@@ -81,22 +81,34 @@ const SingleLayerRenderer = ({ indicatorId, sourceId }: SingleLayerRendererProps
       return redShades[bucketIndex];
     };
 
-    const coloredFeatures: FeatureCollection<Geometry, GeoJsonProperties> = {
-      ...geojson,
-      features: geojson.features.map((feature) => {
-        const name = feature.properties?.[nameKey]?.toLowerCase().trim();
-        const value = name ? dataMap[name] : undefined;
-        const color = getColorForValue(value);
-        return {
-          ...feature,
-          properties: {
-            ...feature.properties,
-            dataValue: value,
-            fillColor: color,
-          },
-        };
-      }),
+    let coloredFeatures: FeatureCollection<Geometry, GeoJsonProperties> = {
+      type: "FeatureCollection",
+      features: [],
     };
+
+    if (
+        geojson &&
+        geojson.type === "FeatureCollection" &&
+        Array.isArray(geojson.features)
+    ) {
+      coloredFeatures = {
+        ...geojson,
+        features: geojson.features.map((feature) => {
+          const name = feature.properties?.[nameKey]?.toLowerCase().trim();
+          const value = name ? dataMap[name] : undefined;
+          const color = getColorForValue(value);
+          return {
+            ...feature,
+            properties: {
+              ...feature.properties,
+              dataValue: value,
+              fillColor: color,
+            },
+          };
+        }),
+      };
+    }
+
 
     if (!map.getSource(sourceLayerId)) {
       map.addSource(sourceLayerId, {
