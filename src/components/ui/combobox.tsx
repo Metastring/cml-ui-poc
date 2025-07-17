@@ -29,6 +29,7 @@ interface ComboboxProps {
   placeholder?: string
   onSelect: (value: string) => void
   defaultValue?: string
+  className?: string;
 }
 
 export function Combobox({
@@ -36,6 +37,7 @@ export function Combobox({
   placeholder = "Select an option",
   onSelect,
   defaultValue = "",
+  className = "w-[400px]",
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(defaultValue)
@@ -54,15 +56,18 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[400px] justify-between"
+          className={cn("justify-between", className)}
         >
-          {value
+          <span className="overflow-hidden">
+            {value
             ? options.find((val) => val.value === value)?.label
             : placeholder}
+          </span>
+
           <ChevronsUpDown className="opacity-50 ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0">
+      <PopoverContent className={cn("p-0", className)}>
         <Command>
           <CommandInput placeholder="Search..." className="h-9" />
           <CommandList>
@@ -88,5 +93,5 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
