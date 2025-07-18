@@ -165,14 +165,18 @@ const SingleLayerRenderer = ({ indicatorId, sourceId }: SingleLayerRendererProps
     map.on("mouseleave", fillLayerId, handleMouseLeave);
 
     return () => {
+      const currentMap = useMapStore.getState().mapRef;
+      if (!currentMap) {
+        return;
+      }
       popup.remove();
 
-      map.off("mousemove", fillLayerId, handleMouseMove);
-      map.off("mouseleave", fillLayerId, handleMouseLeave);
+      currentMap.off("mousemove", fillLayerId, handleMouseMove);
+      currentMap.off("mouseleave", fillLayerId, handleMouseLeave);
 
-      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId);
-      if (map.getLayer(borderLayerId)) map.removeLayer(borderLayerId);
-      if (map.getSource(sourceLayerId)) map.removeSource(sourceLayerId);
+      if (currentMap.getLayer(fillLayerId)) currentMap.removeLayer(fillLayerId);
+      if (currentMap.getLayer(borderLayerId)) currentMap.removeLayer(borderLayerId);
+      if (currentMap.getSource(sourceLayerId)) currentMap.removeSource(sourceLayerId);
     };
   }, [mapRef, data, isSuccess, indicatorId, sourceId]);
 
