@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import TanstackQueryProvider from "@/components/providers/TanstackQueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+
         <TanstackQueryProvider>
           <div className="flex min-h-screen w-full bg-gray-100">
             <Sidebar />
             <div className="flex-1 overflow-hidden">{children}</div>
           </div>
         </TanstackQueryProvider>
+           <Toaster position="top-center" richColors />
       </body>
     </html>
   );

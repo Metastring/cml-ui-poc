@@ -1,31 +1,85 @@
-import { useQuery } from "@tanstack/react-query";
-import { GetFederatedSearchBaseApiHandler } from "./FederatedSearchBaseApiHandler";
-import { useFederatedSearchStore } from "@/store/useFederatedSearchStore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  GetFederatedSearchBaseApiHandler,
+  GetFederatedSearchByPayload,
+} from "./FederatedSearchBaseApiHandler";
 
-export const useGetFederatedResultByQuery = () => {
-  const { query, categories } = useFederatedSearchStore();
+export const useFederatedSearchResult = (
+  search_text: string,
+  category: string[],
+  dataset: string[]
+) => {
+  const queryClient = useQueryClient();
 
-  // console.log(categories[0])
-  // console.log(query)
+  const queryKey = ["federatedSearchResult"];
 
-  const shouldFetch = query.trim().length > 0 && categories.length > 0;
+  if (search_text && search_text.trim().length > 0) {
+    queryKey.push(search_text.trim());
+  }
 
-  const { data, error, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["federated-search-results", query, categories[0]],
+  if (Array.isArray(category) && category.length > 0) {
+    queryKey.push(...category);
+  }
+
+  if (Array.isArray(dataset) && dataset.length > 0) {
+    queryKey.push(...dataset);
+  }
+
+  const queryResult = useQuery({
+    queryKey,
     queryFn: () => {
-      return GetFederatedSearchBaseApiHandler(
-        `/federated-search?category=species&field=${categories[0]}&query=${query}`
-      );
+      const cachedData = queryClient.getQueryData(queryKey);
+      return Promise.resolve(cachedData ?? []);
     },
-    enabled: shouldFetch,
+    enabled: true,
+    staleTime: Infinity,
   });
 
-  const dataSets: { name: string; count: number }[] = data?.results
-    ? Object.entries(data.results).map(([key, value]) => ({
-        name: key,
-        count: (value as { results?: unknown[] })?.results?.length || 0,
-      }))
-    : [];
+  return {
+    data: queryResult.data,
+    isLoading: queryResult.isLoading,
+    isError: queryResult.isError,
+    error: queryResult.error,
+  };
+};
 
-  return { data, dataSets, error, isLoading, isFetching, refetch };
+
+export const useFederatedSearchMutate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      search_text,
+      category,
+      dataset,
+    }: {
+      search_text: string;
+      category: string[];
+      dataset: string[];
+    }) =>
+      GetFederatedSearchByPayload("/federated-search", {
+        search_text,
+        category,
+        dataset,
+      }),
+    onSuccess: (data, variables) => {
+      const { search_text, category, dataset } = variables;
+      const queryKey = [
+        "federatedSearchResult",
+        search_text,
+        ...category,
+        ...dataset,
+      ];
+      queryClient.setQueryData(queryKey, data);
+    },
+  });
+};
+
+export const useGetFilterData = () => {
+  const { data, error, isLoading, isFetching, refetch } = useQuery({
+    queryKey: ["metadata"],
+    queryFn: () => GetFederatedSearchBaseApiHandler(`/metadata`),
+    enabled: true,
+  });
+  return { data, error, isLoading, isFetching, refetch };
 };

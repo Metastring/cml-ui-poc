@@ -43,7 +43,7 @@ const BaseMap: React.FC = () => {
   }, [setMapRef]);
 
   return (
-    <div className="w-full h-screen relative">
+    <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full" />
     </div>
   );
