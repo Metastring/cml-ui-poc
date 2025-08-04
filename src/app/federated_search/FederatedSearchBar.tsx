@@ -1,62 +1,152 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFederatedSearchStore } from "@/store/useFederatedSearchStore";
 import { Combobox } from "@/components/ui/combobox";
+import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
+import {
+  useFederatedSearchMutate,
+  useGetFilterData,
+} from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 
 interface Option {
   value: string;
   label: string;
 }
 
-const options: Option[] = [
-  { value: "vernacular_name_common_names", label: "Vernacular Names" },
-  { value: "plant_species", label: "Plant Species" },
-  { value: "soil_type", label: "Soil Type" },
-  { value: "water_quality", label: "Water Quality" },
-  { value: "forest_cover", label: "Forest Cover" },
-  { value: "wetlands", label: "Wetlands" },
-  { value: "protected_areas", label: "Protected Areas" },
-  { value: "climate_zones", label: "Climate Zones" },
-  { value: "vegetation_type", label: "Vegetation Type" },
-  { value: "altitude_zone", label: "Altitude Zone" },
-];
-
 const FederatedSearchBar = () => {
+  const { mutate } = useFederatedSearchMutate();
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const { data } = useGetFilterData();
   const {
-    // categories,
-     addCategory,
-      // removeCategory,
-      setQuery } =
-    useFederatedSearchStore();
+    query,
+    datasets,
+    categories,
+    setQuery,
+    setCategories,
+    setDatasets,
+    setIndicators,
+  } = useFederatedSearchStore();
+
+  const categoryList: Option[] = useMemo(() => {
+    if (!data) return [];
+    return data.map((item: { category: string }) => ({
+      value: item.category,
+      label: item.category
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+    }));
+  }, [data]);
+
+  const datasetList: Option[] = useMemo(
+    () =>
+      data
+        ?.find(
+          (item: { category: string; datasets: { name: string }[] }) =>
+            item.category === categories
+        )
+        ?.datasets.map((ds: { name: string }) => ({
+          label: ds.name,
+          value: ds.name,
+        })) ?? [],
+    [data, categories]
+  );
+
+  const indicatorList: Option[] = useMemo(
+    () =>
+      data
+        ?.find(
+          (item: {
+            category: string;
+            datasets: { name: string; fields: { field_name: string }[] }[];
+          }) => item.category === categories
+        )
+        ?.datasets.filter((ds: { name: string }) => datasets.includes(ds.name))
+        .flatMap((ds: { name: string; fields: { field_name: string }[] }) =>
+          ds.fields.map((field: { field_name: string }) => ({
+            label: field.field_name,
+            value: field.field_name,
+          }))
+        ) ?? [],
+    [data, categories, datasets]
+  );
 
   const handleSearch = () => {
     const inputValue = inputRef.current?.value.trim() || "";
-      setQuery(inputValue);
+
+    if (!categories.length) {
+      alert("Please select a category.");
+      return;
     }
+
+    if (!inputValue) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    setQuery(inputValue);
+
+    // Trigger mutation
+    mutate({
+      category: [categories],
+      dataset: datasets,
+      search_text: query,
+    });
+  };
+
+useEffect(() => {
+  setDatasets([]);
+  setIndicators([]);
+}, [categories, setDatasets, setIndicators]);
+
+useEffect(() => {
+  setIndicators([]);
+}, [datasets, setIndicators]);
 
 
   return (
-    <div className="flex items-center gap-2 w-full">
-      <Combobox
-        options={options}
-        placeholder="Select category"
-        onSelect={(val: string) => addCategory(val)}
-        className="w-[250px]"
-      />
+    <div className="flex flex-col mx-auto items-center justify-center space-y-2 rounded-2xl max-w-3xl w-full drop-shadow-lg p-6 bg-gray-50">
+      {/* Filters Row */}
+      <div className="flex flex-wrap justify-center gap-2 w-full  ">
+        <Combobox
+          options={categoryList}
+          placeholder="Select category"
+          onSelect={(val: string) => setCategories(val)}
+          className="flex-1 min-w-0 w-full drop-shadow-md"
+        />
 
-      <Input
-        ref={inputRef}
-        type="text"
-        placeholder="Search for species, location, etc."
-        className="w-full max-w-md bg-white"
-      />
+        <MultiSelectCombobox
+          options={datasetList}
+          placeholder="Select Datasets"
+          onChange={(val: string[]) => setDatasets(val)}
+          className="flex-1 min-w-0 w-full drop-shadow-md"
+          key={categories}
+        />
 
-      <Button onClick={handleSearch}>Search</Button>
+        <MultiSelectCombobox
+          options={indicatorList}
+          placeholder="Select Indicators"
+          onChange={(val: string[]) => setIndicators(val)}
+          className="flex-1 min-w-0 w-full drop-shadow-md"
+          key={categories[0] + datasets.join(",")}
+        />
+      </div>
+
+      {/* Search Box */}
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-2 w-full max-w-2xl">
+        <Input
+          ref={inputRef}
+          type="text"
+          placeholder="What's in your mind..."
+          className="w-full sm:w-auto flex-1 p-2 bg-white drop-shadow-md"
+        />
+        <Button onClick={handleSearch} className="w-full sm:w-auto">
+          Search
+        </Button>
+      </div>
     </div>
   );
 };

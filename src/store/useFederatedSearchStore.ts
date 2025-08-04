@@ -2,35 +2,36 @@ import { create } from "zustand";
 
 type FederatedSearchState = {
   query: string;
-  categories: string[]; // ✅ now supports multiple categories
+  categories: string;
+  datasets: string[];
+  indicators: string[];
+
   setQuery: (query: string) => void;
-  addCategory: (category: string) => void;
-  removeCategory: (category: string) => void;
-  clearCategories: () => void;
+  setCategories: (category: string) => void;
+  setDatasets: (datasets: string[]) => void;
+  setIndicators: (indicators: string[]) => void;
 };
 
 export const useFederatedSearchStore = create<FederatedSearchState>((set) => ({
   query: "",
-  categories: [],
+  categories: "",
+  datasets: [],
+  indicators: [],
 
-  setQuery: (query) => {
+  setQuery: (query: string) => {
     set({ query: query.trim() });
   },
-  
-  addCategory: (category) => {
-  if (!category.trim()) return;
-  set((state) => ({
-    categories: [...new Set([...state.categories, category.trim()])],
-  }));
-},
 
-  removeCategory: (category) => {
-    set((state) => ({
-      categories: state.categories.filter((c) => c !== category),
-    }));
+  setCategories: (category: string) => {
+    set({ categories: category.trim() });
   },
 
-  clearCategories: () => {
-    set({ categories: [] });
+  setDatasets: (datasets: string[]) => {
+    const clean = datasets.map((d) => d.trim()).filter(Boolean);
+    set({ datasets: Array.from(new Set(clean)) });
+  },
+  setIndicators: (indicators: string[]) => {
+    const clean = indicators.map((d) => d.trim()).filter(Boolean);
+    set({ indicators: Array.from(new Set(clean)) });
   },
 }));

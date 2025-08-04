@@ -3,10 +3,13 @@
 import {
   Menu,
   ChevronLeft,
-  Layers,
-  Triangle,
+  // Layers,
+  // Triangle,
   Globe,
   LayoutDashboard,
+  DatabaseZap,
+  LocateFixed,
+  FileText,
 } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
@@ -36,7 +39,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isOpen, active }
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -45,6 +48,8 @@ const Sidebar: React.FC = () => {
     if (pathname === '/federated_search') return 'Federated Search';
     if (pathname === '/explore_map/polygon') return 'Explore Polygon';
     if (pathname === '/explore_map/layer') return 'Explore Layer';
+    if (pathname === '/admin/db_mapping') return 'DB Mapping';
+    if (pathname === '/metadata') return 'Metadata';
     return '';
   };
 
@@ -89,19 +94,36 @@ const Sidebar: React.FC = () => {
 
         <Link href="/explore_map/polygon">
           <SidebarItem
-            icon={<Triangle size={18} />}
-            label="Explore Polygon"
+            icon={<LocateFixed size={18} />}
+            // icon={<Triangle size={18} />}
+            label="Map Search"
             isOpen={isSidebarOpen}
             active={currentTab === 'Explore Polygon'}
           />
         </Link>
 
-        <Link href="/explore_map/layer">
+        {/* <Link href="/explore_map/layer">
           <SidebarItem
             icon={<Layers size={18} />}
             label="Explore Layer"
             isOpen={isSidebarOpen}
             active={currentTab === 'Explore Layer'}
+          />
+        </Link> */}
+        <Link href="/admin/db_mapping">
+          <SidebarItem
+            icon={<DatabaseZap size={18} />}
+            label="DB Mapping"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'DB Mapping'}
+          />
+        </Link>
+        <Link href="/metadata">
+          <SidebarItem
+            icon={<FileText size={18} />}
+            label="Metadata"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Metadata'}
           />
         </Link>
       </div>

@@ -21,7 +21,7 @@ const PolygonDataTable: React.FC = () => {
     : [];
 
   return (
-    <div className="w-full">
+    <div className="w-full h-fit">
     <GenericTable<Record<string, unknown>>
   columns={columns}
   data={data as unknown as Record<string, unknown>[]}
