@@ -1,68 +1,62 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import maplibregl from "maplibre-gl";
 import useMapStore from "@/store/useMapStore";
 
 interface AddMarkerProps {
-  coordinates: [number, number]; // [lng, lat]
-  popupText?: string;
-  color?: string;
+  markers: {
+    lat: number;
+    lng: number;
+    label?: string;
+  }[];
+  flyTo?: {
+    lat: number;
+    lng: number;
+  } | null;
 }
 
-const AddMarker: React.FC<AddMarkerProps> = ({
-  coordinates,
-  popupText = "Marker",
-  color = "red",
-}) => {
+const AddMarker: React.FC<AddMarkerProps> = ({ markers, flyTo }) => {
   const { mapRef } = useMapStore();
-  const markerRef = useRef<maplibregl.Marker | null>(null);
 
   useEffect(() => {
-    if (!mapRef || !coordinates) return;
+    if (!mapRef) return;
 
-    const updateMarker = () => {
-      if(!coordinates[0] && !coordinates[1]) return;
-      // Fly to the new coordinates
-      mapRef.flyTo({
-        center: coordinates ,
-        zoom: 4, // Optional: adjust zoom level
-        speed: 1.2, // Optional: fly speed
-        curve: 1.42, // Optional: curve of the fly
-        essential: true,
-      });
+    const markerRefs: maplibregl.Marker[] = [];
 
-      // Remove existing marker
-      if (markerRef.current) {
-        markerRef.current.remove();
-      }
+    markers.forEach((marker) => {
+      const isFlyingTo =
+        flyTo?.lat === marker.lat && flyTo?.lng === marker.lng;
 
-      const marker = new maplibregl.Marker({ color })
-        .setLngLat(coordinates)
-        .setPopup(new maplibregl.Popup().setText(popupText))
+      const m = new maplibregl.Marker({
+        color: isFlyingTo ? "blue" : "red", // 🔵 Change color if flying to this marker
+      })
+        .setLngLat([marker.lng, marker.lat])
+        .setPopup(new maplibregl.Popup().setText(marker.label || "Marker"))
         .addTo(mapRef);
 
-      // Optional: open popup on hover
-      const markerElement = marker.getElement();
-      markerElement.addEventListener("mouseenter", () => marker.togglePopup());
-      markerElement.addEventListener("mouseleave", () => marker.togglePopup());
+      const el = m.getElement();
+      el.addEventListener("mouseenter", () => m.togglePopup());
+      el.addEventListener("mouseleave", () => m.togglePopup());
 
-      markerRef.current = marker;
-    };
+      markerRefs.push(m);
+    });
 
-    if (mapRef.isStyleLoaded()) {
-      updateMarker();
-    } else {
-      mapRef.once("load", updateMarker);
+    // 🛫 Perform flyTo if requested
+    if (flyTo) {
+      mapRef.flyTo({
+        center: [flyTo.lng, flyTo.lat],
+        zoom: 4,
+        speed: 1.2,
+        curve: 1.42,
+        essential: true,
+      });
     }
 
     return () => {
-      if (markerRef.current) {
-        markerRef.current.remove();
-        markerRef.current = null;
-      }
+      markerRefs.forEach((marker) => marker.remove());
     };
-  }, [mapRef, coordinates, popupText, color]);
+  }, [mapRef, markers, flyTo]);
 
   return null;
 };

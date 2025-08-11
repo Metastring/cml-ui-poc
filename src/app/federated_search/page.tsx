@@ -11,7 +11,7 @@ import useFederatedMapData from "@/store/useFederatedMapData";
 
 const Page = () => {
   const [isMapVisible, setIsMapVIsible] = useState(false);
-  const { selectedCoordinates } = useFederatedMapData();
+  const { selectedCoordinates , visibleMarkers } = useFederatedMapData();
   console.log("selectedCoordinates", selectedCoordinates);
   return (
     <div className="h-screen flex flex-col p-4 space-y-2">
@@ -53,12 +53,8 @@ const Page = () => {
         >
           <div className="h-full w-full">
             <BaseMap />
-            {selectedCoordinates?.lat && selectedCoordinates?.lat && (
-              <AddMarker
-                coordinates={[selectedCoordinates.lng, selectedCoordinates.lat]}
-                popupText={selectedCoordinates.label}
-              />
-            )}
+            <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
+
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ interface Option {
 const FederatedSearchBar = () => {
   const { mutate } = useFederatedSearchMutate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { data } = useGetFilterData();
+  const { data , isLoading , error } = useGetFilterData();
   const {
     query,
     datasets,
@@ -31,48 +31,56 @@ const FederatedSearchBar = () => {
   } = useFederatedSearchStore();
 
   const categoryList: Option[] = useMemo(() => {
-    if (!data) return [];
-    return data.map((item: { category: string }) => ({
-      value: item.category,
-      label: item.category
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" "),
-    }));
-  }, [data]);
+  if (isLoading || error || !data) return [];
+  return data.map((item: { category_name: string }) => ({
+    value: item.category_name,
+    label: item.category_name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" "),
+  }));
+}, [data, isLoading, error]);
 
-  const datasetList: Option[] = useMemo(
-    () =>
-      data
-        ?.find(
-          (item: { category: string; datasets: { name: string }[] }) =>
-            item.category === categories
-        )
-        ?.datasets.map((ds: { name: string }) => ({
-          label: ds.name,
-          value: ds.name,
-        })) ?? [],
-    [data, categories]
+const datasetList: Option[] = useMemo(() => {
+  if (isLoading || error || !data) return [];
+  return (
+    data
+      ?.find(
+        (item: { category_name: string; datasets?: { dataset_title: string }[] }) =>
+          item.category_name === categories
+      )
+      ?.datasets?.map((ds) => ({
+        label: ds.dataset_title,
+        value: ds.dataset_title,
+      })) ?? []
   );
+}, [data, categories, isLoading, error]);
 
-  const indicatorList: Option[] = useMemo(
-    () =>
-      data
-        ?.find(
-          (item: {
-            category: string;
-            datasets: { name: string; fields: { field_name: string }[] }[];
-          }) => item.category === categories
-        )
-        ?.datasets.filter((ds: { name: string }) => datasets.includes(ds.name))
-        .flatMap((ds: { name: string; fields: { field_name: string }[] }) =>
-          ds.fields.map((field: { field_name: string }) => ({
-            label: field.field_name,
-            value: field.field_name,
-          }))
-        ) ?? [],
-    [data, categories, datasets]
+const indicatorList: Option[] = useMemo(() => {
+  if (isLoading || error || !data) return [];
+  return (
+    (
+      data?.find(
+        (item) =>
+          (
+            item as {
+              category_name: string;
+              datasets?: { dataset_title: string; fields: { field_name: string }[] }[];
+            }
+          ).category_name === categories
+      ) as
+        | { datasets?: { dataset_title: string; fields: { field_name: string }[] }[] }
+        | undefined
+    )?.datasets
+      ?.filter((ds) => datasets.includes(ds.dataset_title))
+      .flatMap((ds) =>
+        ds.fields.map((field) => ({
+          label: field.field_name,
+          value: field.field_name,
+        }))
+      ) ?? []
   );
+}, [data, categories, datasets, isLoading, error]);
 
   const handleSearch = () => {
     const inputValue = inputRef.current?.value.trim() || "";
@@ -97,15 +105,14 @@ const FederatedSearchBar = () => {
     });
   };
 
-useEffect(() => {
-  setDatasets([]);
-  setIndicators([]);
-}, [categories, setDatasets, setIndicators]);
+  useEffect(() => {
+    setDatasets([]);
+    setIndicators([]);
+  }, [categories, setDatasets, setIndicators]);
 
-useEffect(() => {
-  setIndicators([]);
-}, [datasets, setIndicators]);
-
+  useEffect(() => {
+    setIndicators([]);
+  }, [datasets, setIndicators]);
 
   return (
     <div className="flex flex-col mx-auto items-center justify-center space-y-2 rounded-2xl max-w-3xl w-full drop-shadow-lg p-6 bg-gray-50">

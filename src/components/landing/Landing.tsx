@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 const Landing = () => {
   return (
@@ -23,21 +22,21 @@ const Landing = () => {
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Polygon Explorer</h2>
+            <h2 className="text-xl font-semibold mb-2">Federated Search</h2>
             <p className="text-gray-600 mb-2">
-              Draw, edit, and manage polygonal boundaries on an interactive map.
+              Federated Search queries multiple remote databases and returns unified results in a single view.
             </p>
-            <Badge variant="outline">Map Tool</Badge>
+            {/* <Badge variant="outline">Map Tool</Badge> */}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Layer Explorer</h2>
+            <h2 className="text-xl font-semibold mb-2">Map Search</h2>
             <p className="text-gray-600 mb-2">
-              Toggle and analyze map layers using external datasets.
+              Draw, edit, and manage polygonal boundaries on an interactive map.
             </p>
-            <Badge variant="outline">Geo Data</Badge>
+            {/* <Badge variant="outline">Geo Data</Badge> */}
           </CardContent>
         </Card>
       </div>
