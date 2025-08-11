@@ -81,22 +81,34 @@ const SingleLayerRenderer = ({ indicatorId, sourceId }: SingleLayerRendererProps
       return redShades[bucketIndex];
     };
 
-    const coloredFeatures: FeatureCollection<Geometry, GeoJsonProperties> = {
-      ...geojson,
-      features: geojson.features.map((feature) => {
-        const name = feature.properties?.[nameKey]?.toLowerCase().trim();
-        const value = name ? dataMap[name] : undefined;
-        const color = getColorForValue(value);
-        return {
-          ...feature,
-          properties: {
-            ...feature.properties,
-            dataValue: value,
-            fillColor: color,
-          },
-        };
-      }),
+    let coloredFeatures: FeatureCollection<Geometry, GeoJsonProperties> = {
+      type: "FeatureCollection",
+      features: [],
     };
+
+    if (
+        geojson &&
+        geojson.type === "FeatureCollection" &&
+        Array.isArray(geojson.features)
+    ) {
+      coloredFeatures = {
+        ...geojson,
+        features: geojson.features.map((feature) => {
+          const name = feature.properties?.[nameKey]?.toLowerCase().trim();
+          const value = name ? dataMap[name] : undefined;
+          const color = getColorForValue(value);
+          return {
+            ...feature,
+            properties: {
+              ...feature.properties,
+              dataValue: value,
+              fillColor: color,
+            },
+          };
+        }),
+      };
+    }
+
 
     if (!map.getSource(sourceLayerId)) {
       map.addSource(sourceLayerId, {
@@ -153,14 +165,18 @@ const SingleLayerRenderer = ({ indicatorId, sourceId }: SingleLayerRendererProps
     map.on("mouseleave", fillLayerId, handleMouseLeave);
 
     return () => {
+      const currentMap = useMapStore.getState().mapRef;
+      if (!currentMap) {
+        return;
+      }
       popup.remove();
 
-      map.off("mousemove", fillLayerId, handleMouseMove);
-      map.off("mouseleave", fillLayerId, handleMouseLeave);
+      currentMap.off("mousemove", fillLayerId, handleMouseMove);
+      currentMap.off("mouseleave", fillLayerId, handleMouseLeave);
 
-      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId);
-      if (map.getLayer(borderLayerId)) map.removeLayer(borderLayerId);
-      if (map.getSource(sourceLayerId)) map.removeSource(sourceLayerId);
+      if (currentMap.getLayer(fillLayerId)) currentMap.removeLayer(fillLayerId);
+      if (currentMap.getLayer(borderLayerId)) currentMap.removeLayer(borderLayerId);
+      if (currentMap.getSource(sourceLayerId)) currentMap.removeSource(sourceLayerId);
     };
   }, [mapRef, data, isSuccess, indicatorId, sourceId]);
 
