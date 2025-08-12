@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect } from "react";
 import maplibregl from "maplibre-gl";
@@ -35,6 +35,17 @@ const AddMarker: React.FC<AddMarkerProps> = ({ markers, flyTo }) => {
         .setPopup(new maplibregl.Popup().setText(marker.label || "Marker"))
         .addTo(mapRef);
 
+      // Raise flying-to marker visually
+      if (isFlyingTo) {
+        // Shift marker slightly upwards to separate visually if overlapping
+        m.setOffset([0, -15]);
+
+        // Increase z-index so it's on top
+        const el = m.getElement();
+        el.style.zIndex = "1000";
+      }
+
+      // Show popup on hover
       const el = m.getElement();
       el.addEventListener("mouseenter", () => m.togglePopup());
       el.addEventListener("mouseleave", () => m.togglePopup());
@@ -46,7 +57,7 @@ const AddMarker: React.FC<AddMarkerProps> = ({ markers, flyTo }) => {
     if (flyTo) {
       mapRef.flyTo({
         center: [flyTo.lng, flyTo.lat],
-        zoom: 4,
+        zoom: 10,
         speed: 1.2,
         curve: 1.42,
         essential: true,

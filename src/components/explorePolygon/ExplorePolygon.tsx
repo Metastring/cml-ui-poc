@@ -13,19 +13,23 @@ import InstructionPopover from "@/element/popover/InstructionPopover";
 import BaseMap from "../map/BaseMap";
 import ExternalLayers from "../mapFeatures/externalLayers/ExternalLayers";
 import PolygonEditor from "../mapFeatures/polygonEditor/PolygonEditor";
+import AddMarker from "../mapFeatures/addMarker/AddMarker";
+import useMapSearchData from "@/store/useMapSearchData";
 
 const ExplorePolygon = () => {
-  const [tableVisible, setTableVisible] = useState(false);
+  const [tableVisible, setTableVisible] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
+  const { selectedCoordinates , visibleMarkers } = useMapSearchData();
+
   return (
-    <div className="w-full h-screen p-4 space-y-4">
+    <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
       {/* Top Section: Map + Sidebar */}
-      <div
-        className={`flex flex-col md:flex-row w-full ${
-          tableVisible ? "h-1/2" : "h-[calc(100%-2.5rem)]"
-        } gap-4 transition-all duration-300`}
-      >
+       <div
+    className={`flex flex-col md:flex-row w-full ${
+      tableVisible ? "flex-[0.5]" : "flex-1"
+    } gap-4 transition-all duration-300 overflow-hidden`}
+  >
         {/* Sidebar with instructions and search */}
         {sidebarVisible ? (
           <div className="flex flex-col gap-4 w-auto shrink-0">
@@ -97,17 +101,18 @@ const ExplorePolygon = () => {
         )}
 
         {/* Map Area */}
-        <div className="flex-1 h-full relative rounded-lg overflow-hidden shadow-md">
-          <BaseMap />
+         <div className="flex-1 h-full relative rounded-lg overflow-hidden shadow-md">
+       <BaseMap />
           <ExternalLayers />
           <PolygonEditor />
+          <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
         </div>
       </div>
 
       {/* Data Table or Toggle Strip */}
       {tableVisible ? (
-        <div className="w-full transition-all duration-300">
-          <PolygonDataTable />
+        <div className="flex-[0.5] w-full overflow-auto">
+       <PolygonDataTable />
         </div>
       ) : (
         <div
