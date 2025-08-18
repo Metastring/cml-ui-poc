@@ -21,7 +21,8 @@ pipeline {
                     string(credentialsId: 'FRONTEND_CML_DEPLOYMENT_BRANCH', variable: 'DEPLOYMENT_BRANCH'),
                     string(credentialsId: 'FRONTEND_CML_DEPLOYMENT_NAME', variable: 'DEPLOYMENT_NAME'),
                     string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_HHM_BASE_URL', variable: 'NEXT_PUBLIC_HHM_BASE_URL'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_FEDERATED_BASE_URL', variable: 'NEXT_PUBLIC_FEDERATED_BASE_URL')
+                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_FEDERATED_BASE_URL', variable: 'NEXT_PUBLIC_FEDERATED_BASE_URL'),
+                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_MAP_BASE_URL', variable: 'NEXT_PUBLIC_MAP_BASE_URL')
                 ]) {
                     sh """
 
@@ -77,6 +78,7 @@ pipeline {
                     cat > .env <<EOF_ENV
 NEXT_PUBLIC_HHM_BASE_URL=${NEXT_PUBLIC_HHM_BASE_URL}
 NEXT_PUBLIC_FEDERATED_BASE_URL=${NEXT_PUBLIC_FEDERATED_BASE_URL}
+NEXT_PUBLIC_MAP_BASE_URL=${NEXT_PUBLIC_MAP_BASE_URL}
 PORT=${PORT}
 DEPLOY_NAME=${DEPLOYMENT_NAME}
 EOF_ENV
