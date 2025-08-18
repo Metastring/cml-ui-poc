@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo, ReactNode } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import useIndicatorStore from "@/store/useIndicatorStore";
-import useRecentIndicatorStore from "@/store/useRecentIndicatorStore";
+import useIndicatorStore from "@/store/map_indicatore_store/useIndicatorStore";
+import useRecentIndicatorStore from "@/store/map_indicatore_store/useRecentIndicatorStore";
 import { useFetchHHMLayers } from "@/api/layerApiHandler/LayerApiHandler";
 
 // ---------- Types ----------

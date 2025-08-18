@@ -6,7 +6,7 @@ interface MarkerData {
   label?: string;
 }
 
-interface FederatedMapDataStore {
+interface FederatedSearchDataStore {
   selectedCoordinates: MarkerData | null;
   visibleMarkers: MarkerData[];
   setSelectedCoordinates: (coords: MarkerData) => void;
@@ -15,7 +15,7 @@ interface FederatedMapDataStore {
   clearCoordinates: () => void;
 }
 
-const useFederatedMapData = create<FederatedMapDataStore>((set) => ({
+const useFederatedSeachData = create<FederatedSearchDataStore>((set) => ({
   selectedCoordinates: null,
   visibleMarkers: [],
   setSelectedCoordinates: (coords) => set({ selectedCoordinates: coords }),
@@ -26,11 +26,10 @@ const useFederatedMapData = create<FederatedMapDataStore>((set) => ({
   removeVisibleMarker: (coords) =>
     set((state) => ({
       visibleMarkers: state.visibleMarkers.filter(
-        (marker) =>
-          marker.lat !== coords.lat || marker.lng !== coords.lng
+        (marker) => marker.lat !== coords.lat || marker.lng !== coords.lng
       ),
     })),
   clearCoordinates: () => set({ selectedCoordinates: null }),
 }));
 
-export default useFederatedMapData;
+export default useFederatedSeachData;

@@ -7,17 +7,17 @@ import {
   PanelLeftClose,
   PanelRightOpen,
 } from "lucide-react";
-import SearchBar from "@/components/explorePolygon/SearchBar";
+import SearchBar from "@/components/explorePolygon/MapSearchBar";
 import PolygonDataTable from "@/components/explorePolygon/PolygonDataTable";
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import BaseMap from "../map/BaseMap";
 import ExternalLayers from "../mapFeatures/externalLayers/ExternalLayers";
 import PolygonEditor from "../mapFeatures/polygonEditor/PolygonEditor";
 import AddMarker from "../mapFeatures/addMarker/AddMarker";
-import useMapSearchData from "@/store/useMapSearchData";
+import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 
 const ExplorePolygon = () => {
-  const [tableVisible, setTableVisible] = useState(true);
+  const [tableVisible, setTableVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const { selectedCoordinates , visibleMarkers } = useMapSearchData();

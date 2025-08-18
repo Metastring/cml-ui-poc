@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import maplibregl from "maplibre-gl";
-import useMapStore from "@/store/useMapStore";
+import useMapStore from "@/store/base_map_store/useMapStore";
 
 interface AddMarkerProps {
   markers: {

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl, { Map, MapMouseEvent, MapGeoJSONFeature } from "maplibre-gl";
 import { useIndicatorData } from "@/api/layerApiHandler/LayerApiHandler";
-import useMapStore from "@/store/useMapStore";
+import useMapStore from "@/store/base_map_store/useMapStore";
 import {
   FeatureCollection,
   Geometry,

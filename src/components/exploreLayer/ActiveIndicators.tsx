@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Eye, EyeOff, Trash2 } from "lucide-react";
-import useMapStore from "@/store/useMapStore";
-import useIndicatorStore from "@/store/useIndicatorStore";
+import useMapStore from "@/store/base_map_store/useMapStore";
+import useIndicatorStore from "@/store/map_indicatore_store/useIndicatorStore";
 
 
 

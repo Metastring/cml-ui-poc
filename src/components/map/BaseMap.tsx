@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import maplibregl, { Map } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-import useMapStore from '@/store/useMapStore';
+import useMapStore from '@/store/base_map_store/useMapStore';
 
 const BaseMap: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);

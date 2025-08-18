@@ -1,6 +1,6 @@
 "use client";
 
-import useIndicatorStore from "@/store/useIndicatorStore";
+import useIndicatorStore from "@/store/map_indicatore_store/useIndicatorStore";
 import SingleLayerRenderer from "@/components/mapFeatures/externalLayers/SingleLayerRenderer";
 
 const ExternalLayers = () => {
@@ -14,7 +14,7 @@ const ExternalLayers = () => {
             key={`${indicatorId}-${sourceId}`}
             indicatorId={indicatorId}
             sourceId={sourceId}
-            
+
           />
         ))
       )}

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { MaplibreTerradrawControl } from '@watergis/maplibre-gl-terradraw';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@watergis/maplibre-gl-terradraw/dist/maplibre-gl-terradraw.css';
-import useMapStore from '@/store/useMapStore';
+import useMapStore from '@/store/base_map_store/useMapStore';
 import { patchMapAddLayer } from '@/utils/mapUtils';
 import type { FeatureCollection, Geometry, GeoJsonProperties, Feature } from 'geojson';
 

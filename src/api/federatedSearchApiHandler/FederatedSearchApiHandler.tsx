@@ -75,78 +75,70 @@ export interface DatasetDetail {
   fields: Field[];
   statistics: Statistic[];
 }
+type DataItem = {
+  // define fields for each table row here
+  id: string;
+  name: string;
+  // ...more
+};
 
+type FederatedSearchData = {
+  results?: Record<
+    string,
+    {
+      field_results?: {
+        vernacular_name_common_names?: {
+          results?: DataItem[];
+        };
+      };
+    }
+  >;
+};
 
-
-
-export const useFederatedSearchResult = (
-  search_text: string,
-  category: string[],
-  dataset: string[]
-) => {
+export const useMutateFederatedSearch = () => {
   const queryClient = useQueryClient();
 
   const queryKey = ["federatedSearchResult"];
 
-  if (search_text && search_text.trim().length > 0) {
-    queryKey.push(search_text.trim());
-  }
-
-  if (Array.isArray(category) && category.length > 0) {
-    queryKey.push(...category);
-  }
-
-  if (Array.isArray(dataset) && dataset.length > 0) {
-    queryKey.push(...dataset);
-  }
-
-  const queryResult = useQuery({
+  const queryResult = useQuery<FederatedSearchData>({
     queryKey,
     queryFn: () => {
-      const cachedData = queryClient.getQueryData(queryKey);
-      return Promise.resolve(cachedData ?? []);
+      const cachedData = queryClient.getQueryData<FederatedSearchData>(queryKey);
+      return Promise.resolve(cachedData ?? {});
     },
     enabled: true,
     staleTime: Infinity,
   });
 
-  return {
-    data: queryResult.data,
-    isLoading: queryResult.isLoading,
-    isError: queryResult.isError,
-    error: queryResult.error,
-  };
-};
-
-export const useFederatedSearchMutate = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({
       search_text,
       category,
       dataset,
+      fields,
     }: {
       search_text: string;
       category: string[];
       dataset: string[];
+      fields: string[];
     }) =>
       GetFederatedSearchByPayload("/federated-search", {
         search_text,
         category,
         dataset,
+        fields,
       }),
-    onSuccess: (data, variables) => {
-      const { search_text, category, dataset } = variables;
-      const queryKey = [
-        "federatedSearchResult",
-        search_text,
-        ...category,
-        ...dataset,
-      ];
+    onSuccess: (data) => {
       queryClient.setQueryData(queryKey, data);
     },
   });
+
+  return {
+    ...queryResult,
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isMutating: mutation.isPending,
+  };
 };
 
 export const useGetFilterData = () => {
@@ -175,6 +167,9 @@ export const useGetIndicatorsByCategoryAndDatasets = (
     enabled: !!category && datasets.length > 0,
   });
 };
+
+
+
 
 
 export const useGetDatasetDetails = (categoryName: string, datasetTitle: string) => {

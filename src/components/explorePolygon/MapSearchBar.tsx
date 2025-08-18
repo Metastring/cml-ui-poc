@@ -3,19 +3,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
-import useMapStore from "@/store/useMapStore";
+import useMapStore from "@/store/base_map_store/useMapStore";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { useGetMapSearchData } from "./useGetMapSearchData";
-import useMapSearchData from "@/store/useMapSearchData";
+import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 
 interface Option {
   value: string;
   label: string;
 }
 
-const SearchBar: React.FC = () => {
+const MapSearchBar: React.FC = () => {
   const { shapes } = useMapStore();
   const [category, setCategory] = useState<string>("");
   const [dataset, setDataset] = useState<string[]>([]);
@@ -67,6 +67,10 @@ const SearchBar: React.FC = () => {
       alert("Please select a category.");
       return;
     }
+    if (!dataset.length) {
+      alert("Please select at least one dataset.");
+      return;
+    }
     if (!shapes || shapes.features.length === 0) {
       alert("Please draw at least one polygon.");
       return;
@@ -93,6 +97,7 @@ const SearchBar: React.FC = () => {
         : [],
     });
   };
+
 
   useEffect(() => {
     setDataset([]);
@@ -129,4 +134,4 @@ const SearchBar: React.FC = () => {
   );
 };
 
-export default SearchBar;
+export default MapSearchBar;

@@ -1,18 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FederatedSearchBar from "@/app/federated_search/FederatedSearchBar";
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import { LocateFixed, LocateOff } from "lucide-react";
 import BaseMap from "@/components/map/BaseMap";
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
-import NewFederatedDataTable from "./NewFederatedDataTable";
-import useFederatedMapData from "@/store/useFederatedMapData";
+import { useMutateFederatedSearch } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import FederatedDataTable, { DataItem } from "./FederatedDataTable";
+import useFederatedSeachData from "@/store/federated_search_store/useFederatedSeachData";
 
 const Page = () => {
   const [isMapVisible, setIsMapVIsible] = useState(false);
-  const { selectedCoordinates , visibleMarkers } = useFederatedMapData();
-  console.log("selectedCoordinates", selectedCoordinates);
+  const { selectedCoordinates, visibleMarkers } = useFederatedSeachData();
+  const {
+    data,
+    isError,
+    mutate,
+    isMutating: isLoading,
+  } = useMutateFederatedSearch();
+  const resultKeys = Object.keys(data?.results || {});
+  const [activeKey, setActiveKey] = useState(resultKeys[0]);
+
+  useEffect(() => {
+    if (!activeKey && resultKeys.length > 0) {
+      setActiveKey(resultKeys[0]);
+    }
+  }, [resultKeys, activeKey]);
+
   return (
     <div className="h-screen flex flex-col p-4 space-y-2">
       {/* Top bar */}
@@ -37,10 +52,35 @@ const Page = () => {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden space-x-4">
         {/* Left Content */}
-        <div className="flex flex-col flex-1 min-w-0 space-y-4 overflow-hidden">
-          <FederatedSearchBar />
-          <NewFederatedDataTable />
-          {/* <FederatedResult /> */}
+        <div className="flex flex-col flex-1 min-w-0 space-y-2 overflow-hidden">
+          <FederatedSearchBar mutate={mutate} />
+
+          {/* Tabs */}
+          <div className="flex space-x-2 border-b">
+            {resultKeys.map((key) => (
+              <button
+                key={key}
+                className={`px-4 py-2 cursor-pointer ${
+                  activeKey === key
+                    ? "border-b-2 border-blue-600 font-bold text-blue-700"
+                    : ""
+                }`}
+                onClick={() => setActiveKey(key)}
+              >
+                {key.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {/* Active Table */}
+          <FederatedDataTable
+            isLoading={isLoading}
+            isError={isError}
+            data={
+              (data?.results?.[activeKey]?.field_results
+                ?.vernacular_name_common_names?.results ?? []) as DataItem[]
+            }
+          />
         </div>
 
         {/* Right Map Section */}
@@ -54,7 +94,6 @@ const Page = () => {
           <div className="h-full w-full">
             <BaseMap />
             <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
-
           </div>
         </div>
       </div>

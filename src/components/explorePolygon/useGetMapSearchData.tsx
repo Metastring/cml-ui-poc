@@ -72,7 +72,7 @@ export const useGetMapSearchData = () => {
 
       // ✅ Set the query options so it stays in cache for 10 minutes (600_000 ms)
       queryClient.setQueryDefaults(['polygonData'], {
-        staleTime: 600_000, 
+        staleTime: 600_000,
         gcTime: 600_000,
       });
 

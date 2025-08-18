@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import useMapSearchData from "@/store/useMapSearchData";
+import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 
 interface PolygonDataItem {
   scientificName: string;
