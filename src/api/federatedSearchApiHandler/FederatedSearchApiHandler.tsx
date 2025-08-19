@@ -75,11 +75,15 @@ export interface DatasetDetail {
   fields: Field[];
   statistics: Statistic[];
 }
-type DataItem = {
-  // define fields for each table row here
-  id: string;
-  name: string;
-  // ...more
+
+
+export type DataItem = {
+  decimalLatitude?: number;
+  decimalLongitude?: number;
+  taxon_name?: string;
+  common_names?: string;
+  scientific_name?: string;
+  common_name?: string;
 };
 
 type FederatedSearchData = {
@@ -90,10 +94,14 @@ type FederatedSearchData = {
         vernacular_name_common_names?: {
           results?: DataItem[];
         };
+        scientific_name?: {
+          results?: DataItem[];
+        };
       };
     }
   >;
 };
+
 
 export const useMutateFederatedSearch = () => {
   const queryClient = useQueryClient();

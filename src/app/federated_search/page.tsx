@@ -7,7 +7,7 @@ import { LocateFixed, LocateOff } from "lucide-react";
 import BaseMap from "@/components/map/BaseMap";
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import { useMutateFederatedSearch } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import FederatedDataTable, { DataItem } from "./FederatedDataTable";
+import FederatedDataTable from "./FederatedDataTable";
 import useFederatedSeachData from "@/store/federated_search_store/useFederatedSeachData";
 
 const Page = () => {
@@ -20,13 +20,17 @@ const Page = () => {
     isMutating: isLoading,
   } = useMutateFederatedSearch();
   const resultKeys = Object.keys(data?.results || {});
-  const [activeKey, setActiveKey] = useState(resultKeys[0]);
+  const [activeKey, setActiveKey] = useState<string | null>(resultKeys[0]);
 
   useEffect(() => {
-    if (!activeKey && resultKeys.length > 0) {
-      setActiveKey(resultKeys[0]);
+    if (resultKeys.length > 0) {
+      if (!activeKey || !resultKeys.includes(activeKey)) {
+        setActiveKey(resultKeys[0]);
+      }
+    } else {
+      setActiveKey(null);
     }
-  }, [resultKeys, activeKey]);
+  }, [resultKeys]);
 
   return (
     <div className="h-screen flex flex-col p-4 space-y-2">
@@ -76,10 +80,12 @@ const Page = () => {
           <FederatedDataTable
             isLoading={isLoading}
             isError={isError}
-            data={
-              (data?.results?.[activeKey]?.field_results
-                ?.vernacular_name_common_names?.results ?? []) as DataItem[]
-            }
+            data={Object.values(
+              data?.results?.[activeKey ?? 0]?.field_results ?? {}
+            ).flatMap(
+              (field: { results?: Record<string, unknown>[] | undefined }) =>
+                field.results ?? []
+            )}
           />
         </div>
 
