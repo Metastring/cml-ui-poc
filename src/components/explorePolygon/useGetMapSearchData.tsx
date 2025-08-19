@@ -13,6 +13,7 @@ interface PolygonDetail {
 }
 
 export interface SearchParams {
+  category: string;
   dataset: string[];
   shapes: PolygonDetail[];
   limit?: number;
@@ -22,6 +23,7 @@ export interface SearchParams {
 export type PolygonDataItem = Record<string, unknown>;
 
 const fetchPolygonData = async ({
+  category,
   dataset,
   shapes,
   limit = 100,
@@ -31,18 +33,19 @@ const fetchPolygonData = async ({
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v1/graphql_data_method`,
     {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: `
-          query GetPolygonData($input: SpatialQueryInput!) {
-            getPolygonData(input: $input) {
-              data
-            }
-          }
+          query GetMultiPolygonData($input: SpatialQueryInput!) {
+  getMultiPolygonData(input: $input) {
+    data
+  }
+}
         `,
         variables: {
           input: {
+            category,
             dataset,
             polygonDetail: shapes,
             limit,
@@ -58,7 +61,7 @@ const fetchPolygonData = async ({
   }
 
   const json = await res.json();
-  return json.data?.getPolygonData?.data || [];
+  return json.data?.getMultiPolygonData?.data || [];
 };
 
 export const useGetMapSearchData = () => {

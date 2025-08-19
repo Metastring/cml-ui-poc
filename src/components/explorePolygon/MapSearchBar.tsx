@@ -9,6 +9,7 @@ import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { useGetMapSearchData } from "./useGetMapSearchData";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
+import { toast } from "sonner";
 
 interface Option {
   value: string;
@@ -60,19 +61,23 @@ const MapSearchBar: React.FC = () => {
   };
   const handleSearch = () => {
     if (!category && (!shapes || shapes.features.length === 0)) {
-      alert("Please select a category and draw at least one polygon.");
+      toast.error("Please select a category, datasets and draw at least one polygon.");
+      // alert("Please select a category, datasets and draw at least one polygon.");
       return;
     }
     if (!category) {
-      alert("Please select a category.");
+       toast.error("Please select a category.");
+      // alert("Please select a category.");
       return;
     }
     if (!dataset.length) {
-      alert("Please select at least one dataset.");
+       toast.error("Please select at least one dataset.");
+      // alert("Please select at least one dataset.");
       return;
     }
     if (!shapes || shapes.features.length === 0) {
-      alert("Please draw at least one polygon.");
+       toast.error("Please draw at least one polygon.");
+      // alert("Please draw at least one polygon.");
       return;
     }
 
@@ -87,13 +92,10 @@ const MapSearchBar: React.FC = () => {
       category,
       dataset,
       // @ts-expect-error : polygonDetail type not declared
-      shapes: polygon
-        ? [
-            {
-              geometry: polygon.features[polygon.features.length - 1]
-                .geometry as unknown,
-            },
-          ]
+       shapes: polygon
+        ? polygon.features.map((feature: GeoJSON.Feature) => ({
+            geometry: feature.geometry,
+          }))
         : [],
     });
   };
