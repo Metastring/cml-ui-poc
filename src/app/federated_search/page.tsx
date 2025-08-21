@@ -8,11 +8,11 @@ import BaseMap from "@/components/map/BaseMap";
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import { useMutateFederatedSearch } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import FederatedDataTable from "./FederatedDataTable";
-import useFederatedSeachData from "@/store/federated_search_store/useFederatedSeachData";
+import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 
 const Page = () => {
   const [isMapVisible, setIsMapVIsible] = useState(false);
-  const { selectedCoordinates, visibleMarkers } = useFederatedSeachData();
+  const { selectedCoordinates, visibleMarkers } = useFederatedSearchMapData();
   const {
     data,
     isError,
@@ -30,7 +30,7 @@ const Page = () => {
     } else {
       setActiveKey(null);
     }
-  }, [resultKeys]);
+  }, [resultKeys ,activeKey]);
 
   return (
     <div className="h-screen flex flex-col p-4 space-y-2">

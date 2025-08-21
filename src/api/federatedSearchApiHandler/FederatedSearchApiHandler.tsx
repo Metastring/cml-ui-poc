@@ -1,10 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   GetFederatedSearchBaseApiHandler,
   GetFederatedSearchByPayload,
 } from "./FederatedSearchBaseApiHandler";
-
-
+import { toast } from "sonner";
 
 interface Dataset {
   dataset_title: string;
@@ -14,8 +17,6 @@ interface Category {
   category_name: string;
   datasets?: Dataset[];
 }
-
-
 
 export interface Contact {
   name: string | null;
@@ -76,7 +77,6 @@ export interface DatasetDetail {
   statistics: Statistic[];
 }
 
-
 export type DataItem = {
   decimalLatitude?: number;
   decimalLongitude?: number;
@@ -102,7 +102,6 @@ type FederatedSearchData = {
   >;
 };
 
-
 export const useMutateFederatedSearch = () => {
   const queryClient = useQueryClient();
 
@@ -111,7 +110,8 @@ export const useMutateFederatedSearch = () => {
   const queryResult = useQuery<FederatedSearchData>({
     queryKey,
     queryFn: () => {
-      const cachedData = queryClient.getQueryData<FederatedSearchData>(queryKey);
+      const cachedData =
+        queryClient.getQueryData<FederatedSearchData>(queryKey);
       return Promise.resolve(cachedData ?? {});
     },
     enabled: true,
@@ -176,11 +176,10 @@ export const useGetIndicatorsByCategoryAndDatasets = (
   });
 };
 
-
-
-
-
-export const useGetDatasetDetails = (categoryName: string, datasetTitle: string) => {
+export const useGetDatasetDetails = (
+  categoryName: string,
+  datasetTitle: string
+) => {
   return useQuery<DatasetDetail>({
     queryKey: ["dataset-details", categoryName, datasetTitle],
     queryFn: async () => {
@@ -194,4 +193,57 @@ export const useGetDatasetDetails = (categoryName: string, datasetTitle: string)
     },
     enabled: Boolean(categoryName && datasetTitle),
   });
+}
+
+
+
+
+
+
+export const useGetMapDataBasedOnFederatedSearchResult = () => {
+  return useMutation({
+    mutationFn: async (scientificName: string) => {
+      const res = await fetch(
+        process.env.NEXT_PUBLIC_MAP_BASE_URL + "/v1/graphql_data_method",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: `
+              query GetScientificNameMatches($input: ScientificNameInput!) {
+                getScientificNameMatches(input: $input) {
+                  data {
+                    scientificName
+                    longitude
+                    latitude
+                  }
+                }
+              }
+            `,
+            variables: { input: { scientificName } },
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch dataset details for ${scientificName}`);
+      }
+
+      const json = await res.json();
+      return json.data.getScientificNameMatches.data;
+    },
+
+    onSuccess: (data, scientificName) => {
+      if (!data || data.length === 0) {
+        toast.error(`No occurrence data available for "${scientificName}"`);
+      }
+    },
+
+    onError: (error, scientificName) => {
+      toast.error(
+        `Error fetching data for "${scientificName}": ${error.message}`
+      );
+    },
+  });
 };
+

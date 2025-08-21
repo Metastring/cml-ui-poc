@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
+import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 
 export type DataItem = {
   decimalLatitude?: number;
@@ -12,7 +14,6 @@ export type DataItem = {
   scientific_name?: string;
   common_name?: string;
 };
-
 
 type FederatedDataTableProps = {
   isLoading: boolean;
@@ -26,30 +27,81 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   data = [],
 }) => {
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
+  const [selectedScientificName, setSelectedScientificName] = useState<
+    string | null
+  >(null);
+  const { addVisibleMarker, clearCoordinates } = useFederatedSearchMapData();
+
+  // this api is being used for fetching the map data based on scietific name
+  const {
+    mutate: fetchMapData,
+    data: mapData = [],
+    // isPending: isLoadingMapData,
+    // isError: isErrorMapData,
+    // error,
+  } = useGetMapDataBasedOnFederatedSearchResult();
+
+  useEffect(() => {
+    if (!mapData?.length) return;
+
+    mapData.forEach(
+      (item: {
+        latitude: number;
+        longitude: number;
+        scientificName: string;
+      }) => {
+        if (item.latitude && item.longitude) {
+          addVisibleMarker({
+            lat: item.latitude,
+            lng: item.longitude,
+            label: item.scientificName,
+          });
+        }
+      }
+    );
+  }, [mapData, addVisibleMarker, clearCoordinates]);
 
   useEffect(() => {
     setCheckedRows((prev) => {
-      // Only reset if row count changed
       if (prev.length !== data.length) {
-        return new Array(data.length).fill(true);
+        return new Array(data.length).fill(false);
       }
       return prev;
     });
   }, [data.length]);
 
-  const handleRowClick = (row: DataItem, index: number) => {
-    // click logic
-    console.log(row)
-    console.log(index)
-  };
+const handleRowClick = (row: DataItem, index: number) => {
+  const name = row.scientific_name || row.taxon_name;
+  if (!name) return;
 
-  const handleCheckboxChange = (index: number) => {
-    setCheckedRows((prev) => {
-      const newState = [...prev];
-      newState[index] = !newState[index];
-      return newState;
-    });
-  };
+  setCheckedRows(() => {
+    const newState = new Array(data.length).fill(false); // reset all
+    newState[index] = true; // select only this one
+
+    setSelectedScientificName(name);
+    clearCoordinates();
+    fetchMapData(name);
+
+    return newState;
+  });
+};
+
+const handleCheckboxChange = (row: DataItem, index: number) => {
+  const name = row.scientific_name || row.taxon_name;
+  if (!name) return;
+
+  setCheckedRows(() => {
+    const newState = new Array(data.length).fill(false); // reset all
+    newState[index] = true; // select only this one
+
+    setSelectedScientificName(name);
+    clearCoordinates();
+    fetchMapData(name);
+
+    return newState;
+  });
+};
+
 
   const TableHeader = () => (
     <thead className="bg-gray-200 text-xs uppercase font-semibold tracking-wider border-b border-gray-300">
@@ -121,24 +173,39 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
         <table className="min-w-full text-sm text-left text-gray-800">
           <TableHeader />
           <tbody className="divide-y divide-gray-200">
-            {data.map((row, index) => (
-              <tr
-                key={index}
-                onClick={() => handleRowClick(row, index)}
-                className="hover:bg-blue-50 cursor-pointer transition-colors"
-              >
-                <td className="px-6 py-4" title="view on map feature is not ready yet!">
-                  <Checkbox
-                    checked={!!checkedRows[index]}
-                    onCheckedChange={() => handleCheckboxChange(index)}
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {row.taxon_name ?? row.scientific_name}
-                </td>
-                <td className="px-6 py-4">{row.common_names ?? row.common_name}</td>
-              </tr>
-            ))}
+            {data.map((row, index) => {
+              const name = row.scientific_name || row.taxon_name;
+              const isSelected = name === selectedScientificName;
+
+              return (
+                <tr
+                  key={index}
+                  onClick={() => handleRowClick(row, index)}
+                  className={`cursor-pointer transition-colors ${
+                    isSelected
+                      ? "bg-blue-100 hover:bg-blue-200" // ✅ highlight selected
+                      : "hover:bg-blue-50"
+                  }`}
+                >
+                  <td
+                    className="px-6 py-4"
+                    title="view/Hide on Map"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      checked={!!checkedRows[index]}
+                      onCheckedChange={() => handleCheckboxChange(row, index)}
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {row.taxon_name ?? row.scientific_name}
+                  </td>
+                  <td className="px-6 py-4">
+                    {row.common_names ?? row.common_name}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
