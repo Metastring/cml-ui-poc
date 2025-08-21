@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   GetFederatedSearchBaseApiHandler,
   GetFederatedSearchByPayload,
@@ -83,6 +79,7 @@ export type DataItem = {
   taxon_name?: string;
   common_names?: string;
   scientific_name?: string;
+  scientificName?: string;
   common_name?: string;
 };
 
@@ -154,6 +151,7 @@ export const useGetFilterData = () => {
     queryKey: ["metadata"],
     queryFn: () =>
       GetFederatedSearchBaseApiHandler(`/categories-with-datasets`),
+    staleTime: 1000 * 6000,
     enabled: true,
   });
   return { data, error, isLoading, isFetching, refetch };
@@ -193,15 +191,18 @@ export const useGetDatasetDetails = (
     },
     enabled: Boolean(categoryName && datasetTitle),
   });
-}
+};
 
-
-
-
-
+// shared type for what the map needs
+export type MapDataItem = {
+  latitude: number;
+  longitude: number;
+  scientificName: string;
+  dataset: string;
+};
 
 export const useGetMapDataBasedOnFederatedSearchResult = () => {
-  return useMutation({
+  return useMutation<MapDataItem[], Error, string>({
     mutationFn: async (scientificName: string) => {
       const res = await fetch(
         process.env.NEXT_PUBLIC_MAP_BASE_URL + "/v1/graphql_data_method",
@@ -210,13 +211,9 @@ export const useGetMapDataBasedOnFederatedSearchResult = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query: `
-              query GetScientificNameMatches($input: ScientificNameInput!) {
+              query ($input: ScientificNameInput!) {
                 getScientificNameMatches(input: $input) {
-                  data {
-                    scientificName
-                    longitude
-                    latitude
-                  }
+                  results
                 }
               }
             `,
@@ -226,14 +223,36 @@ export const useGetMapDataBasedOnFederatedSearchResult = () => {
       );
 
       if (!res.ok) {
-        throw new Error(`Failed to fetch dataset details for ${scientificName}`);
+        throw new Error(
+          `Failed to fetch dataset details for ${scientificName}`
+        );
       }
 
       const json = await res.json();
-      return json.data.getScientificNameMatches.data;
+      const mapdata: Record<string, DataItem[]> =
+        json.data?.getScientificNameMatches?.results || {};
+        console.log(mapdata)
+
+      const results: MapDataItem[] = Object.entries(mapdata).flatMap(
+        ([key, items]) =>
+          (items || [])
+            .filter(
+              (item) => item.decimalLatitude && item.decimalLongitude
+            )
+            .map((item) => ({
+              latitude: item.decimalLatitude as number,
+              longitude: item.decimalLongitude as number,
+              scientificName:
+                item.scientificName || item.taxon_name || "Unknown",
+              dataset: key,
+            }))
+      );
+
+      return results;
     },
 
     onSuccess: (data, scientificName) => {
+      console.log("map data", data);
       if (!data || data.length === 0) {
         toast.error(`No occurrence data available for "${scientificName}"`);
       }
@@ -246,4 +265,3 @@ export const useGetMapDataBasedOnFederatedSearchResult = () => {
     },
   });
 };
-

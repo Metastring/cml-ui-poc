@@ -49,7 +49,7 @@ const Sidebar: React.FC = () => {
     if (pathname === '/explore_map/polygon') return 'Explore Polygon';
     if (pathname === '/explore_map/layer') return 'Explore Layer';
     if (pathname === '/admin/db_mapping') return 'DB Mapping';
-    if (pathname === '/metadata') return 'Metadata';
+    if (pathname === '/datasets') return 'Datasets';
     return '';
   };
 
@@ -118,12 +118,12 @@ const Sidebar: React.FC = () => {
             active={currentTab === 'DB Mapping'}
           />
         </Link>
-        <Link href="/metadata">
+        <Link href="/datasets">
           <SidebarItem
             icon={<FileText size={18} />}
-            label="Metadata"
+            label="Datasets"
             isOpen={isSidebarOpen}
-            active={currentTab === 'Metadata'}
+            active={currentTab === 'Datasets'}
           />
         </Link>
       </div>

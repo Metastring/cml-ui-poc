@@ -43,16 +43,22 @@ const MapSearchBar: React.FC = () => {
       }) => item.category_name === category
     );
     return (
-      categoryData?.datasets?.map((ds) => ({
-        label: ds.dataset_title,
-        value: ds.dataset_title,
-      })) ?? []
+      categoryData?.datasets
+        ?.filter((ds) => ds.dataset_title.toLowerCase() !== "cpmp")
+        .map((ds) => ({
+          label: ds.dataset_title,
+          value: ds.dataset_title,
+        })) ?? []
     );
   }, [data, category, isLoading, error]);
 
   const loading = false;
 
-  const { mutate, isLoading: isMapDataLoading ,clearDataMapSearchData } = useGetMapSearchData();
+  const {
+    mutate,
+    isLoading: isMapDataLoading,
+    clearDataMapSearchData,
+  } = useGetMapSearchData();
   const { clearCoordinates } = useMapSearchData();
 
   const handleResetMapData = () => {
@@ -61,22 +67,24 @@ const MapSearchBar: React.FC = () => {
   };
   const handleSearch = () => {
     if (!category && (!shapes || shapes.features.length === 0)) {
-      toast.error("Please select a category, datasets and draw at least one polygon.");
+      toast.error(
+        "Please select a category, datasets and draw at least one polygon."
+      );
       // alert("Please select a category, datasets and draw at least one polygon.");
       return;
     }
     if (!category) {
-       toast.error("Please select a category.");
+      toast.error("Please select a category.");
       // alert("Please select a category.");
       return;
     }
     if (!dataset.length) {
-       toast.error("Please select at least one dataset.");
+      toast.error("Please select at least one dataset.");
       // alert("Please select at least one dataset.");
       return;
     }
     if (!shapes || shapes.features.length === 0) {
-       toast.error("Please draw at least one polygon.");
+      toast.error("Please draw at least one polygon.");
       // alert("Please draw at least one polygon.");
       return;
     }
@@ -92,14 +100,13 @@ const MapSearchBar: React.FC = () => {
       category,
       dataset,
       // @ts-expect-error : polygonDetail type not declared
-       shapes: polygon
+      shapes: polygon
         ? polygon.features.map((feature: GeoJSON.Feature) => ({
             geometry: feature.geometry,
           }))
         : [],
     });
   };
-
 
   useEffect(() => {
     setDataset([]);

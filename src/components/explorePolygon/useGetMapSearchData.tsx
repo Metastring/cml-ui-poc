@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface PolygonGeometry {
-  type: 'Polygon';
+  type: "Polygon";
   coordinates: number[][][];
 }
 
@@ -37,9 +37,9 @@ const fetchPolygonData = async ({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: `
-          query GetMultiPolygonData($input: SpatialQueryInput!) {
+          query ($input: SpatialQueryInput!) {
   getMultiPolygonData(input: $input) {
-    data
+    results
   }
 }
         `,
@@ -59,9 +59,22 @@ const fetchPolygonData = async ({
   if (!res.ok) {
     throw new Error(`HTTP error: ${res.status}`);
   }
-
   const json = await res.json();
-  return json.data?.getMultiPolygonData?.data || [];
+  // console.log("✅ API JSON:", json);
+
+  const multiPolygonData: Record<string, PolygonDataItem[]> =
+    json.data?.getMultiPolygonData?.results || {};
+
+  const results = Object.entries(multiPolygonData).flatMap(([key, items]) =>
+    (items || []).map((item) => ({
+      ...item,
+      dataset: key,
+    }))
+  );
+
+  // console.log("✅ Results prepared:", results);
+
+  return results ?? [];
 };
 
 export const useGetMapSearchData = () => {
@@ -71,24 +84,26 @@ export const useGetMapSearchData = () => {
     mutationFn: fetchPolygonData,
     onSuccess: (data) => {
       // ✅ Cache the result under 'polygonData' key
-      queryClient.setQueryData(['polygonData'], data);
+      queryClient.setQueryData(["polygonData"], data);
 
       // ✅ Set the query options so it stays in cache for 10 minutes (600_000 ms)
-      queryClient.setQueryDefaults(['polygonData'], {
+      queryClient.setQueryDefaults(["polygonData"], {
         staleTime: 600_000,
         gcTime: 600_000,
       });
 
-       if (!data || data.length === 0) {
-        toast.error("No data found for your search. Please try with another polygon.");
+      if (!data || data.length === 0) {
+        toast.error(
+          "No data found for your search. Please try with another polygon."
+        );
 
         // alert("No data found for your search. Please try with another polygon.");
       }
     },
   });
 
-   const clearDataMapSearchData = () => {
-    queryClient.setQueryData(['polygonData'], []);
+  const clearDataMapSearchData = () => {
+    queryClient.setQueryData(["polygonData"], []);
   };
 
   return {
@@ -98,6 +113,6 @@ export const useGetMapSearchData = () => {
     error: mutation.error,
     mutate: mutation.mutate,
     mutateAsync: mutation.mutateAsync,
-    clearDataMapSearchData
+    clearDataMapSearchData,
   };
 };
