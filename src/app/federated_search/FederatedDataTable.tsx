@@ -13,6 +13,8 @@ export type DataItem = {
   common_names?: string;
   scientific_name?: string;
   common_name?: string;
+    eventDate?:string;
+        basisOfRecord?:string;
 };
 
 type FederatedDataTableProps = {
@@ -49,12 +51,18 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
         latitude: number;
         longitude: number;
         scientificName: string;
+        dataset:string;
+        eventDate:string;
+        basisOfRecord:string;
       }) => {
         if (item.latitude && item.longitude) {
           addVisibleMarker({
+            scientificName: item.scientificName,
+            dataset:item.dataset,
+            eventDate:item.eventDate,
+            basisOfRecord:item.basisOfRecord,
             lat: item.latitude,
             lng: item.longitude,
-            label: item.scientificName,
           });
         }
       }

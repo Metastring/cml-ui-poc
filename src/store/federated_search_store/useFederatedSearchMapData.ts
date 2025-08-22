@@ -3,7 +3,10 @@ import { create } from "zustand";
 interface MarkerData {
   lat: number;
   lng: number;
-  label?: string;
+  scientificName?: string;
+  dataset?: string;
+  eventDate?: string;
+  basisOfRecord?: string;
 }
 
 interface FederatedSearchMapDataStore {

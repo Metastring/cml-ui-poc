@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface MarkerData {
   lat: number;
   lng: number;
-  label?: string;
+  scientificName?: string;
 }
 
 interface MapSearchDataStore {

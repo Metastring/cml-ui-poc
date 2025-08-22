@@ -81,6 +81,8 @@ export type DataItem = {
   scientific_name?: string;
   scientificName?: string;
   common_name?: string;
+  basisOfRecord?:string
+  eventDate?:string
 };
 
 type FederatedSearchData = {
@@ -199,6 +201,9 @@ export type MapDataItem = {
   longitude: number;
   scientificName: string;
   dataset: string;
+   eventDate: string;  
+  basisOfRecord:string;
+
 };
 
 export const useGetMapDataBasedOnFederatedSearchResult = () => {
@@ -245,6 +250,9 @@ export const useGetMapDataBasedOnFederatedSearchResult = () => {
               scientificName:
                 item.scientificName || item.taxon_name || "Unknown",
               dataset: key,
+              basisOfRecord:item.basisOfRecord as string,
+              eventDate:item.eventDate as string,
+
             }))
       );
 

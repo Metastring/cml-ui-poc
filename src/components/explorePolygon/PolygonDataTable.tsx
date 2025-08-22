@@ -40,16 +40,17 @@ const PolygonDataTable: React.FC = () => {
   useEffect(() => {
     polygonData.forEach((row) =>
       addVisibleMarker({
+        scientificName: row.scientificName,
         lat: row.latitude,
         lng: row.longitude,
-        label: row.scientificName,
+
       })
     );
   }, [polygonData, addVisibleMarker]);
 
   const handleCheckboxChange = (index: number) => {
     const row = polygonData[index];
-    const { latitude: lat, longitude: lng, scientificName: label } = row;
+    const { latitude: lat, longitude: lng, scientificName: scientificName } = row;
 
     setVisibleRows((prev) => {
       const newVisibleRows = [...prev];
@@ -66,10 +67,10 @@ const PolygonDataTable: React.FC = () => {
 
       if (prev[index]) {
         if (!hasOtherVisible) {
-          removeVisibleMarker({ lat, lng, label });
+          removeVisibleMarker({ lat, lng, scientificName });
         }
       } else {
-        addVisibleMarker({ lat, lng, label });
+        addVisibleMarker({ lat, lng, scientificName });
       }
 
       return newVisibleRows;
@@ -82,9 +83,10 @@ const PolygonDataTable: React.FC = () => {
     }
     setSelectedIndex(index);
     setSelectedCoordinates({
+      scientificName: row.scientificName,
       lat: row.latitude,
       lng: row.longitude,
-      label: row.scientificName,
+
     });
   };
 

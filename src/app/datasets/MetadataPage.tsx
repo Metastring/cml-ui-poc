@@ -1,13 +1,19 @@
 "use client";
 
 import React from "react";
-import { ChevronDown, ChevronRight, Folder, FileText, Loader2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  FileText,
+  Loader2,
+} from "lucide-react";
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import DatasetDetailView from "./DatasetDetailView";
 
 const Accordion = ({
-  label,
+  // label,
   title,
   icon,
   children,
@@ -31,7 +37,9 @@ const Accordion = ({
           {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           {icon}
           <div className="flex items-center gap-2">
-            {label && <span className="text-gray-700 font-semibold">{label}:</span>}
+            {/* {label && (
+              <span className="text-gray-700 font-semibold">{label}:</span>
+            )} */}
             <span className="text-gray-900">{title}</span>
           </div>
         </div>
@@ -40,8 +48,6 @@ const Accordion = ({
     </div>
   );
 };
-
-
 
 const MetadataPage = () => {
   const { data, isLoading, error } = useGetFilterData();
@@ -60,18 +66,21 @@ const MetadataPage = () => {
   }
 
   if (!data || data.length === 0) {
-    return <div className="p-6 text-gray-500 italic">No categories or datasets found.</div>;
+    return (
+      <div className="p-6 text-gray-500 italic">
+        No categories or datasets found.
+      </div>
+    );
   }
 
   return (
     <div className="h-screen overflow-y-auto p-6 bg-white text-sm flex flex-col space-y-2">
-    <InstructionPopover title={`Dataset's Detail`}>
-  <p>
-    {`The datasets displayed here is collected from multiple remote databases.
+      <InstructionPopover title={`Dataset`}>
+        <p>
+          {`The datasets displayed here is collected from multiple remote databases.
     Click a category to view dataset's details.`}
-  </p>
-</InstructionPopover>
-
+        </p>
+      </InstructionPopover>
 
       {data.map((cat, i) => (
         <Accordion
@@ -95,7 +104,9 @@ const MetadataPage = () => {
               </Accordion>
             ))
           ) : (
-            <div className="text-gray-500 italic">No datasets available in this category.</div>
+            <div className="text-gray-500 italic">
+              No datasets available in this category.
+            </div>
           )}
         </Accordion>
       ))}
