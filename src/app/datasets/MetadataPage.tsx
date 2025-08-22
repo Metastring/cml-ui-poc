@@ -75,7 +75,7 @@ const MetadataPage = () => {
 
   return (
     <div className="h-screen overflow-y-auto p-6 bg-white text-sm flex flex-col space-y-2">
-      <InstructionPopover title={`Dataset`}>
+      <InstructionPopover title={`Datasets`}>
         <p>
           {`The datasets displayed here is collected from multiple remote databases.
     Click a category to view dataset's details.`}

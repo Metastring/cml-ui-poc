@@ -1,7 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_FEDERATED_BASE_URL;
 
 
-export const PostDBMappingBaseApiHandler = (
+export const PostContributeBaseApiHandler = (
   endpoint: string,
   params: Record<string, string>
 ) => {

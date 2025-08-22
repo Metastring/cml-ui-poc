@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { PostDBMappingBaseApiHandler } from './DBMappingBaseApiHandler';
+import { PostContributeBaseApiHandler } from './ContributeBaseApiHandler';
 
 interface MappingPayload {
   endpoint: string;
@@ -9,7 +9,7 @@ interface MappingPayload {
 export const usePostDBMapping = () => {
   return useMutation({
     mutationFn: ({ endpoint, params }: MappingPayload) =>
-      PostDBMappingBaseApiHandler(endpoint, params),
+      PostContributeBaseApiHandler(endpoint, params),
   });
 };
 

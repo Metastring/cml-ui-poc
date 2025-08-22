@@ -4,7 +4,7 @@ import React, { useState, KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { usePostDBMapping } from "@/api/admin/dbMappingApiHandler/DBMappingApiHandler";
+import { usePostDBMapping } from "@/api/contributeApiHandler/ContributeApiHandler";
 import { toast } from "sonner";
 import {  X } from "lucide-react";
 

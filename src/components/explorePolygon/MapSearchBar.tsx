@@ -21,6 +21,8 @@ const MapSearchBar: React.FC = () => {
   const [category, setCategory] = useState<string>("");
   const [dataset, setDataset] = useState<string[]>([]);
 
+
+
   const { data, isLoading, error } = useGetFilterData();
 
   const categoryList: Option[] = useMemo(() => {

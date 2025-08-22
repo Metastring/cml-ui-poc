@@ -9,20 +9,13 @@ const Page = () => {
     <div className="relative h-screen w-full">
       {/* Top-left instructions */}
       <div className="absolute top-4 left-4 z-10">
-        <InstructionPopover title="Database Mapping">
+        <InstructionPopover title="Onboard Your Dataset">
           <ul className="list-disc pl-4">
             <li>
-              Enter the <strong>scientific name</strong> and local (vernacular)
-              name of the plant.
+              Fill all the <strong>required</strong> and{" "}
+              <strong>optional</strong> details carefully.
             </li>
-            <li>
-              Provide the <strong>family name</strong> and known{" "}
-              <strong>habitat</strong>.
-            </li>
-            <li>
-              Include any <strong>medicinal uses</strong> if known.
-            </li>
-            <li>Make sure all information is accurate and verified.</li>
+            <li>Ensure details are accurate before submission.</li>
           </ul>
         </InstructionPopover>
       </div>
