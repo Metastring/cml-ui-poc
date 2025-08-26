@@ -27,6 +27,7 @@ interface MultiSelectComboboxProps {
   options: Option[]
   placeholder?: string
   onChange: (selectedValues: string[]) => void
+  value?: string[]
   defaultValues?: string[]
   className?: string
 }
@@ -35,11 +36,15 @@ export function MultiSelectCombobox({
   options,
   placeholder = "Select options",
   onChange,
+  value,
   defaultValues = [],
   className = "w-[400px]",
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValues)
+  const [internalValues, setInternalValues] = React.useState<string[]>(defaultValues)
+
+  // 🔑 Prefer controlled value if passed
+  const selectedValues = value ?? internalValues
 
   const toggleValue = (val: string) => {
     let updatedValues: string[]
@@ -50,7 +55,11 @@ export function MultiSelectCombobox({
       updatedValues = [...selectedValues, val]
     }
 
-    setSelectedValues(updatedValues)
+    if (value === undefined) {
+      // uncontrolled mode → keep internal state
+      setInternalValues(updatedValues)
+    }
+
     onChange(updatedValues)
   }
 

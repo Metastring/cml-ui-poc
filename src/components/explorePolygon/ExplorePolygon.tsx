@@ -17,6 +17,9 @@ import AddMarker from "../mapFeatures/addMarker/AddMarker";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PolygonDataItem } from "./useGetMapSearchData";
+import { useGetWMSLayerByDataset } from "@/api/polygonApiHandler/PolygonApiHandler";
+import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
+import AddLayer from "../mapFeatures/addLayer/AddLayer";
 
 const ExplorePolygon = () => {
   const [tableVisible, setTableVisible] = useState(false);
@@ -28,9 +31,24 @@ const ExplorePolygon = () => {
     queryFn: () => [],
     initialData: () => queryClient.getQueryData(["polygonData"]) || [],
   });
+ const { datasets } =
+    useMapSearchFilter();
+    const { data:WMS_SOURCE } = useGetWMSLayerByDataset({
+    dataset: datasets,
+  });
+
+  console.log("WMS_SOURCE" , WMS_SOURCE)
+
+
+
+
   useEffect(() => {
     setTableVisible(true);
   }, [polygonData]);
+
+
+
+
 
   return (
     <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
@@ -114,6 +132,7 @@ const ExplorePolygon = () => {
           <ExternalLayers />
           <PolygonEditor />
           <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
+          <AddLayer layers={WMS_SOURCE ?? []} />
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Combobox } from "@/components/ui/combobox";
+import React, { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import useMapStore from "@/store/base_map_store/useMapStore";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
@@ -10,6 +9,7 @@ import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearc
 import { useGetMapSearchData } from "./useGetMapSearchData";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { toast } from "sonner";
+import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
 
 interface Option {
   value: string;
@@ -18,10 +18,8 @@ interface Option {
 
 const MapSearchBar: React.FC = () => {
   const { shapes } = useMapStore();
-  const [category, setCategory] = useState<string>("");
-  const [dataset, setDataset] = useState<string[]>([]);
-
-
+  const { categories, datasets, setCategories, setDatasets, resetFilters } =
+    useMapSearchFilter();
 
   const { data, isLoading, error } = useGetFilterData();
 
@@ -37,12 +35,12 @@ const MapSearchBar: React.FC = () => {
   }, [data, isLoading, error]);
 
   const datasetList: Option[] = useMemo(() => {
-    if (isLoading || error || !data || !category) return [];
+    if (isLoading || error || !data || !categories) return [];
     const categoryData = data.find(
       (item: {
         category_name: string;
         datasets?: { dataset_title: string }[];
-      }) => item.category_name === category
+      }) => item.category_name === categories[0]
     );
     return (
       categoryData?.datasets
@@ -52,7 +50,7 @@ const MapSearchBar: React.FC = () => {
           value: ds.dataset_title,
         })) ?? []
     );
-  }, [data, category, isLoading, error]);
+  }, [data, categories, isLoading, error]);
 
   const loading = false;
 
@@ -66,21 +64,22 @@ const MapSearchBar: React.FC = () => {
   const handleResetMapData = () => {
     clearCoordinates();
     clearDataMapSearchData();
+    resetFilters();
   };
+
   const handleSearch = () => {
-    if (!category && (!shapes || shapes.features.length === 0)) {
+    if (categories.length === 0 && (!shapes || shapes.features.length === 0)) {
       toast.error(
         "Please select a category, datasets and draw at least one polygon."
       );
-      // alert("Please select a category, datasets and draw at least one polygon.");
       return;
     }
-    if (!category) {
+    if (categories.length === 0) {
       toast.error("Please select a category.");
-      // alert("Please select a category.");
       return;
     }
-    if (!dataset.length) {
+
+    if (!datasets.length) {
       toast.error("Please select at least one dataset.");
       // alert("Please select at least one dataset.");
       return;
@@ -94,13 +93,13 @@ const MapSearchBar: React.FC = () => {
     // clearCoordinates();
 
     const polygon: FeatureCollection<Geometry, GeoJsonProperties> = shapes;
-    console.log("🟡 Selected Category:", category);
-    console.log("🔴 Selected dataset:", dataset);
+    console.log("🟡 Selected Category:", categories);
+    console.log("🔴 Selected dataset:", datasets);
     console.log("🟢 Drawn Polygon:", polygon?.features);
 
     mutate({
-      category,
-      dataset,
+      category: categories[0],
+      dataset: datasets,
       // @ts-expect-error : polygonDetail type not declared
       shapes: polygon
         ? polygon.features.map((feature: GeoJSON.Feature) => ({
@@ -111,23 +110,27 @@ const MapSearchBar: React.FC = () => {
   };
 
   useEffect(() => {
-    setDataset([]);
-  }, [category]);
+    if (categories.length) {
+      setDatasets([]);
+    }
+  }, [categories , setDatasets]);
 
   return (
     <div className="flex flex-col space-y-3 w-fit p-4 rounded-xl bg-gray-50 shadow-lg">
-      <Combobox
+      <MultiSelectCombobox
         options={categoryList}
         placeholder="Select category"
-        onSelect={(val: string) => setCategory(val)}
+        value={categories}
+        onChange={(val: string[]) => setCategories(val)}
         className="w-[250px]"
       />
       <MultiSelectCombobox
         options={datasetList}
         placeholder="Select Datasets"
-        onChange={(val: string[]) => setDataset(val)}
+        value={datasets}
+        onChange={(val: string[]) => setDatasets(val)}
         className="w-[250px]"
-        key={category}
+        key={categories[0]}
       />
       <div className="flex space-x-2">
         <Button onClick={handleSearch} disabled={loading} className="flex-1">

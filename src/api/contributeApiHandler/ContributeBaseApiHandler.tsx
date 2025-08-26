@@ -1,17 +1,17 @@
 const BASE_URL = process.env.NEXT_PUBLIC_FEDERATED_BASE_URL;
 
 
-export const PostContributeBaseApiHandler = (
-  endpoint: string,
-  params: Record<string, string>
-) => {
-  const query = new URLSearchParams(params).toString();
-  const url = `${BASE_URL}${endpoint}?${query}`;
-
-  return fetch(url, {
-    method: 'POST',
-  }).then((res) => {
-    if (!res.ok) throw new Error('Failed to submit');
-    return res.json();
+// ContributeBaseApiHandler.ts
+export const PostContributeBaseApiHandler = async (endpoint: string, params: object) => {
+  const res = await fetch(BASE_URL+endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params), // send all payload as body
   });
+
+  if (!res.ok) throw new Error("Failed to submit data");
+
+  return res.json();
 };
