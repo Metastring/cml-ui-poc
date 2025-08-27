@@ -24,7 +24,7 @@ const AddLayer: React.FC<AddLayerProps> = ({ layers }) => {
     const dpr = window.devicePixelRatio || 1; // Device Pixel Ratio
 
     const addLayer = (layer: WmsLayer) => {
-      if (mapRef.getSource(layer.id)) return;
+      if (!mapRef || mapRef.getSource(layer.id)) return;
 
       // Calculate high-res tile size
       const tileSize = 256 * dpr;
@@ -63,9 +63,14 @@ const AddLayer: React.FC<AddLayerProps> = ({ layers }) => {
     }
 
     return () => {
+      if (!mapRef) return; 
       addedLayers.forEach((layerId) => {
-        if (mapRef.getLayer(layerId)) mapRef.removeLayer(layerId);
-        if (mapRef.getSource(layerId)) mapRef.removeSource(layerId);
+        try {
+          if (mapRef.getLayer(layerId)) mapRef.removeLayer(layerId);
+          if (mapRef.getSource(layerId)) mapRef.removeSource(layerId);
+        } catch (err) {
+          console.warn(`Failed to remove WMS layer ${layerId}`, err);
+        }
       });
     };
   }, [mapRef, layers]);

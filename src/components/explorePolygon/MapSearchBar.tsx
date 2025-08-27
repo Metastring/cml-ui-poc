@@ -44,7 +44,7 @@ const MapSearchBar: React.FC = () => {
     );
     return (
       categoryData?.datasets
-        ?.filter((ds) => ds.dataset_title.toLowerCase() !== "cpmp")
+        ?.filter((ds) => ds.dataset_title !== "Citizens’ Portal of Medicinal Plants")
         .map((ds) => ({
           label: ds.dataset_title,
           value: ds.dataset_title,
@@ -99,7 +99,8 @@ const MapSearchBar: React.FC = () => {
 
     mutate({
       category: categories[0],
-      dataset: datasets,
+      dataset: datasets.map(k => k === "Global Biodiversity Info Facility" ? "gbif" : k === "Kew Plant Database" ? "kew" : k),
+
       // @ts-expect-error : polygonDetail type not declared
       shapes: polygon
         ? polygon.features.map((feature: GeoJSON.Feature) => ({

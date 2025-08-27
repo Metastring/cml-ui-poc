@@ -31,24 +31,22 @@ const ExplorePolygon = () => {
     queryFn: () => [],
     initialData: () => queryClient.getQueryData(["polygonData"]) || [],
   });
- const { datasets } =
-    useMapSearchFilter();
-    const { data:WMS_SOURCE } = useGetWMSLayerByDataset({
-    dataset: datasets,
+  const { datasets } = useMapSearchFilter();
+  const { data: WMS_SOURCE } = useGetWMSLayerByDataset({
+    dataset: datasets.map((k) =>
+      k === "Global Biodiversity Info Facility"
+        ? "gbif"
+        : k === "Kew Plant Database"
+        ? "kew"
+        : k
+    ),
   });
 
-  console.log("WMS_SOURCE" , WMS_SOURCE)
-
-
-
+  console.log("WMS_SOURCE", WMS_SOURCE);
 
   useEffect(() => {
     setTableVisible(true);
   }, [polygonData]);
-
-
-
-
 
   return (
     <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
