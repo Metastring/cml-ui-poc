@@ -220,7 +220,7 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                                   key={m.key}
                                   className="text-xs text-muted-foreground whitespace-pre-line"
                                 >
-                                  {m.key}: {m.value}
+                                  <strong>{m.key}</strong>: {m.value}
                                 </div>
                               ))}
                             </HoverCardContent>

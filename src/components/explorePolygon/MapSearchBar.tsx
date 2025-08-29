@@ -85,7 +85,7 @@ const nodes = useMemo(() => {
     datasets?: {
       dataset_title: string;
       description?: string;
-      metadata?: { label: string; value: string }[]
+      metadata?: Record<string, string> | null; // updated: metadata is an object
     }[]
   }, idx: number) => ({
     id: `n-${idx}`,
@@ -96,16 +96,16 @@ const nodes = useMemo(() => {
           (ds) =>
             ds.dataset_title !== "Citizens’ Portal of Medicinal Plants"
         )
-        .map((ds: {
-          dataset_title: string;
-          description?: string;
-          metadata?: { label: string; value: string }[]
-        }, jdx: number) => {
-          const originalMetadata =
-            ds.metadata?.map((m: { label: string; value: string }) => ({
-              key: m.label,
-              value: m.value,
-            })) || [];
+        .map((ds, jdx) => {
+          // fallback: convert object metadata to array
+          const originalMetadata = ds.metadata
+            ? Object.entries(ds.metadata)
+                .filter(([key]) => key) // filter out undefined keys
+                .map(([key, value]) => ({
+                  key,
+                  value: value != null ? String(value) : "N/A",
+                }))
+            : [];
 
           return {
             id: `c-${idx}-${jdx}`,
@@ -118,6 +118,7 @@ const nodes = useMemo(() => {
         }) || [],
   }));
 }, [data]);
+
 
 
   return (
