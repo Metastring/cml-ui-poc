@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
   PanelLeftClose,
   PanelRightOpen,
 } from "lucide-react";
-import SearchBar from "@/components/explorePolygon/MapSearchBar";
+import MapSearchBar from "@/components/explorePolygon/MapSearchBar";
 import PolygonDataTable from "@/components/explorePolygon/PolygonDataTable";
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import BaseMap from "../map/BaseMap";
@@ -15,8 +15,6 @@ import ExternalLayers from "../mapFeatures/externalLayers/ExternalLayers";
 import PolygonEditor from "../mapFeatures/polygonEditor/PolygonEditor";
 import AddMarker from "../mapFeatures/addMarker/AddMarker";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PolygonDataItem } from "./useGetMapSearchData";
 import { useGetWMSLayerByDataset } from "@/api/polygonApiHandler/PolygonApiHandler";
 import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
 import AddLayer from "../mapFeatures/addLayer/AddLayer";
@@ -25,12 +23,6 @@ const ExplorePolygon = () => {
   const [tableVisible, setTableVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const { selectedCoordinates, visibleMarkers } = useMapSearchData();
-  const queryClient = useQueryClient();
-  const { data: polygonData = [] } = useQuery<PolygonDataItem[]>({
-    queryKey: ["polygonData"],
-    queryFn: () => [],
-    initialData: () => queryClient.getQueryData(["polygonData"]) || [],
-  });
   const { datasets } = useMapSearchFilter();
   const { data: WMS_SOURCE } = useGetWMSLayerByDataset({
     dataset: datasets.map((k) =>
@@ -42,11 +34,7 @@ const ExplorePolygon = () => {
     ),
   });
 
-  console.log("WMS_SOURCE", WMS_SOURCE);
-
-  useEffect(() => {
-    setTableVisible(true);
-  }, [polygonData]);
+  // console.log("WMS_SOURCE", WMS_SOURCE);
 
   return (
     <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
@@ -96,7 +84,8 @@ const ExplorePolygon = () => {
             </div>
 
             {/* Search Input */}
-            <SearchBar />
+            <MapSearchBar onSearch={() => setTableVisible(true)} />
+
           </div>
         ) : (
           <div className="flex flex-col">

@@ -107,15 +107,15 @@ if (!polygonData.length) {
               <th className="px-6 py-4">Scientific Name</th>
               <th className="px-6 py-4">Event Date</th>
               <th className="px-6 py-4">Basis of Record</th>
-              <th className="px-6 py-4">Region</th>
-              <th className="px-6 py-4">Longitude</th>
-              <th className="px-6 py-4">Latitude</th>
+              {/* <th className="px-6 py-4">Region</th> */}
+              {/* <th className="px-6 py-4">Longitude</th>
+              <th className="px-6 py-4">Latitude</th> */}
               <th className="px-6 py-4">Dataset</th>
             </tr>
         </thead>
         <tbody>
           <tr>
-            <td colSpan={7} className="text-center text-gray-500 italic ">
+            <td colSpan={5} className="text-center text-gray-500 italic ">
               No data available. Please draw a polygon and select filters to search.
             </td>
           </tr>
@@ -139,9 +139,9 @@ if (!polygonData.length) {
               <th className="px-6 py-4">Scientific Name</th>
               <th className="px-6 py-4">Event Date</th>
               <th className="px-6 py-4">Basis of Record</th>
-              <th className="px-6 py-4">Region</th>
-              <th className="px-6 py-4">Longitude</th>
-              <th className="px-6 py-4">Latitude</th>
+              {/* <th className="px-6 py-4">Region</th> */}
+              {/* <th className="px-6 py-4">Longitude</th>
+              <th className="px-6 py-4">Latitude</th> */}
               <th className="px-6 py-4">Dataset</th>
             </tr>
           </thead>
@@ -168,9 +168,9 @@ if (!polygonData.length) {
                   <td className="px-6 py-4 whitespace-nowrap">{row.scientificName}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{row.eventDate || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{row.basisOfRecord || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{row.region || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{row.longitude || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{row.latitude || "-"}</td>
+                  {/* <td className="px-6 py-4 whitespace-nowrap">{row.region || "-"}</td> */}
+                  {/* <td className="px-6 py-4 whitespace-nowrap">{row.longitude || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.latitude || "-"}</td> */}
                   <td className="px-6 py-4 whitespace-nowrap">{row.dataset.toUpperCase()}</td>
                 </tr>
               );

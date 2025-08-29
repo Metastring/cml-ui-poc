@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
 import { Combobox } from "@/components/ui/combobox";
 import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
-import {
-  useGetFilterData,
-} from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { UseMutateFunction } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -37,7 +35,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { data, isLoading, error } = useGetFilterData();
   const {
-
     datasets,
     categories,
     indicators,
@@ -74,6 +71,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
         })) ?? []
     );
   }, [data, categories, isLoading, error]);
+
   const indicatorList: Option[] = useMemo(() => {
     if (isLoading || error || !data) return [];
 
@@ -127,27 +125,27 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
   const handleSearch = () => {
     const inputValue = inputRef.current?.value.trim() || "";
 
-     if (!categories.length) {
-    toast.error("Please select a category.");
-    return;
-  }
+    if (!categories.length) {
+      toast.error("Please select a category.");
+      return;
+    }
 
-  if (!datasets?.length) {
-    toast.error("Please select a dataset.");
-    return;
-  }
+    if (!datasets?.length) {
+      toast.error("Please select a dataset.");
+      return;
+    }
 
-  if (!indicators?.length) {
-    toast.error("Please select at least one field.");
-    return;
-  }
+    if (!indicators?.length) {
+      toast.error("Please select at least one field.");
+      return;
+    }
 
-  if (!inputValue?.trim()) {
-    toast.error("Please enter a search term.");
-    return;
-  }
+    if (!inputValue?.trim()) {
+      toast.error("Please enter a search term.");
+      return;
+    }
 
-  // toast.success("All good! Fetching results...");
+    // toast.success("All good! Fetching results...");
 
     console.log(inputValue);
     setQuery(inputValue);

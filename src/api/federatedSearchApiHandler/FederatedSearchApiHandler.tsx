@@ -6,6 +6,7 @@ import {
 import { toast } from "sonner";
 
 interface Dataset {
+  [x: string]: unknown;
   dataset_title: string;
 }
 
@@ -149,14 +150,14 @@ export const useMutateFederatedSearch = () => {
 };
 
 export const useGetFilterData = () => {
-  const { data, error, isLoading, isFetching, refetch } = useQuery<Category[]>({
+  const { data, error, isLoading, isFetching, refetch , isError } = useQuery<Category[]>({
     queryKey: ["metadata"],
     queryFn: () =>
       GetFederatedSearchBaseApiHandler(`/categories-with-datasets`),
     staleTime: 1000 * 6000,
     enabled: true,
   });
-  return { data, error, isLoading, isFetching, refetch };
+  return { data, error, isLoading, isFetching, refetch , isError };
 };
 
 export const useGetIndicatorsByCategoryAndDatasets = (
@@ -201,7 +202,7 @@ export type MapDataItem = {
   longitude: number;
   scientificName: string;
   dataset: string;
-   eventDate: string;  
+   eventDate: string;
   basisOfRecord:string;
 
 };
