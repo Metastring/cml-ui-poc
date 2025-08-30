@@ -133,9 +133,9 @@ const DatasetDetailView = ({
         {details.fields.length ? (
           details.fields.map((f, i) => (
             <div key={i} className="ml-4">
-              Field Name: {renderValue(f.field_name)}, Ontology Mapping:{" "}
-              {renderValue(f.ontology_mapping)}, Data Type:{" "}
-              {renderValue(f.data_type)}
+              Field Name: {renderValue(f.field_name)},{" "}
+               {/* Ontology Mapping:{" "}{renderValue(f.ontology_mapping)}, */}
+               Data Type:{" "}{renderValue(f.data_type)}
             </div>
           ))
         ) : (
@@ -148,8 +148,7 @@ const DatasetDetailView = ({
         {details.statistics.length ? (
           details.statistics.map((st, i) => (
             <div key={i} className="ml-4">
-              Stat Name: {renderValue(st.stat_name)}, Stat Value:{" "}
-              {renderValue(st.stat_value)}, Measurement Date:{" "}
+               {renderValue(st.stat_name ?? "Stat Name")}{" : "}{renderValue(st.stat_value)}, Measurement Date:{" "}
               {renderValue(st.measurement_date)}
             </div>
           ))

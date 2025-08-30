@@ -135,7 +135,7 @@ if (!polygonData.length) {
         <table className="min-w-full text-sm text-left text-gray-800">
           <thead className="bg-gray-200 sticky top-0 z-10  font-semibold tracking-wider border">
             <tr>
-              <th className="px-6 py-4">View on Map</th>
+              <th className="px-6 py-4">View Distribution</th>
               <th className="px-6 py-4">Scientific Name</th>
               <th className="px-6 py-4">Event Date</th>
               <th className="px-6 py-4">Basis of Record</th>
