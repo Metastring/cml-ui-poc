@@ -103,7 +103,7 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
     onSubmit({
       dataset_id: String(dsIdStr),
       scopes,
-      publishers: publisher ? [{ publisher_name: publisher , record_count:""}] : [],
+      publishers: publisher ? [{ publisher_name: publisher , record_count:"0"}] : [],
       mappings: [],
       metrics: [],
       statistics,
