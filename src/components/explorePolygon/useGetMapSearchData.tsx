@@ -26,7 +26,7 @@ const fetchPolygonData = async ({
   category,
   dataset,
   shapes,
-  limit = 100,
+  limit = 500,
   offset = 0,
 }: SearchParams): Promise<PolygonDataItem[]> => {
   console.log(dataset);

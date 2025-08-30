@@ -8,8 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+import { useGetCategoriesList } from "@/api/contributeApiHandler/ContributeApiHandler";
 
 // Define exact type for initial dataset form
 export interface InitialDatasetForm {
@@ -34,7 +46,10 @@ interface InitialDatasetRegistrationProps {
   isSubmitting?: boolean;
 }
 
-const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDatasetRegistrationProps) => {
+const InitialDatasetRegistration = ({
+  onNext,
+  isSubmitting = false,
+}: InitialDatasetRegistrationProps) => {
   const [formData, setFormData] = useState<InitialDatasetForm>({
     title: "",
     description: "",
@@ -52,13 +67,19 @@ const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDat
     category_id: "",
   });
 
+  const { data: categoriesList, isLoading: isCategoriesLoading } =
+    useGetCategoriesList();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (name: keyof InitialDatasetForm, date: Date | undefined) => {
-    if (date) setFormData(prev => ({ ...prev, [name]: date }));
+  const handleDateChange = (
+    name: keyof InitialDatasetForm,
+    date: Date | undefined
+  ) => {
+    if (date) setFormData((prev) => ({ ...prev, [name]: date }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -78,9 +99,15 @@ const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDat
     // Format dates before sending
     const payload: InitialDatasetForm = {
       ...formData,
-      publication_date: new Date(format(formData.publication_date, "yyyy-MM-dd")),
-      metadata_modified_date: new Date(format(formData.metadata_modified_date, "yyyy-MM-dd")),
-      registration_date: new Date(format(formData.registration_date, "yyyy-MM-dd")),
+      publication_date: new Date(
+        format(formData.publication_date, "yyyy-MM-dd")
+      ),
+      metadata_modified_date: new Date(
+        format(formData.metadata_modified_date, "yyyy-MM-dd")
+      ),
+      registration_date: new Date(
+        format(formData.registration_date, "yyyy-MM-dd")
+      ),
     };
 
     onNext(payload);
@@ -89,36 +116,102 @@ const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDat
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg overflow-y-auto h-fit"
+      className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto "
     >
       <div className="flex flex-wrap gap-x-4 gap-y-3">
         {[
           { id: "title", label: "Title *", value: formData.title },
-          { id: "description", label: "Description *", value: formData.description },
+          {
+            id: "description",
+            label: "Description *",
+            value: formData.description,
+          },
           { id: "citation", label: "Citation *", value: formData.citation },
-          { id: "doi", label: "Digital Object Identifier *", value: formData.doi },
+          {
+            id: "doi",
+            label: "Digital Object Identifier *",
+            value: formData.doi,
+          },
           { id: "language", label: "Language *", value: formData.language },
-          { id: "data_language", label: "Data Language *", value: formData.data_language },
+          {
+            id: "data_language",
+            label: "Data Language *",
+            value: formData.data_language,
+          },
           { id: "license", label: "License *", value: formData.license },
           { id: "keywords", label: "Keywords *", value: formData.keywords },
-          { id: "dataset_type", label: "Dataset Type *", value: formData.dataset_type },
-          { id: "category_id", label: "Category ID *", value: formData.category_id },
+          {
+            id: "dataset_type",
+            label: "Dataset Type *",
+            value: formData.dataset_type,
+          },
         ].map(({ id, label, value }) => (
           <div key={id} className="w-full sm:w-[48%] flex flex-col">
-            <Label className="text-sm font-medium text-gray-700">
+            <Label className="text-sm font-medium text-gray-700 mb-1">
               {label.replace("*", "")} <span className="text-red-500">*</span>
             </Label>
             <Input id={id} name={id} value={value} onChange={handleChange} />
           </div>
         ))}
 
-        {[ // Date Pickers
-          { id: "publication_date", label: "Publication Date", value: formData.publication_date },
-          { id: "metadata_modified_date", label: "Metadata Modified Date", value: formData.metadata_modified_date },
-          { id: "registration_date", label: "Registration Date", value: formData.registration_date },
+        {/* Category Select */}
+        <div className="w-full sm:w-[48%] flex flex-col">
+          <Label
+            htmlFor="category_id"
+            className="text-sm font-medium text-gray-700 mb-1"
+          >
+            Category <span className="text-red-500">*</span>
+          </Label>
+          <Select
+            value={formData.category_id}
+            onValueChange={(val) =>
+              setFormData((prev) => ({ ...prev, category_id: val }))
+            }
+            disabled={isCategoriesLoading}
+          >
+            <SelectTrigger id="category_id" className="w-full">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent className="w-full">
+              {categoriesList?.map(
+                (cat: {
+                  category_id: React.Key | null | undefined;
+                  category_name: string;
+                }) => (
+                  <SelectItem
+                    key={cat.category_id}
+                    value={String(cat.category_id)}
+                  >
+                    {cat.category_name}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Date Pickers */}
+        {[
+          {
+            id: "publication_date",
+            label: "Publication Date",
+            value: formData.publication_date,
+          },
+          {
+            id: "metadata_modified_date",
+            label: "Metadata Modified Date",
+            value: formData.metadata_modified_date,
+          },
+          // {
+          //   id: "registration_date",
+          //   label: "Registration Date",
+          //   value: formData.registration_date,
+          // },
         ].map(({ id, label, value }) => (
           <div key={id} className="w-full sm:w-[48%] flex flex-col">
-            <Label className="text-sm font-medium text-gray-700">{label} <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium text-gray-700 mb-1">
+              {label} <span className="text-red-500">*</span>
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -134,7 +227,9 @@ const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDat
                 <Calendar
                   mode="single"
                   selected={value}
-                  onSelect={(date) => handleDateChange(id as keyof InitialDatasetForm, date)}
+                  onSelect={(date) =>
+                    handleDateChange(id as keyof InitialDatasetForm, date)
+                  }
                   initialFocus
                 />
               </PopoverContent>
@@ -144,7 +239,11 @@ const InitialDatasetRegistration = ({ onNext, isSubmitting = false }: InitialDat
       </div>
 
       <div className="mt-6 flex justify-center">
-        <Button type="submit" className="w-full sm:w-1/3" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full sm:w-1/3"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Submitting..." : "Next"}
         </Button>
       </div>

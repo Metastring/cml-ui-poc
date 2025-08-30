@@ -22,7 +22,7 @@ const DatasetRegistration = () => {
       { endpoint: "/dataset-master", params: data },
       {
         onSuccess: (res: InitialDatasetResponse) => {
-          toast.success("Initial dataset submitted successfully!");
+          // toast.success("Initial dataset !");
           setDatasetId(res.dataset_id);
           setStep("final");
         },

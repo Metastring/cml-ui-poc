@@ -101,9 +101,9 @@ if (!polygonData.length) {
   return (
     <div className="h-full flex justify-center  border border-gray-300 rounded-md">
       <table className="min-w-full text-sm text-left text-gray-800 border-collapse border border-gray-300">
-        <thead className="bg-gray-200 text-xs uppercase font-semibold tracking-wider border-b border-gray-300">
+        <thead className="bg-gray-200  font-semibold tracking-wider border-b border-gray-300">
              <tr>
-              <th className="px-6 py-4">View on Map</th>
+              <th className="px-6 py-4">View Distribution</th>
               <th className="px-6 py-4">Scientific Name</th>
               <th className="px-6 py-4">Event Date</th>
               <th className="px-6 py-4">Basis of Record</th>
@@ -133,7 +133,7 @@ if (!polygonData.length) {
     <div className="w-full overflow-x-auto min-w-md">
       <div className="min-w-full bg-white shadow-xl rounded-xl overflow-hidden">
         <table className="min-w-full text-sm text-left text-gray-800">
-          <thead className="bg-gray-200 sticky top-0 z-10 text-xs uppercase font-semibold tracking-wider border">
+          <thead className="bg-gray-200 sticky top-0 z-10  font-semibold tracking-wider border">
             <tr>
               <th className="px-6 py-4">View on Map</th>
               <th className="px-6 py-4">Scientific Name</th>

@@ -112,9 +112,9 @@ const handleCheckboxChange = (row: DataItem, index: number) => {
 
 
   const TableHeader = () => (
-    <thead className="bg-gray-200 text-xs uppercase font-semibold tracking-wider border-b border-gray-300">
+    <thead className="bg-gray-200 font-semibold tracking-wider border-b border-gray-300">
       <tr>
-        <th className="px-6 py-4">View on Map</th>
+        <th className="px-6 py-4">View distribution</th>
         <th className="px-6 py-4">Scientific Name</th>
         <th className="px-6 py-4">Common Name</th>
       </tr>
