@@ -47,8 +47,8 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
   onBackToInitial,
 }) => {
   // const initialState: KeyValue[][] = [[]];
-  const [scopes, setScopes] = useState<Record<string, string>[]>([{}]);
-  const [statistics, setStatistics] = useState<Record<string, string>[]>([{}]);
+  const [scopes, setScopes] = useState<Record<string, string>[]>([]);
+  const [statistics, setStatistics] = useState<Record<string, string>[]>([]);
 
   // const [publishers, setPublishers] = useState<[]>([]);
   // const [mappings, setMappings] = useState<[]>([]);
@@ -101,9 +101,9 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
     if (!dsIdStr)
       return toast.error("Cannot submit final dataset. Invalid dataset ID.");
     onSubmit({
-      dataset_id: dsIdStr,
+      dataset_id: String(dsIdStr),
       scopes,
-      publishers: publisher ? [{ name: publisher }] : [],
+      publishers: publisher ? [{ publisher_name: publisher , record_count:""}] : [],
       mappings: [],
       metrics: [],
       statistics,
@@ -162,7 +162,7 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
     >
       <div className="flex flex-wrap gap-x-4 gap-y-3">
         {fields.map(({ id, label, value, setter, singleBox }) => (
-          <div key={id} className="w-full sm:w-[48%] flex flex-col">
+          <div key={id} className="w-full sm:w-[48%]  flex-col hidden">
             <Label className="text-sm font-medium text-gray-700 mb-1">
               {label}
             </Label>

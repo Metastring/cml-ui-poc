@@ -41,7 +41,7 @@ const DatasetRegistration = () => {
     }
 
     finalDatasetMutation.mutate(
-      { endpoint: "/dataset-details", params: { ...data, dataset_id: datasetId } },
+      { endpoint: "/dataset-details", params: { ...data, dataset_id: String(datasetId) } },
       {
         onSuccess: () => {
           toast.success("Final dataset submitted successfully!");
