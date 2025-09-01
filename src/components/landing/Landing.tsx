@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 const Landing = () => {
   return (
@@ -20,44 +21,57 @@ const Landing = () => {
       </div>
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+        <Link href="/federated_search">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-2">Federated Search</h2>
+              <p className="text-gray-600 mb-2">
+                Federated Search queries multiple remote databases and returns
+                unified results in a single view.
+              </p>
+              {/* <Badge variant="outline">Map Tool</Badge> */}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Federated Search</h2>
-            <p className="text-gray-600 mb-2">
-              Federated Search queries multiple remote databases and returns unified results in a single view.
-            </p>
-            {/* <Badge variant="outline">Map Tool</Badge> */}
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Link href="/explore_map/polygon"><Card>
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-2">Map Search</h2>
             <p className="text-gray-600 mb-2">
-              View layers, draw polygons on the map and explore available layers.
+              View layers, draw polygons on the map and explore available
+              layers.
             </p>
             {/* <Badge variant="outline">Geo Data</Badge> */}
           </CardContent>
-        </Card>
-        <Card>
+        </Card></Link>
+
+
+        <Link href="/contribute"><Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Register Your Dataset</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Register Your Dataset
+            </h2>
             {/* <p className="text-gray-600 mb-2">
               Register your Dataset
             </p> */}
             {/* <Badge variant="outline">Geo Data</Badge> */}
           </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Explore Dataset catalog</h2>
-            {/* <p className="text-gray-600 mb-2">
+        </Card></Link>
+
+
+        <Link href="/datasets">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-2">
+                Explore Dataset catalog
+              </h2>
+              {/* <p className="text-gray-600 mb-2">
               Draw, edit, and manage polygonal boundaries on an interactive map.
             </p> */}
-            {/* <Badge variant="outline">Geo Data</Badge> */}
-          </CardContent>
-        </Card>
+              {/* <Badge variant="outline">Geo Data</Badge> */}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );
