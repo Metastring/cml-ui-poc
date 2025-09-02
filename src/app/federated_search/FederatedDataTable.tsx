@@ -29,20 +29,18 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   data = [],
 }) => {
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
-  const [selectedScientificName, setSelectedScientificName] = useState<
-    string | null
-  >(null);
-  const { addVisibleMarker, clearCoordinates } = useFederatedSearchMapData();
+  const { addVisibleMarker, removeMarkerByName } =
+    useFederatedSearchMapData();
 
-  // this api is being used for fetching the map data based on scietific name
-  const {
-    mutate: fetchMapData,
-    data: mapData = [],
-    // isPending: isLoadingMapData,
-    // isError: isErrorMapData,
-    // error,
-  } = useGetMapDataBasedOnFederatedSearchResult();
+  const { mutate: fetchMapData, data: mapData = [] } =
+    useGetMapDataBasedOnFederatedSearchResult();
 
+  // Initialize checkbox state when data changes
+  useEffect(() => {
+    setCheckedRows(new Array(data.length).fill(false));
+  }, [data.length]);
+
+  // Add markers when mapData arrives
   useEffect(() => {
     if (!mapData?.length) return;
 
@@ -67,49 +65,28 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
         }
       }
     );
-  }, [mapData, addVisibleMarker, clearCoordinates]);
+  }, [mapData, addVisibleMarker]);
 
-  useEffect(() => {
-    setCheckedRows((prev) => {
-      if (prev.length !== data.length) {
-        return new Array(data.length).fill(false);
-      }
-      return prev;
-    });
-  }, [data.length]);
+  // Handle row toggle
+const handleToggleSelection = (row: DataItem, index: number) => {
+  setCheckedRows((prev) => {
+    const newState = [...prev];
+    const newChecked = !newState[index];
+    newState[index] = newChecked;
 
-const handleRowClick = (row: DataItem, index: number) => {
-  const name = row.scientific_name || row.taxon_name;
-  if (!name) return;
+    const name = row.scientific_name || row.taxon_name;
+    if (!name) return newState;
 
-  setCheckedRows(() => {
-    const newState = new Array(data.length).fill(false); // reset all
-    newState[index] = true; // select only this one
-
-    setSelectedScientificName(name);
-    clearCoordinates();
-    fetchMapData(name);
+    if (newChecked) {
+      fetchMapData(name);
+    } else {
+      // ✅ remove all markers for this species
+      removeMarkerByName(name);
+    }
 
     return newState;
   });
 };
-
-const handleCheckboxChange = (row: DataItem, index: number) => {
-  const name = row.scientific_name || row.taxon_name;
-  if (!name) return;
-
-  setCheckedRows(() => {
-    const newState = new Array(data.length).fill(false); // reset all
-    newState[index] = true; // select only this one
-
-    setSelectedScientificName(name);
-    clearCoordinates();
-    fetchMapData(name);
-
-    return newState;
-  });
-};
-
 
   const TableHeader = () => (
     <thead className="bg-gray-200 font-semibold tracking-wider border-b border-gray-300">
@@ -183,17 +160,16 @@ const handleCheckboxChange = (row: DataItem, index: number) => {
           <tbody className="divide-y divide-gray-200">
             {data.map((row, index) => {
               const name = row.scientific_name || row.taxon_name;
-              const isSelected = name === selectedScientificName;
 
               return (
                 <tr
                   key={index}
-                  onClick={() => handleRowClick(row, index)}
                   className={`cursor-pointer transition-colors ${
-                    isSelected
-                      ? "bg-blue-100 hover:bg-blue-200" // ✅ highlight selected
+                    checkedRows[index]
+                      ? "bg-blue-100 hover:bg-blue-200"
                       : "hover:bg-blue-50"
                   }`}
+                  onClick={() => handleToggleSelection(row, index)}
                 >
                   <td
                     className="px-6 py-4"
@@ -202,12 +178,12 @@ const handleCheckboxChange = (row: DataItem, index: number) => {
                   >
                     <Checkbox
                       checked={!!checkedRows[index]}
-                      onCheckedChange={() => handleCheckboxChange(row, index)}
+                      onCheckedChange={() =>
+                        handleToggleSelection(row, index)
+                      }
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {row.taxon_name ?? row.scientific_name}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{name}</td>
                   <td className="px-6 py-4">
                     {row.common_names ?? row.common_name}
                   </td>
