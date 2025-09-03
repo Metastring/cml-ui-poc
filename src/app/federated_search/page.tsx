@@ -11,7 +11,7 @@ import FederatedDataTable from "./FederatedDataTable";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 
 const Page = () => {
-  const [isMapVisible, setIsMapVIsible] = useState(false);
+  const [isMapVisible, setIsMapVisible] = useState(false);
   const { selectedCoordinates, visibleMarkers } = useFederatedSearchMapData();
   const {
     data,
@@ -19,6 +19,7 @@ const Page = () => {
     mutate,
     isMutating: isLoading,
   } = useMutateFederatedSearch();
+
   const resultKeys = Object.keys(data?.results || {});
   const [activeKey, setActiveKey] = useState<string | null>(resultKeys[0]);
 
@@ -30,38 +31,62 @@ const Page = () => {
     } else {
       setActiveKey(null);
     }
-  }, [resultKeys ,activeKey]);
+  }, [resultKeys, activeKey]);
 
   return (
-    <div className="h-screen flex flex-col p-4 space-y-2">
-      {/* Top bar */}
-      <div className="flex items-center space-x-2">
-        <InstructionPopover title="Federated Search">
-          <p>
-            Federated Search queries multiple remote databases and returns
-            unified results in a single view.
-          </p>
-        </InstructionPopover>
-        {isMapVisible ? (
-          <button type="button" title="Hide Map">
-            <LocateOff onClick={() => setIsMapVIsible((prev) => !prev)} />
-          </button>
-        ) : (
-          <button title="View Map">
-            <LocateFixed onClick={() => setIsMapVIsible((prev) => !prev)} />
-          </button>
-        )}
+    <div className="h-screen flex">
+      {/* Sidebar */}
+  <div className="w-96 border-r p-4 flex flex-col space-y-4">
+        {/* Top bar merged here */}
+        <div className="flex items-center justify-between border-b pb-2 mb-4">
+          <InstructionPopover title="Federated Search">
+            <p>
+              Federated Search queries multiple remote databases and returns
+              unified results in a single view.
+            </p>
+          </InstructionPopover>
+
+          {isMapVisible ? (
+            <button
+              type="button"
+              title="Hide Map"
+              onClick={() => setIsMapVisible(false)}
+            >
+              <LocateOff />
+            </button>
+          ) : (
+            <button
+              type="button"
+              title="Show Map"
+              onClick={() => setIsMapVisible(true)}
+            >
+              <LocateFixed />
+            </button>
+          )}
+        </div>
+
+        <FederatedSearchBar mutate={mutate} />
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden space-x-4">
-        {/* Left Content */}
-        <div className="flex flex-col flex-1 min-w-0 space-y-2 overflow-hidden">
-          <FederatedSearchBar mutate={mutate} />
+      {/* Right Section (Map + Tabs + Table) */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Map Section - inside right side only */}
+        <div
+          className={`transition-all duration-500 overflow-hidden shadow-lg ${
+            isMapVisible ? "h-[50vh]" : "h-0"
+          }`}
+        >
+          {isMapVisible && (
+            <div className="h-full w-full">
+              <BaseMap />
+              <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
+            </div>
+          )}
+        </div>
 
-          {/* Tabs */}
-          <div className="flex space-x-2 border-b">
-            {resultKeys.map((key) => (
+        {/* Tabs Above Table */}
+        <div className="border-b  flex space-x-2 bg-gray-50">
+          {resultKeys.map((key) => (
               <button
                 key={key}
                 className={`px-4 py-2 cursor-pointer ${
@@ -74,9 +99,10 @@ const Page = () => {
                 {key.toUpperCase()}
               </button>
             ))}
-          </div>
+        </div>
 
-          {/* Active Table */}
+        {/* Table Section */}
+        <div className="flex-1 p-4 overflow-auto">
           <FederatedDataTable
             isLoading={isLoading}
             isError={isError}
@@ -87,20 +113,6 @@ const Page = () => {
                 field.results ?? []
             )}
           />
-        </div>
-
-        {/* Right Map Section */}
-        <div
-          className={`
-            transition-all duration-500
-            shadow-lg overflow-hidden
-            ${isMapVisible ? "w-[50vw]" : "w-0"}
-          `}
-        >
-          <div className="h-full w-full">
-            <BaseMap />
-            <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
-          </div>
         </div>
       </div>
     </div>
