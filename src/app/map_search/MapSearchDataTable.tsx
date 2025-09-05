@@ -1,0 +1,238 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import useMapSearchData from "@/store/map_search_store/useMapSearchData";
+import { Loader2 } from "lucide-react";
+
+interface PolygonDataItem {
+  scientificName: string;
+  eventDate: string;
+  basisOfRecord?: string;
+  longitude: number;
+  latitude: number;
+  dataset: string;
+  region: string;
+}
+
+export type DataItem = {
+  decimalLatitude?: number;
+  decimalLongitude?: number;
+  taxon_name?: string;
+  common_names?: string;
+  scientific_name?: string;
+  common_name?: string;
+  eventDate?: string;
+  basisOfRecord?: string;
+};
+
+type FederatedDataTableProps = {
+  isLoading: boolean;
+  isError: boolean;
+  // data: DataItem[];
+};
+const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
+  isLoading,
+  isError,
+  // data = [],
+}) => {
+  const queryClient = useQueryClient();
+  const { setSelectedCoordinates, addVisibleMarker, removeVisibleMarker } =
+    useMapSearchData();
+
+
+  // Fetch polygon data from cache (mutated by SearchBar)
+  const { data: polygonData = [] } = useQuery<PolygonDataItem[]>({
+    queryKey: ["polygonData"],
+    queryFn: () => [],
+    initialData: () => queryClient.getQueryData(["polygonData"]) || [],
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [visibleRows, setVisibleRows] = useState<boolean[]>([]);
+
+  // Keep all checked when data changes
+  useEffect(() => {
+    setVisibleRows(new Array(polygonData.length).fill(true));
+  }, [polygonData]);
+
+  // Add all markers on mount
+  useEffect(() => {
+    polygonData.forEach((row) => {
+      if (row.latitude != null && row.longitude != null) {
+        addVisibleMarker({
+          scientificName: row.scientificName,
+          lat: row.latitude,
+          lng: row.longitude,
+        });
+      }
+    });
+  }, [polygonData, addVisibleMarker]);
+
+  const handleCheckboxChange = (index: number) => {
+    const row = polygonData[index];
+    const {
+      latitude: lat,
+      longitude: lng,
+      scientificName: scientificName,
+    } = row;
+
+    if (lat == null || lng == null) return;
+
+    setVisibleRows((prev) => {
+      const newVisibleRows = [...prev];
+      newVisibleRows[index] = !prev[index];
+
+      const hasOtherVisible = polygonData.some((r, i) => {
+        return (
+          i !== index &&
+          newVisibleRows[i] &&
+          r.latitude === lat &&
+          r.longitude === lng
+        );
+      });
+
+      if (prev[index]) {
+        if (!hasOtherVisible) {
+          removeVisibleMarker({ lat, lng, scientificName });
+        }
+      } else {
+        addVisibleMarker({ lat, lng, scientificName });
+      }
+
+      return newVisibleRows;
+    });
+  };
+
+  const handleRowClick = (row: PolygonDataItem, index: number) => {
+    if (!visibleRows[index]) {
+      return;
+    }
+
+    if (row.latitude == null || row.longitude == null) return;
+    setSelectedIndex(index);
+    setSelectedCoordinates({
+      scientificName: row.scientificName,
+      lat: row.latitude,
+      lng: row.longitude,
+    });
+  };
+
+  const TableHeader = () => (
+    <thead className="bg-gray-200 font-semibold tracking-wider border-b border-gray-300">
+      <tr>
+        <th className="px-6 py-4">View Distribution</th>
+        <th className="px-6 py-4">Scientific Name</th>
+        <th className="px-6 py-4">Event Date</th>
+        <th className="px-6 py-4">Basis of Record</th>
+        <th className="px-6 py-4">Dataset</th>
+      </tr>
+    </thead>
+  );
+
+if (isLoading) {
+    return (
+      <div className="flex h-full justify-center rounded-2xl">
+        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+          <TableHeader />
+          <tbody>
+            <tr>
+              <td colSpan={5} className="text-center text-gray-500 italic">
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="animate-spin mr-2" />
+                  <span>Loading...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-full justify-center rounded-2xl">
+        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+          <TableHeader />
+          <tbody>
+            <tr>
+              <td colSpan={5} className="text-center text-red-500 italic py-6">
+                Oops! Something went wrong while loading data.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  if (polygonData.length === 0) {
+    return (
+      <div className="flex h-full justify-center rounded-2xl">
+        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+          <TableHeader />
+          <tbody>
+            <tr>
+              <td colSpan={5} className="text-center text-gray-500 italic py-6">
+                No data available
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full overflow-x-auto min-w-md">
+      <div className="min-w-full bg-white shadow-xl rounded-xl overflow-hidden">
+        <table className="min-w-full text-sm text-left text-gray-800">
+
+          <TableHeader/>
+          <tbody className="divide-y divide-gray-200">
+            {polygonData.map((row, index) => {
+              const isSelected = selectedIndex === index;
+              const isVisible = visibleRows[index];
+
+              return (
+                <tr
+                  key={index}
+                  className={`transition-colors duration-200 ${
+                    isSelected
+                      ? "bg-blue-100 text-blue-900"
+                      : "hover:bg-blue-50"
+                  }`}
+                  onClick={() => handleRowClick(row, index)}
+                >
+                  <td className="px-6 py-4">
+                    <Checkbox
+                      checked={isVisible}
+                      onClick={(e) => e.stopPropagation()}
+                      onCheckedChange={() => handleCheckboxChange(index)}
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {row.scientificName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {row.eventDate || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {row.basisOfRecord || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {row.dataset.toUpperCase()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default MapSearchDataTable;

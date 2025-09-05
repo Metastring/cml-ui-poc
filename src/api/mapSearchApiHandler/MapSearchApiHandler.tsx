@@ -1,7 +1,36 @@
-"use client";
-
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GetMapSearchBaseApiHandler } from "./MapSearchBaseApiHandler";
 import { toast } from "sonner";
+
+export const useGetWMSLayerByDataset = ({
+  dataset,
+}: {
+  dataset?: string[];
+}) => {
+  const { data: rawData } = useQuery({
+    queryKey: ["wms-layer-detail", dataset],
+    queryFn: () =>
+      GetMapSearchBaseApiHandler("/layers/tile_urls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataset ?? []),
+      }),
+    enabled: !!dataset && dataset.length > 0,
+  });
+
+  const data = rawData
+    ? Object.entries(rawData).map(([key, value], index) => ({
+        id: `${index + 1}`, // convert to string
+        name: key,
+        wmsUrl: value as string, // lowercase 'u'
+      }))
+    : [];
+
+  console.log("Transformed data:", data);
+
+  return { data };
+};
+
 
 interface PolygonGeometry {
   type: "Polygon";
@@ -12,13 +41,14 @@ interface PolygonDetail {
   geometry: PolygonGeometry;
 }
 
-export interface SearchParams {
+export interface MapSearchParams {
   category: string;
   dataset: string[];
   shapes: PolygonDetail[];
   limit?: number;
   offset?: number;
 }
+
 
 export type PolygonDataItem = Record<string, unknown>;
 
@@ -28,7 +58,7 @@ const fetchPolygonData = async ({
   shapes,
   limit = 500,
   offset = 0,
-}: SearchParams): Promise<PolygonDataItem[]> => {
+}: MapSearchParams): Promise<PolygonDataItem[]> => {
   console.log(dataset);
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v1/graphql_data_method`,
@@ -80,7 +110,7 @@ const fetchPolygonData = async ({
 export const useGetMapSearchData = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<PolygonDataItem[], Error, SearchParams>({
+  const mutation = useMutation<PolygonDataItem[], Error, MapSearchParams>({
     mutationFn: fetchPolygonData,
     onSuccess: (data) => {
       // ✅ Cache the result under 'polygonData' key

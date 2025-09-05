@@ -46,8 +46,7 @@ const Sidebar: React.FC = () => {
   const getCurrentTab = (): string => {
     if (pathname === '/') return 'Dashboard';
     if (pathname === '/federated_search') return 'Federated Search';
-    if (pathname === '/explore_map/polygon') return 'Explore Polygon';
-    if (pathname === '/explore_map/layer') return 'Explore Layer';
+    if (pathname === '/map_search') return 'Map Search';
     if (pathname === '/contribute') return 'Contribute';
     if (pathname === '/datasets') return 'Datasets';
     return '';
@@ -92,24 +91,16 @@ const Sidebar: React.FC = () => {
           />
         </Link>
 
-        <Link href="/explore_map/polygon">
+        <Link href="/map_search">
           <SidebarItem
             icon={<LocateFixed size={18} />}
             // icon={<Triangle size={18} />}
             label="Map Search"
             isOpen={isSidebarOpen}
-            active={currentTab === 'Explore Polygon'}
+            active={currentTab === 'Map Search'}
           />
         </Link>
 
-        {/* <Link href="/explore_map/layer">
-          <SidebarItem
-            icon={<Layers size={18} />}
-            label="Explore Layer"
-            isOpen={isSidebarOpen}
-            active={currentTab === 'Explore Layer'}
-          />
-        </Link> */}
         <Link href="/contribute">
           <SidebarItem
             icon={<DatabaseZap size={18} />}

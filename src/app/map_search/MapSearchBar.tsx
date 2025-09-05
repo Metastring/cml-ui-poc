@@ -5,26 +5,31 @@ import { Button } from "@/components/ui/button";
 import useMapStore from "@/store/base_map_store/useMapStore";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import { useGetMapSearchData } from "./useGetMapSearchData";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { toast } from "sonner";
 import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
-import TreeDropdown from "../ui/treedropdown";
+import TreeDropdown from "@/components/ui/treedropdown";
+import { UseMutateFunction } from "@tanstack/react-query";
+import { MapSearchParams, PolygonDataItem } from "@/api/mapSearchApiHandler/MapSearchApiHandler";
 // import { MultiSelectCombobox } from "../ui/MultiSelectCombobox";
 
 interface MapSearchBarProps {
   onSearch?: () => void;
+  mutate: UseMutateFunction<PolygonDataItem[], Error, MapSearchParams, unknown>; // ✅ exact type
+  clearDataMapSearchData: () => void;
+  isMapDataLoading:boolean
+
 }
 // interface Option {
 //   value: string;
 //   label: string;
 // }
-const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch }) => {
+const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch , mutate , clearDataMapSearchData , isMapDataLoading }) => {
 
   const { shapes } = useMapStore();
   const { categories, datasets, setCategories, setDatasets, resetFilters , setIndicators } = useMapSearchFilter();
   const { data, isLoading, isError } = useGetFilterData();
-  const { mutate, isLoading: isMapDataLoading, clearDataMapSearchData} = useGetMapSearchData();
+  // const { mutate, isLoading: isMapDataLoading, clearDataMapSearchData} = useGetMapSearchData();
   const { clearCoordinates } = useMapSearchData();
   const handleResetMapData = () => {
     clearCoordinates();
@@ -105,6 +110,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch }) => {
           ? "kew"
           : k
       ),
+
       // @ts-expect-error : polygonDetail type not declared
       shapes: polygon
         ? polygon.features.map((feature: GeoJSON.Feature) => ({
@@ -214,6 +220,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch }) => {
       <div className="flex space-x-2">
         <Button onClick={handleSearch} disabled={isLoading} className="flex-1">
           {isMapDataLoading ? "Searching..." : "Search"}
+
         </Button>
         <Button
           onClick={handleResetMapData}

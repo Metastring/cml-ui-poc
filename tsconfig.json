@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/layout/Sidebar.tsx", "src/store/map_indicatore_store/useIndicatorStore.ts", "src/components/mapFeatures/externalLayers/ExternalLayers.tsx", "src/components/landing/Landing.tsx", "src/element/table/GenericTable.tsx", "src/app/federated_search/page.tsx", "src/app/explore_map/page.tsx", "src/store/useLayerControlStore.js", "src/app/layer/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/layout/Sidebar.tsx", "src/store/map_indicatore_store/useIndicatorStore.ts", "src/components/mapFeatures/externalLayers/ExternalLayers.tsx", "src/components/dashboard/Dashboard.tsx", "src/element/table/GenericTable.tsx", "src/app/federated_search/page.tsx", "src/app/explore_map/page.tsx", "src/store/useLayerControlStore.js", "src/app/layer/page.jsx"],
   "exclude": ["node_modules"]
 }

@@ -7,19 +7,21 @@ import {
   PanelLeftClose,
   PanelRightOpen,
 } from "lucide-react";
-import MapSearchBar from "@/components/explorePolygon/MapSearchBar";
-import PolygonDataTable from "@/components/explorePolygon/PolygonDataTable";
 import InstructionPopover from "@/element/popover/InstructionPopover";
-import BaseMap from "../map/BaseMap";
-import ExternalLayers from "../mapFeatures/externalLayers/ExternalLayers";
-import PolygonEditor from "../mapFeatures/polygonEditor/PolygonEditor";
-import AddMarker from "../mapFeatures/addMarker/AddMarker";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
-import { useGetWMSLayerByDataset } from "@/api/polygonApiHandler/PolygonApiHandler";
+import {
+  useGetMapSearchData,
+  useGetWMSLayerByDataset,
+} from "@/api/mapSearchApiHandler/MapSearchApiHandler";
 import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
-import AddLayer from "../mapFeatures/addLayer/AddLayer";
+import AddLayer from "@/components/mapFeatures/addLayer/AddLayer";
+import BaseMap from "@/components/map/BaseMap";
+import PolygonEditor from "@/components/mapFeatures/polygonEditor/PolygonEditor";
+import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
+import MapSearchBar from "@/app/map_search/MapSearchBar";
+import MapSearchDataTable from "@/app/map_search/MapSearchDataTable";
 
-const ExplorePolygon = () => {
+const Page = () => {
   const [tableVisible, setTableVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const { selectedCoordinates, visibleMarkers } = useMapSearchData();
@@ -34,7 +36,12 @@ const ExplorePolygon = () => {
     ),
   });
 
-  // console.log("WMS_SOURCE", WMS_SOURCE);
+  const {
+    mutate,
+    isLoading: isMapDataLoading,
+    clearDataMapSearchData,
+    isError
+  } = useGetMapSearchData();
 
   return (
     <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
@@ -84,8 +91,12 @@ const ExplorePolygon = () => {
             </div>
 
             {/* Search Input */}
-            <MapSearchBar onSearch={() => setTableVisible(true)} />
-
+            <MapSearchBar
+              onSearch={() => setTableVisible(true)}
+              mutate={mutate}
+              clearDataMapSearchData={clearDataMapSearchData}
+              isMapDataLoading={isMapDataLoading}
+            />
           </div>
         ) : (
           <div className="flex flex-col">
@@ -116,7 +127,6 @@ const ExplorePolygon = () => {
         {/* Map Area */}
         <div className="flex-1 h-full relative rounded-lg overflow-hidden shadow-md">
           <BaseMap />
-          <ExternalLayers />
           <PolygonEditor />
           <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
           <AddLayer layers={WMS_SOURCE ?? []} />
@@ -126,7 +136,17 @@ const ExplorePolygon = () => {
       {/* Data Table or Toggle Strip */}
       {tableVisible ? (
         <div className="flex-[0.5] w-full overflow-auto">
-          <PolygonDataTable />
+          {/* <MapSearchDataTable /> */}
+           <MapSearchDataTable
+            isLoading={isMapDataLoading}
+            isError={isError}
+            // data={Object.values(
+            //   data?.results?.[activeKey ?? 0]?.field_results ?? {}
+            // ).flatMap(
+            //   (field: { results?: Record<string, unknown>[] | undefined }) =>
+            //     field.results ?? []
+            // )}
+          />
         </div>
       ) : (
         <div
@@ -144,4 +164,4 @@ const ExplorePolygon = () => {
   );
 };
 
-export default ExplorePolygon;
+export default Page;
