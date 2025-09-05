@@ -70,20 +70,17 @@ export function MultiSelectCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between", className)}
+          className={cn("justify-between overflow-hidden w-full max-w-full", className)}
         >
-          <span className="truncate">
-            {selectedValues.length > 0
-              ? options
-                  .filter((opt) => selectedValues.includes(opt.value))
-                  .map((opt) => opt.label)
-                  .join(", ")
-              : placeholder}
+          <span className="flex-1 min-w-0 truncate text-left">
+            {selectedValues.length === 0
+              ? placeholder
+              : `${placeholder} (${selectedValues.length})`}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("p-0", className)}>
+      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
         <Command>
           <CommandInput placeholder="Search..." className="h-9" />
           <CommandList>

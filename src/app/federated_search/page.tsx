@@ -102,7 +102,7 @@ const Page = () => {
         </div>
 
         {/* Table Section */}
-        <div className="flex-1 p-4 overflow-auto">
+        <div className="flex-1 overflow-auto">
           <FederatedDataTable
             isLoading={isLoading}
             isError={isError}
