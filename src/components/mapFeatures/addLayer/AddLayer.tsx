@@ -30,9 +30,24 @@ const AddLayer: React.FC<AddLayerProps> = ({ layers }) => {
       const tileSize = 256 * dpr;
 
       // Use tiles with high-resolution WIDTH/HEIGHT
+      // const tiles = [
+      //   `${layer.wmsUrl}&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${layer.name}&SRS=EPSG:3857&WIDTH=${tileSize}&HEIGHT=${tileSize}&BBOX={bbox-epsg-3857}&FORMAT=image/png`
+      // ];
+
+      const url = new URL(layer.wmsUrl);
+      const baseUrl = url.origin + url.pathname;
+      const layerName = new URLSearchParams(url.search).get("layers") || "";
+
       const tiles = [
-        `${layer.wmsUrl}&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${layer.name}&SRS=EPSG:3857&WIDTH=${tileSize}&HEIGHT=${tileSize}&BBOX={bbox-epsg-3857}&FORMAT=image/png`
+        `${baseUrl}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap` +
+          `&LAYERS=${layerName}` +
+          `&STYLES=` +
+          `&SRS=EPSG:3857` +
+          `&WIDTH=${tileSize}&HEIGHT=${tileSize}` +
+          `&BBOX={bbox-epsg-3857}` +
+          `&FORMAT=image/png&TRANSPARENT=true`,
       ];
+
 
       mapRef.addSource(layer.id, {
         type: "raster",
@@ -63,7 +78,7 @@ const AddLayer: React.FC<AddLayerProps> = ({ layers }) => {
     }
 
     return () => {
-      if (!mapRef) return; 
+      if (!mapRef) return;
       addedLayers.forEach((layerId) => {
         try {
           if (mapRef.getLayer(layerId)) mapRef.removeLayer(layerId);
