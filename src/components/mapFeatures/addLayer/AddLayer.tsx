@@ -34,20 +34,33 @@ const AddLayer: React.FC<AddLayerProps> = ({ layers }) => {
       //   `${layer.wmsUrl}&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${layer.name}&SRS=EPSG:3857&WIDTH=${tileSize}&HEIGHT=${tileSize}&BBOX={bbox-epsg-3857}&FORMAT=image/png`
       // ];
 
-      const url = new URL(layer.wmsUrl);
-      const baseUrl = url.origin + url.pathname;
-      const layerName = new URLSearchParams(url.search).get("layers") || "";
+      let tiles: string[] = [];
 
-      const tiles = [
-        `${baseUrl}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap` +
-          `&LAYERS=${layerName}` +
-          `&STYLES=` +
-          `&SRS=EPSG:3857` +
-          `&WIDTH=${tileSize}&HEIGHT=${tileSize}` +
-          `&BBOX={bbox-epsg-3857}` +
-          `&FORMAT=image/png&TRANSPARENT=true`,
-      ];
+      if (layer?.wmsUrl) {
+        try {
+          const url = new URL(layer.wmsUrl);
+          const baseUrl = url.origin + url.pathname;
+          const layerName = new URLSearchParams(url.search).get("layers") || "";
 
+          tiles = [
+            `${baseUrl}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap` +
+              `&LAYERS=${layerName}` +
+              `&STYLES=` +
+              `&SRS=EPSG:3857` +
+              `&WIDTH=${tileSize}&HEIGHT=${tileSize}` +
+              `&BBOX={bbox-epsg-3857}` +
+              `&FORMAT=image/png&TRANSPARENT=true`,
+          ];
+        } catch (err) {
+          console.warn("Invalid WMS URL:", layer?.wmsUrl, err);
+        }
+      }
+
+      if (!tiles?.length) {
+        // toast.error("Unable to load this layer");
+
+        return null;
+      }
 
       mapRef.addSource(layer.id, {
         type: "raster",

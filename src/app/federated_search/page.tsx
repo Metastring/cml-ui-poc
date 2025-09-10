@@ -36,7 +36,7 @@ const Page = () => {
   return (
     <div className="h-screen flex">
       {/* Sidebar */}
-  <div className="w-96 border-r p-4 flex flex-col space-y-4">
+      <div className="w-96 border-r p-4 flex flex-col space-y-4">
         {/* Top bar merged here */}
         <div className="flex items-center justify-between border-b pb-2 mb-4">
           <InstructionPopover title="Federated Search">
@@ -87,23 +87,24 @@ const Page = () => {
         {/* Tabs Above Table */}
         <div className="border-b  flex space-x-2 bg-gray-50">
           {resultKeys.map((key) => (
-              <button
-                key={key}
-                className={`px-4 py-2 cursor-pointer ${
-                  activeKey === key
-                    ? "border-b-2 border-blue-600 font-bold text-blue-700"
-                    : ""
-                }`}
-                onClick={() => setActiveKey(key)}
-              >
-                {key.toUpperCase()}
-              </button>
-            ))}
+            <button
+              key={key}
+              className={`px-4 py-2 cursor-pointer ${
+                activeKey === key
+                  ? "border-b-2 border-blue-600 font-bold text-blue-700"
+                  : ""
+              }`}
+              onClick={() => setActiveKey(key)}
+            >
+              {key.toUpperCase()}
+            </button>
+          ))}
         </div>
 
         {/* Table Section */}
         <div className="flex-1 overflow-auto">
           <FederatedDataTable
+            onSearch={() => setIsMapVisible(true)}
             isLoading={isLoading}
             isError={isError}
             data={Object.values(

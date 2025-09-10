@@ -21,12 +21,14 @@ type FederatedDataTableProps = {
   isLoading: boolean;
   isError: boolean;
   data: DataItem[];
+  onSearch: ()=>void
 };
 
 const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isLoading,
   isError,
   data = [],
+  onSearch
 }) => {
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
   const { addVisibleMarker, removeMarkerByName } =
@@ -86,6 +88,7 @@ const handleToggleSelection = (row: DataItem, index: number) => {
 
     return newState;
   });
+  onSearch?.();
 };
 
   const TableHeader = () => (
@@ -174,7 +177,7 @@ const handleToggleSelection = (row: DataItem, index: number) => {
                   <td
                     className="px-6 py-4"
                     title="view/Hide on Map"
-                    onClick={(e) => e.stopPropagation()}
+                    // onClick={(e) => e.stopPropagation()}
                   >
                     <Checkbox
                       checked={!!checkedRows[index]}
