@@ -1,83 +1,53 @@
 "use client";
-
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useMapStore from "@/store/base_map_store/useMapStore";
-import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { toast } from "sonner";
 import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
 import TreeDropdown from "@/components/ui/treedropdown";
 import { UseMutateFunction } from "@tanstack/react-query";
-import { MapSearchParams, PolygonDataItem } from "@/api/mapSearchApiHandler/MapSearchApiHandler";
-// import { MultiSelectCombobox } from "../ui/MultiSelectCombobox";
+import {
+  MapSearchParams,
+  PolygonDataItem,
+  PolygonDetail,
+} from "@/types/api/mapSearch.types";
 
 interface MapSearchBarProps {
   onSearch?: () => void;
-  mutate: UseMutateFunction<PolygonDataItem[], Error, MapSearchParams, unknown>; // ✅ exact type
+  mutate: UseMutateFunction<PolygonDataItem[], Error, MapSearchParams, unknown>;
   clearDataMapSearchData: () => void;
-  isMapDataLoading:boolean
-
+  isMapDataLoading: boolean;
 }
-// interface Option {
-//   value: string;
-//   label: string;
-// }
-const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch , mutate , clearDataMapSearchData , isMapDataLoading }) => {
 
+export type SelectedShape = { parent: string; child: { name: string }[] }[];
+
+const MapSearchBar: React.FC<MapSearchBarProps> = ({
+  onSearch,
+  mutate,
+  clearDataMapSearchData,
+  isMapDataLoading,
+}) => {
   const { shapes } = useMapStore();
-  const { categories, datasets, setCategories, setDatasets, resetFilters , setIndicators } = useMapSearchFilter();
+  const {
+    categories,
+    datasets,
+    setCategories,
+    setDatasets,
+    resetFilters,
+    setIndicators,
+  } = useMapSearchFilter();
   const { data, isLoading, isError } = useGetFilterData();
-  // const { mutate, isLoading: isMapDataLoading, clearDataMapSearchData} = useGetMapSearchData();
   const { clearCoordinates } = useMapSearchData();
+  const [selectedNodes, setSelectedNodes] = useState<SelectedShape>([]);
+
   const handleResetMapData = () => {
     clearCoordinates();
     clearDataMapSearchData();
     resetFilters();
+    setSelectedNodes([]);
   };
-
-  // const indicatorList: Option[] = useMemo(() => {
-  //   if (isLoading || isError || !data) return [];
-
-  //   const matchedCategories = data.filter((item) =>
-  //     categories.includes(item.category_name)
-  //   );
-
-  //   const matchedDatasets = matchedCategories.flatMap(
-  //     (cat) =>
-  //       cat.datasets?.filter((ds) => datasets.includes(ds.dataset_title)) ?? []
-  //   );
-
-  //   const seen = new Set<string>();
-  //   const options: Option[] = [];
-
-  //   matchedDatasets.forEach((ds) => {
-  //     // Inline TS fix: assert ds.fields is Field[]
-  //     (
-  //       ds.fields as
-  //         | {
-  //             ontology_mapping_to_display: string;
-  //             ontology_mapping: string;
-  //           }[]
-  //         | undefined
-  //     )?.forEach((field) => {
-  //       if (!seen.has(field.ontology_mapping)) {
-  //         seen.add(field.ontology_mapping);
-  //         options.push({
-  //           label: field.ontology_mapping_to_display,
-  //           value: field.ontology_mapping,
-  //         });
-  //       }
-  //     });
-  //   });
-
-  //   return options;
-  // }, [data, categories, datasets, isLoading, isError]);
-
-
-
-
 
   const handleSearch = () => {
     if (categories.length === 0 && (!shapes || shapes.features.length === 0)) {
@@ -86,20 +56,35 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch , mutate , clearDa
       );
       return;
     }
+
     if (categories.length === 0) {
       toast.error("Please select a category.");
       return;
     }
+
     if (!datasets.length) {
       toast.error("Please select at least one dataset.");
       return;
     }
+
     if (!shapes || shapes.features.length === 0) {
       toast.error("Please draw at least one polygon.");
       return;
     }
 
-    const polygon: FeatureCollection<Geometry, GeoJsonProperties> = shapes;
+    const polygonShapes: PolygonDetail[] = shapes.features
+      .filter(
+        (f): f is GeoJSON.Feature<GeoJSON.Polygon> =>
+          f.geometry.type === "Polygon"
+      )
+      .map((feature) => ({
+        geometry: feature.geometry as PolygonDetail["geometry"],
+      }));
+
+    if (!polygonShapes.length) {
+      toast.error("Please draw at least one polygon feature.");
+      return;
+    }
 
     mutate({
       category: categories[0],
@@ -110,25 +95,20 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch , mutate , clearDa
           ? "kew"
           : k
       ),
-
-      // @ts-expect-error : polygonDetail type not declared
-      shapes: polygon
-        ? polygon.features.map((feature: GeoJSON.Feature) => ({
-            geometry: feature.geometry,
-          }))
-        : [],
+      shapes: polygonShapes,
     });
+
     onSearch?.();
   };
 
- const nodes = useMemo(() => {
+  const nodes = useMemo(() => {
     if (!data) return [];
 
     type InlineMetadata = { key: string; value: string };
     type InlineChildNode = {
       id: string;
       name: string;
-      description: string; // always string
+      description: string;
       metadata: InlineMetadata[];
       fields: InlineChildNode[];
     };
@@ -137,90 +117,69 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ onSearch , mutate , clearDa
       id: `cat-${idx}`,
       name: category.category_name,
       children:
-        category.datasets?.filter(
-          (ds) =>
-            ds.dataset_title !== "Citizens’ Portal of Medicinal Plants"
-        )
-        ?.map((ds, jdx) => {
-          // Convert object metadata to array of { key, value }
-          const originalMetadata = ds.metadata
-            ? Object.entries(ds.metadata)
-                .filter(([k]) => k) // remove undefined keys
-                .map(([key, value]) => ({
-                  key,
-                  value: value != null ? String(value) : "N/A",
-                }))
-            : [];
+        category.datasets
+          ?.filter(
+            (ds) => ds.dataset_title !== "Citizens’ Portal of Medicinal Plants"
+          )
+          .map((ds, jdx) => {
+            const originalMetadata: InlineMetadata[] = ds.metadata
+              ? Object.entries(ds.metadata)
+                  .filter(([k]) => k)
+                  .map(([key, value]) => ({
+                    key,
+                    value: value != null ? String(value) : "N/A",
+                  }))
+              : [];
 
-          return {
-            id: `ds-${idx}-${jdx}`,
-            name: ds.dataset_title,
-            description: ds.description
-              ? String(ds.description)
-              : "No description", // fallback
-            metadata: originalMetadata.length
-              ? originalMetadata
-              : [{ key: "Info", value: "No metadata" }],
-            fields: (ds.fields ?? []) as InlineChildNode[],
-          };
-        }) ?? [],
+            return {
+              id: `ds-${idx}-${jdx}`,
+              name: ds.dataset_title,
+              description: ds.description
+                ? String(ds.description)
+                : "No description",
+              metadata: originalMetadata.length
+                ? originalMetadata
+                : [{ key: "Info", value: "No metadata" }],
+              fields: (ds.fields ?? []) as InlineChildNode[],
+            };
+          }) ?? [],
     }));
   }, [data]);
-
-  console.log(nodes)
-
-
-
-
 
   return (
     <div className="flex flex-col space-y-3 w-fit p-4 rounded-xl bg-gray-50 shadow-lg">
       <TreeDropdown
-          nodes={nodes}
-          buttonLabel="Datasets"
-          isLoading={isLoading}
-          isError={isError}
-          onChange={(
-            selected: { parent: string; child: { name: string }[] }[]
-          ) => {
-            if (!selected.length) {
-              // Reset everything if nothing is selected
-              setCategories([]);
-              setDatasets([]);
-              setIndicators([]);
-              return;
-            }
+        nodes={nodes}
+        buttonLabel="Datasets"
+        isLoading={isLoading}
+        isError={isError}
+        selected={selectedNodes}
+        onChange={(selected) => {
+          setSelectedNodes(selected);
 
-            const selectedCategories = Array.from(
-              new Set(selected.map((item) => item.parent))
-            );
-            const selectedDatasets = selected.flatMap((item) =>
-              item.child.map((c) => c.name)
-            );
-
-            setCategories(selectedCategories);
-            setDatasets(selectedDatasets);
-
-            // Also reset indicators because datasets changed
+          if (!selected.length) {
+            setCategories([]);
+            setDatasets([]);
             setIndicators([]);
+            return;
+          }
 
-            console.log("TreeDropdown -> Categories:", selectedCategories);
-            console.log("TreeDropdown -> Datasets:", selectedDatasets);
-          }}
-        />
+          const selectedCategories = Array.from(
+            new Set(selected.map((item) => item.parent))
+          );
+          const selectedDatasets = selected.flatMap((item) =>
+            item.child.map((c) => c.name)
+          );
 
-      {/* <MultiSelectCombobox
-                options={indicatorList}
-                placeholder="Attributes"
-                value={indicators}
-                onChange={(val: string[]) => setIndicators(val)}
-                className="flex-1 min-w-0 w-full drop-shadow-md"
-              /> */}
+          setCategories(selectedCategories);
+          setDatasets(selectedDatasets);
+          setIndicators([]);
+        }}
+      />
 
       <div className="flex space-x-2">
         <Button onClick={handleSearch} disabled={isLoading} className="flex-1">
           {isMapDataLoading ? "Searching..." : "Search"}
-
         </Button>
         <Button
           onClick={handleResetMapData}

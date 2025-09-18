@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -41,7 +39,6 @@ const Dashboard = () => {
             </p>
           </CardContent>
         </Card></Link>
-
 
         <Link href="/contribute"><Card>
           <CardContent className="p-6">

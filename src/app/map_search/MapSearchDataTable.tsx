@@ -5,48 +5,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { Loader2 } from "lucide-react";
+import { PolygonDataItem } from "@/types/api/mapSearch.types";
+import { MapSearchDataTableProps } from "@/types/app/mapSearch.types";
 
-interface PolygonDataItem {
-  scientificName: string;
-  eventDate: string;
-  basisOfRecord?: string;
-  longitude: number;
-  latitude: number;
-  dataset: string;
-  region: string;
-}
-
-export type DataItem = {
-  decimalLatitude?: number;
-  decimalLongitude?: number;
-  taxon_name?: string;
-  common_names?: string;
-  scientific_name?: string;
-  common_name?: string;
-  eventDate?: string;
-  basisOfRecord?: string;
-};
-
-type FederatedDataTableProps = {
-  isLoading: boolean;
-  isError: boolean;
-  // data: DataItem[];
-};
-const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
+const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   isLoading,
   isError,
-  // data = [],
 }) => {
   const queryClient = useQueryClient();
   const { setSelectedCoordinates, addVisibleMarker, removeVisibleMarker } =
     useMapSearchData();
 
-
   // Fetch polygon data from cache (mutated by SearchBar)
   const { data: polygonData = [] } = useQuery<PolygonDataItem[]>({
     queryKey: ["polygonData"],
     queryFn: () => [],
-    initialData: () => queryClient.getQueryData(["polygonData"]) || [],
+    initialData: () => queryClient.getQueryData<PolygonDataItem[]>(["polygonData"]) || [],
   });
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -72,11 +46,7 @@ const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
 
   const handleCheckboxChange = (index: number) => {
     const row = polygonData[index];
-    const {
-      latitude: lat,
-      longitude: lng,
-      scientificName: scientificName,
-    } = row;
+    const { latitude: lat, longitude: lng, scientificName } = row;
 
     if (lat == null || lng == null) return;
 
@@ -85,18 +55,11 @@ const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
       newVisibleRows[index] = !prev[index];
 
       const hasOtherVisible = polygonData.some((r, i) => {
-        return (
-          i !== index &&
-          newVisibleRows[i] &&
-          r.latitude === lat &&
-          r.longitude === lng
-        );
+        return i !== index && newVisibleRows[i] && r.latitude === lat && r.longitude === lng;
       });
 
       if (prev[index]) {
-        if (!hasOtherVisible) {
-          removeVisibleMarker({ lat, lng, scientificName });
-        }
+        if (!hasOtherVisible) removeVisibleMarker({ lat, lng, scientificName });
       } else {
         addVisibleMarker({ lat, lng, scientificName });
       }
@@ -106,11 +69,9 @@ const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
   };
 
   const handleRowClick = (row: PolygonDataItem, index: number) => {
-    if (!visibleRows[index]) {
-      return;
-    }
-
+    if (!visibleRows[index]) return;
     if (row.latitude == null || row.longitude == null) return;
+
     setSelectedIndex(index);
     setSelectedCoordinates({
       scientificName: row.scientificName,
@@ -131,7 +92,7 @@ const MapSearchDataTable: React.FC<FederatedDataTableProps> = ({
     </thead>
   );
 
-if (isLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-full justify-center rounded-2xl">
         <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
@@ -189,8 +150,7 @@ if (isLoading) {
     <div className="w-full overflow-x-auto min-w-md">
       <div className="min-w-full bg-white shadow-xl rounded-xl overflow-hidden">
         <table className="min-w-full text-sm text-left text-gray-800">
-
-          <TableHeader/>
+          <TableHeader />
           <tbody className="divide-y divide-gray-200">
             {polygonData.map((row, index) => {
               const isSelected = selectedIndex === index;
@@ -200,9 +160,7 @@ if (isLoading) {
                 <tr
                   key={index}
                   className={`transition-colors duration-200 ${
-                    isSelected
-                      ? "bg-blue-100 text-blue-900"
-                      : "hover:bg-blue-50"
+                    isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-blue-50"
                   }`}
                   onClick={() => handleRowClick(row, index)}
                 >
@@ -213,18 +171,10 @@ if (isLoading) {
                       onCheckedChange={() => handleCheckboxChange(index)}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {row.scientificName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {row.eventDate || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {row.basisOfRecord || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {row.dataset.toUpperCase()}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.scientificName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.eventDate || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.basisOfRecord || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.dataset.toUpperCase()}</td>
                 </tr>
               );
             })}

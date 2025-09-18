@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import InitialDatasetRegistraion, { InitialDatasetForm } from "./InitialDatasetRegistration";
-import FinalDatasetRegistration, { FinalDatasetForm } from "./FinalDatasetRegistration";
+import InitialDatasetRegistraion from "./InitialDatasetRegistration";
+import FinalDatasetRegistration from "./FinalDatasetRegistration";
 import { useRegisterYourDataset } from "@/api/contributeApiHandler/ContributeApiHandler";
 import { toast } from "sonner";
+import { FinalDatasetForm, InitialDatasetForm, InitialDatasetResponse } from "@/types/app/contribute.types";
 
-// Type for API response of initial submission
-interface InitialDatasetResponse {
-  dataset_id: string;
-}
 
 const DatasetRegistration = () => {
   const [step, setStep] = useState<"initial" | "final">("initial");

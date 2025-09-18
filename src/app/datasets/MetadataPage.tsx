@@ -11,20 +11,14 @@ import {
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import DatasetDetailView from "./DatasetDetailView";
+import { AccordionProps } from "@/types/app/datasets.types";
 
 const Accordion = ({
   // label,
   title,
   icon,
   children,
-  defaultOpen = false,
-}: {
-  label?: string;
-  title: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) => {
+  defaultOpen  = false }: AccordionProps) => {
   const [open, setOpen] = React.useState(defaultOpen);
 
   return (

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GetMapSearchBaseApiHandler } from "./MapSearchBaseApiHandler";
 import { toast } from "sonner";
+import { MapSearchParams, PolygonDataItem } from "@/types/api/mapSearch.types";
 
 export const useGetWMSLayerByDataset = ({
   dataset,
@@ -31,26 +32,6 @@ export const useGetWMSLayerByDataset = ({
   return { data };
 };
 
-
-interface PolygonGeometry {
-  type: "Polygon";
-  coordinates: number[][][];
-}
-
-interface PolygonDetail {
-  geometry: PolygonGeometry;
-}
-
-export interface MapSearchParams {
-  category: string;
-  dataset: string[];
-  shapes: PolygonDetail[];
-  limit?: number;
-  offset?: number;
-}
-
-
-export type PolygonDataItem = Record<string, unknown>;
 
 const fetchPolygonData = async ({
   category,

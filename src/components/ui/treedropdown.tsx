@@ -31,12 +31,13 @@ export type Node = {
   children: ChildNode[];
 };
 
+export type SelectedShape = { parent: string; child: { name: string }[] }[];
+
 interface TreeDropdownProps {
   nodes: Node[];
   buttonLabel?: string;
-  onChange?: (
-    selected: { parent: string; child: { id: string; name: string }[] }[]
-  ) => void;
+  selected: SelectedShape;
+  onChange: (selected: SelectedShape) => void;
   isLoading?: boolean;
   isError?: boolean;
 }
@@ -44,41 +45,56 @@ interface TreeDropdownProps {
 const TreeDropdown: React.FC<TreeDropdownProps> = ({
   nodes,
   buttonLabel = "Select Items",
+  selected,
   onChange,
   isLoading = false,
   isError = false,
 }) => {
   const [openNodes, setOpenNodes] = useState<Record<string, boolean>>({});
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
 
   const toggleNode = (id: string) => {
     setOpenNodes((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const updateSelection = (newSelected: Record<string, boolean>) => {
-    setSelected(newSelected);
-    if (!onChange) return;
-
-    const result: { parent: string; child: { id: string; name: string }[] }[] =
-      [];
-
-    nodes.forEach((node) => {
-      const childrenSelected = node.children
-        .filter((c) => newSelected[c.id])
-        .map((c) => ({ id: c.id, name: c.name }));
-
-      if (childrenSelected.length > 0) {
-        result.push({ parent: node.name, child: childrenSelected });
-      }
-    });
-
-    onChange(result);
+  const isChildSelected = (parent: string, childId: string) => {
+    return selected.some(
+      (s) =>
+        s.parent === parent &&
+        s.child.some((c) => c.name === childId) // here using `name` as unique
+    );
   };
 
-  const toggleChild = (childId: string) => {
-    const newSelected = { ...selected };
-    newSelected[childId] = !newSelected[childId];
-    updateSelection(newSelected);
+  const toggleChild = (parent: string, child: ChildNode) => {
+    const newSelected = [...selected];
+    const parentIndex = newSelected.findIndex((s) => s.parent === parent);
+
+    if (parentIndex >= 0) {
+      const childIndex = newSelected[parentIndex].child.findIndex(
+        (c) => c.name === child.name
+      );
+      if (childIndex >= 0) {
+        // remove child
+        newSelected[parentIndex].child.splice(childIndex, 1);
+      } else {
+        // add child
+        newSelected[parentIndex].child.push({ name: child.name });
+      }
+
+      // remove parent if empty
+      if (newSelected[parentIndex].child.length === 0) {
+        newSelected.splice(parentIndex, 1);
+      }
+    } else {
+      // add new parent with child
+      newSelected.push({ parent, child: [{ name: child.name }] });
+    }
+
+    onChange(newSelected);
+  };
+
+  const clearParentSelection = (parent: string) => {
+    const newSelected = selected.filter((s) => s.parent !== parent);
+    onChange(newSelected);
   };
 
   return (
@@ -87,13 +103,12 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
         <Button variant="outline" className="w-[300px] justify-between">
           <div>
             {buttonLabel}
-            {Object.values(selected).filter(Boolean).length > 0 && (
-              <span className="ml-1 text-sm text-muted-foreground">
-                ({Object.values(selected).filter(Boolean).length})
+            {selected.length > 0 && (
+              <span className="ml-1 text-sm">
+                ({selected.flatMap((s) => s.child).length})
               </span>
             )}
           </div>
-
           <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -121,46 +136,35 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
               <div className="flex items-center justify-between cursor-pointer">
                 <div
                   className="flex items-center space-x-2"
-                  onClick={() => toggleNode(node.id)} // toggles open/close
+                  onClick={() => toggleNode(node.id)}
                 >
                   <button className="p-1">
                     {openNodes[node.id] ? (
-                      <ChevronDown size={16} className="cursor-pointer" />
+                      <ChevronDown size={16} />
                     ) : (
-                      <ChevronRight size={16} className="cursor-pointer" />
+                      <ChevronRight size={16} />
                     )}
                   </button>
                   <span className="font-medium">{node.name}</span>
 
-                  {/* Show count only if > 0 */}
-                  {node.children.filter((c) => selected[c.id]).length > 0 && (
+                  {selected.find((s) => s.parent === node.name)?.child.length ? (
                     <span className="text-xs text-muted-foreground">
-                      ({node.children.filter((c) => selected[c.id]).length})
+                      (
+                      {
+                        selected.find((s) => s.parent === node.name)?.child
+                          .length
+                      }
+                      )
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
-                {/* Trash Button */}
-                {node.children.filter((c) => selected[c.id]).length > 0 && (
+                {selected.find((s) => s.parent === node.name) && (
                   <button
                     className="text-red-500 p-1 hover:bg-red-100 rounded"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const newSelected = { ...selected };
-                      node.children.forEach((c) => delete newSelected[c.id]);
-                      setSelected(newSelected);
-
-                      if (onChange) {
-                        const result = nodes
-                          .map((n) => ({
-                            parent: n.name,
-                            child: n.children
-                              .filter((c) => newSelected[c.id])
-                              .map((c) => ({ id: c.id, name: c.name })),
-                          }))
-                          .filter((r) => r.child.length > 0);
-                        onChange(result);
-                      }
+                      clearParentSelection(node.name);
                     }}
                   >
                     <Trash size={16} />
@@ -175,12 +179,11 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                     node.children.map((child) => (
                       <div
                         key={child.id}
-                        className={`flex items-center justify-between p-2 rounded-md border transition-colors cursor-pointer
-                          ${
-                            selected[child.id]
-                              ? "bg-blue-100 hover:bg-blue-200"
-                              : "hover:bg-accent"
-                          }`}
+                        className={`flex items-center justify-between p-2 rounded-md border transition-colors cursor-pointer ${
+                          isChildSelected(node.name, child.name)
+                            ? "bg-blue-100 hover:bg-blue-200"
+                            : "hover:bg-accent"
+                        }`}
                       >
                         <label
                           htmlFor={`chk-${child.id}`}
@@ -188,8 +191,8 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                         >
                           <Checkbox
                             id={`chk-${child.id}`}
-                            checked={selected[child.id] || false}
-                            onCheckedChange={() => toggleChild(child.id)}
+                            checked={isChildSelected(node.name, child.name)}
+                            onCheckedChange={() => toggleChild(node.name, child)}
                             className="mt-1"
                           />
                           <div className="flex flex-col">
@@ -197,7 +200,10 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                               {child.name}
                             </span>
                             {child.description && (
-                              <span className="text-xs text-muted-foreground">
+                              <span
+                                className="text-xs text-muted-foreground line-clamp-2 max-w-sm whitespace-pre-wrap"
+                                title={child?.description}
+                              >
                                 {child.description}
                               </span>
                             )}
@@ -208,10 +214,7 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                           <HoverCard openDelay={100} closeDelay={100}>
                             <HoverCardTrigger asChild>
                               <button className="p-1 rounded-full hover:bg-muted">
-                                <Info
-                                  size={16}
-                                  className="text-muted-foreground"
-                                />
+                                <Info size={16} className="text-muted-foreground" />
                               </button>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-fit p-3 rounded-xl shadow-lg border bg-card">

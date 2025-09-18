@@ -22,29 +22,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useGetCategoriesList } from "@/api/contributeApiHandler/ContributeApiHandler";
-
-// Define exact type for initial dataset form
-export interface InitialDatasetForm {
-  title: string;
-  description: string;
-  citation: string;
-  doi: string;
-  language: string;
-  data_language: string;
-  license: string;
-  publication_date: Date;
-  metadata_modified_date: Date;
-  registration_date: Date;
-  is_active: boolean;
-  keywords: string;
-  dataset_type: string;
-  category_id: string;
-}
-
-interface InitialDatasetRegistrationProps {
-  onNext: (data: InitialDatasetForm) => void;
-  isSubmitting?: boolean;
-}
+import { InitialDatasetForm, InitialDatasetRegistrationProps } from "@/types/app/contribute.types";
 
 const InitialDatasetRegistration = ({
   onNext,

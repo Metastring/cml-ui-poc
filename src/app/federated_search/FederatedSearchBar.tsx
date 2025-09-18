@@ -1,36 +1,16 @@
 "use client";
-
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
 import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import { UseMutateFunction } from "@tanstack/react-query";
 import { toast } from "sonner";
 import TreeDropdown from "@/components/ui/treedropdown";
+import { FederatedSearchBarProps, Option } from "@/types/app/federatedSearch.types";
 
 
-interface Option {
-  value: string;
-  label: string;
-}
-
-type FederatedSearchVariables = {
-  search_text: string;
-  category: string[];
-  dataset: string[];
-  fields: string[];
-};
-
-type FederatedSearchBarProps = {
-  mutate: UseMutateFunction<
-    unknown,
-    unknown,
-    FederatedSearchVariables,
-    unknown
-  >;
-};
+export type SelectedShape = { parent: string; child: { name: string }[] }[];
 
 const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +25,8 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
     setDatasets,
     setIndicators,
   } = useFederatedSearchStore();
+
+    const [selectedNodes, setSelectedNodes] = useState<SelectedShape>([]);
 
   // Build indicator list based on selected category + dataset
   const indicatorList: Option[] = useMemo(() => {
@@ -153,37 +135,32 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
       {/* Filters */}
       <div className="flex flex-wrap justify-center gap-2 w-full">
         <TreeDropdown
-          nodes={nodes}
-          buttonLabel="Datasets"
-          isLoading={isLoading}
-          isError={!!error}
-          onChange={(
-            selected: { parent: string; child: { name: string }[] }[]
-          ) => {
-            if (!selected.length) {
-              // Reset everything if nothing is selected
-              setCategories([]);
-              setDatasets([]);
-              setIndicators([]);
-              return;
-            }
+        nodes={nodes}
+        buttonLabel="Datasets"
+        isLoading={isLoading}
+        isError={!!error}
+        selected={selectedNodes}
+        onChange={(selected) => {
+          setSelectedNodes(selected);
 
-            const selectedCategories = Array.from(
-              new Set(selected.map((item) => item.parent))
-            );
-            const selectedDatasets = selected.flatMap((item) =>
-              item.child.map((c) => c.name)
-            );
-
-            setCategories(selectedCategories);
-            setDatasets(selectedDatasets);
-
-            // Also reset indicators because datasets changed
+          if (!selected.length) {
+            setCategories([]);
+            setDatasets([]);
             setIndicators([]);
+            return;
+          }
 
-            console.log("TreeDropdown -> Categories:", selectedCategories);
-            console.log("TreeDropdown -> Datasets:", selectedDatasets);
-          }}
+          const selectedCategories = Array.from(
+            new Set(selected.map((item) => item.parent))
+          );
+          const selectedDatasets = selected.flatMap((item) =>
+            item.child.map((c) => c.name)
+          );
+
+          setCategories(selectedCategories);
+          setDatasets(selectedDatasets);
+          setIndicators([]);
+        }}
         />
 
         <MultiSelectCombobox

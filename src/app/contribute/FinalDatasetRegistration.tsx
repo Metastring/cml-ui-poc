@@ -6,39 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { Contact, FinalDatasetRegistrationProps } from "@/types/app/contribute.types";
 
-export interface KeyValue {
-  key: string;
-  value: string;
-}
-
-export interface Contact {
-  name: string;
-  role: string;
-  email: string;
-  organization: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-}
-
-export interface FinalDatasetForm {
-  dataset_id: string;
-  scopes: Record<string, string>[];
-  publishers: Record<string, string>[];
-  mappings: Record<string, string>[];
-  metrics: Record<string, string>[];
-  statistics: Record<string, string>[];
-  contacts: Contact[];
-}
-
-interface FinalDatasetRegistrationProps {
-  datasetId: string | number;
-  onSubmit: (data: FinalDatasetForm) => void;
-  isSubmitting?: boolean;
-  onBackToInitial?: () => void;
-}
 
 const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
   datasetId,

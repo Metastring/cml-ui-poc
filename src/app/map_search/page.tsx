@@ -140,12 +140,6 @@ const Page = () => {
            <MapSearchDataTable
             isLoading={isMapDataLoading}
             isError={isError}
-            // data={Object.values(
-            //   data?.results?.[activeKey ?? 0]?.field_results ?? {}
-            // ).flatMap(
-            //   (field: { results?: Record<string, unknown>[] | undefined }) =>
-            //     field.results ?? []
-            // )}
           />
         </div>
       ) : (

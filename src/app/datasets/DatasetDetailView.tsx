@@ -1,17 +1,13 @@
 "use client";
 
 import { useGetDatasetDetails } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import { DatasetDetailViewProps } from "@/types/app/datasets.types";
 import React from "react";
-
-
 
 const DatasetDetailView = ({
   categoryName,
   datasetTitle,
-}: {
-  categoryName: string;
-  datasetTitle: string;
-}) => {
+}:DatasetDetailViewProps) => {
   const {
     data: details,
     isLoading,

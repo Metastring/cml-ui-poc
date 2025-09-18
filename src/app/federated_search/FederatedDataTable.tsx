@@ -5,34 +5,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
+import { FederatedDataTableProps } from "@/types/app/federatedSearch.types";
+import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
 
-export type DataItem = {
-  decimalLatitude?: number;
-  decimalLongitude?: number;
-  taxon_name?: string;
-  common_names?: string;
-  scientific_name?: string;
-  common_name?: string;
-    eventDate?:string;
-        basisOfRecord?:string;
-};
-
-type FederatedDataTableProps = {
-  isLoading: boolean;
-  isError: boolean;
-  data: DataItem[];
-  onSearch: ()=>void
-};
+// Type for small table components props
+interface TableStateProps {
+  TableHeader: React.FC;
+}
 
 const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isLoading,
   isError,
   data = [],
-  onSearch
+  onSearch,
 }) => {
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
-  const { addVisibleMarker, removeMarkerByName } =
-    useFederatedSearchMapData();
+  const { addVisibleMarker, removeMarkerByName } = useFederatedSearchMapData();
 
   const { mutate: fetchMapData, data: mapData = [] } =
     useGetMapDataBasedOnFederatedSearchResult();
@@ -44,54 +32,41 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
 
   // Add markers when mapData arrives
   useEffect(() => {
-    if (!mapData?.length) return;
+    if (!mapData.length) return;
 
-    mapData.forEach(
-      (item: {
-        latitude: number;
-        longitude: number;
-        scientificName: string;
-        dataset:string;
-        eventDate:string;
-        basisOfRecord:string;
-      }) => {
-        if (item.latitude && item.longitude) {
-          addVisibleMarker({
-            scientificName: item.scientificName,
-            dataset:item.dataset,
-            eventDate:item.eventDate,
-            basisOfRecord:item.basisOfRecord,
-            lat: item.latitude,
-            lng: item.longitude,
-          });
-        }
+    mapData.forEach((item: MapDataItem) => {
+      if (item.latitude && item.longitude) {
+        addVisibleMarker({
+          lat: item.latitude,
+          lng: item.longitude,
+          scientificName: item.scientificName,
+          dataset: item.dataset,
+          eventDate: item.eventDate,
+          basisOfRecord: item.basisOfRecord,
+        });
       }
-    );
+    });
   }, [mapData, addVisibleMarker]);
 
   // Handle row toggle
-const handleToggleSelection = (row: DataItem, index: number) => {
-  setCheckedRows((prev) => {
-    const newState = [...prev];
-    const newChecked = !newState[index];
-    newState[index] = newChecked;
+  const handleToggleSelection = (row: DataItem, index: number) => {
+    setCheckedRows((prev) => {
+      const newState = [...prev];
+      const newChecked = !newState[index];
+      newState[index] = newChecked;
 
-    const name = row.scientific_name || row.taxon_name;
-    if (!name) return newState;
+      const name = row.scientific_name || row.taxon_name;
+      if (!name) return newState;
 
-    if (newChecked) {
-      fetchMapData(name);
-    } else {
-      // ✅ remove all markers for this species
-      removeMarkerByName(name);
-    }
+      if (newChecked) fetchMapData(name);
+      else removeMarkerByName(name);
 
-    return newState;
-  });
-  onSearch?.();
-};
+      return newState;
+    });
+    onSearch?.();
+  };
 
-  const TableHeader = () => (
+  const TableHeader: React.FC = () => (
     <thead className="bg-gray-200 font-semibold tracking-wider border-b border-gray-300">
       <tr>
         <th className="px-6 py-4">View Distribution</th>
@@ -101,59 +76,9 @@ const handleToggleSelection = (row: DataItem, index: number) => {
     </thead>
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
-          <TableHeader />
-          <tbody>
-            <tr>
-              <td colSpan={3} className="text-center text-gray-500 italic">
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 className="animate-spin mr-2" />
-                  <span>Loading...</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
-          <TableHeader />
-          <tbody>
-            <tr>
-              <td colSpan={3} className="text-center text-red-500 italic py-6">
-                Oops! Something went wrong while loading data.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
-          <TableHeader />
-          <tbody>
-            <tr>
-              <td colSpan={3} className="text-center text-gray-500 italic py-6">
-                No data available
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingTable TableHeader={TableHeader} />;
+  if (isError) return <ErrorTable TableHeader={TableHeader} />;
+  if (data.length === 0) return <EmptyTable TableHeader={TableHeader} />;
 
   return (
     <div className="overflow-x-auto w-full">
@@ -163,7 +88,6 @@ const handleToggleSelection = (row: DataItem, index: number) => {
           <tbody className="divide-y divide-gray-200">
             {data.map((row, index) => {
               const name = row.scientific_name || row.taxon_name;
-
               return (
                 <tr
                   key={index}
@@ -174,16 +98,11 @@ const handleToggleSelection = (row: DataItem, index: number) => {
                   }`}
                   onClick={() => handleToggleSelection(row, index)}
                 >
-                  <td
-                    className="px-6 py-4"
-                    title="view/Hide on Map"
-                    // onClick={(e) => e.stopPropagation()}
-                  >
+                  <td className="px-6 py-4" title="view/Hide on Map">
                     <Checkbox
                       checked={!!checkedRows[index]}
-                      onCheckedChange={() =>
-                        handleToggleSelection(row, index)
-                      }
+                      onCheckedChange={() => handleToggleSelection(row, index)}
+                       onClick={(e) => e.stopPropagation()} 
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{name}</td>
@@ -201,3 +120,52 @@ const handleToggleSelection = (row: DataItem, index: number) => {
 };
 
 export default FederatedDataTable;
+
+// Small table components with proper types
+const LoadingTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+  <div className="flex h-full justify-center rounded-2xl">
+    <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+      <TableHeader />
+      <tbody>
+        <tr>
+          <td colSpan={3} className="text-center text-gray-500 italic">
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="animate-spin mr-2" />
+              <span>Loading...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
+
+const ErrorTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+  <div className="flex h-full justify-center rounded-2xl">
+    <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+      <TableHeader />
+      <tbody>
+        <tr>
+          <td colSpan={3} className="text-center text-red-500 italic py-6">
+            Oops! Something went wrong while loading data.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
+
+const EmptyTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+  <div className="flex h-full justify-center rounded-2xl">
+    <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+      <TableHeader />
+      <tbody>
+        <tr>
+          <td colSpan={3} className="text-center text-gray-500 italic py-6">
+            No data available
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
