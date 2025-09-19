@@ -117,7 +117,7 @@ NEXT_PUBLIC_MAP_BASE_URL=your_map_base_url_here
 - Provide ontology mapping for uniform representation.
 
 
-- Mark datasets as map-data or non-map-data.
+<!-- - Mark datasets as map-data or non-map-data. -->
 
 
 
@@ -184,7 +184,7 @@ A researcher wants to contribute new datasets to the platform.
 - Add multiple contacts if needed.
 - Click **Submit Dataset** to register the dataset to the platform.
 
-> These two steps ensure the dataset is correctly registered, mapped to ontology, and ready for federated search and visualization.
+> These two steps ensure the dataset is correctly registered.
 
 ---
 ### Use Case 4: Dataset Exploration by Researchers
