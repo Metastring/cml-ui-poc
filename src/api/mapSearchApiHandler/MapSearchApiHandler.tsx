@@ -42,7 +42,7 @@ const fetchPolygonData = async ({
 }: MapSearchParams): Promise<PolygonDataItem[]> => {
   console.log(dataset);
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v1/graphql_data_method`,
+    `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v1/spatial_search`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

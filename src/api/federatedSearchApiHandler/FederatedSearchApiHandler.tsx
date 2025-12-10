@@ -107,7 +107,7 @@ export const useGetMapDataBasedOnFederatedSearchResult = () => {
   return useMutation<MapDataItem[], Error, string>({
     mutationFn: async (scientificName: string) => {
       const res = await fetch(
-        process.env.NEXT_PUBLIC_MAP_BASE_URL + "/v1/graphql_data_method",
+        process.env.NEXT_PUBLIC_MAP_BASE_URL + "/v1/spatial_search",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
