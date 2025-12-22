@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import "@metastringfoundation/map-list/styles.css"
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import TanstackQueryProvider from "@/components/providers/TanstackQueryProvider";
