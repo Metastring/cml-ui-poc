@@ -13,7 +13,7 @@ import {
 } from "@/types/app/contribute.types";
 
 const DatasetRegistration = () => {
-  const [step, setStep] = useState<"initial" | "final">("final");
+  const [step, setStep] = useState<"initial" | "final">("initial");
   const [datasetId, setDatasetId] = useState<string>("");
 
   const { initialDatasetMutation, finalDatasetMutation } =

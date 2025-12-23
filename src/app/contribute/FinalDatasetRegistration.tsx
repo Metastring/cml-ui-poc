@@ -46,15 +46,9 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
 
   /* ================= HANDLERS ================= */
 
-  const updateRow = (
-    index: number,
-    key: keyof MappingRow,
-    value: string
-  ) => {
+  const updateRow = (index: number, key: keyof MappingRow, value: string) => {
     setRows((prev) =>
-      prev.map((row, i) =>
-        i === index ? { ...row, [key]: value } : row
-      )
+      prev.map((row, i) => (i === index ? { ...row, [key]: value } : row))
     );
   };
 
@@ -75,7 +69,8 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
         .map((r) => ({
           field_name: r.field_name.trim(),
           ontology_mapping:
-            r.ontology_mapping === "other" ? " " : r.ontology_mapping,
+            r.ontology_mapping === "other" ? "" : r.ontology_mapping,
+          description: r.description.trim(),
         })),
     };
 
@@ -87,17 +82,35 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
   return (
     <div className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto">
       <div className="w-[50vw] flex flex-col gap-6">
+        <div className="space-y-2 text-sm text-gray-600">
+          <p className="flex gap-1">
+            <span className="font-semibold text-gray-800">
+              Dataset Parameter Name:
+            </span>
+            <span>
+              Specify the dataset parameter you want to map to an ontology.
+            </span>
+          </p>
+
+          <p className="flex gap-1">
+            <span className="font-semibold text-gray-800">
+              Ontology Parameter:
+            </span>
+            <span>
+              Select an ontology term that defines dataset parameter.
+            </span>
+          </p>
+        </div>
+
         {rows.map((row, index) => (
           <div key={index} className="w-full flex flex-col gap-2">
             {/* ROW 1: FIELD NAME + ONTOLOGY */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* LEFT: USER INPUT FIELD NAME */}
               <Input
-                placeholder="Field name"
+                placeholder="Dataset Parameter Name"
                 value={row.field_name}
-                onChange={(e) =>
-                  updateRow(index, "field_name", e.target.value)
-                }
+                onChange={(e) => updateRow(index, "field_name", e.target.value)}
               />
 
               {/* RIGHT: ONTOLOGY DROPDOWN */}
@@ -125,9 +138,7 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
             <Input
               placeholder="Description"
               value={row.description}
-              onChange={(e) =>
-                updateRow(index, "description", e.target.value)
-              }
+              onChange={(e) => updateRow(index, "description", e.target.value)}
             />
           </div>
         ))}

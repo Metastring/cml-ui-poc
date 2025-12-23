@@ -436,7 +436,7 @@ const InitialDatasetRegistration = ({
                 placeholder="Record Count"
                 // value={recordCount || ""}
                 // onChange={(e) => setRecordCount(Number(e.target.value))}
-                className=""
+                className="bg-white"
               />
 
               {formData.statistics.length > 1 && (
