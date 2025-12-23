@@ -164,7 +164,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
         />
 
         <MultiSelectCombobox
-          options={indicatorList}
+          options={indicatorList ?? []}
           placeholder="Fields"
           value={indicators}
           onChange={(val: string[]) => setIndicators(val)}

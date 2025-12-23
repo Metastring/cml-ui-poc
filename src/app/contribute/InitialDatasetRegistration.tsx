@@ -1,18 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectTrigger,
@@ -22,12 +13,45 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useGetCategoriesList } from "@/api/contributeApiHandler/ContributeApiHandler";
-import { InitialDatasetForm, InitialDatasetRegistrationProps } from "@/types/app/contribute.types";
+
+import {
+  Category,
+  Contact,
+  InitialDatasetForm,
+  InitialDatasetRegistrationProps,
+} from "@/types/app/contribute.types";
+
+/* ================= COMPONENT ================= */
 
 const InitialDatasetRegistration = ({
   onNext,
   isSubmitting = false,
 }: InitialDatasetRegistrationProps) => {
+  /* ---------- Categories ---------- */
+  const { data: categoriesList = [] } = useGetCategoriesList() as {
+    data: Category[];
+  };
+
+  const isLoading = false;
+
+  /* ---------- Publisher ---------- */
+  const [publisherName, setPublisherName] = useState("");
+
+  /* ---------- Contacts ---------- */
+  const [contacts, setContacts] = useState<Contact[]>([
+    {
+      name: "",
+      role: "",
+      email: "",
+      organization: "",
+      address: "",
+      city: "",
+      state: "",
+      country: "",
+    },
+  ]);
+
+  /* ---------- Main form ---------- */
   const [formData, setFormData] = useState<InitialDatasetForm>({
     title: "",
     description: "",
@@ -43,177 +67,416 @@ const InitialDatasetRegistration = ({
     keywords: "",
     dataset_type: "",
     category_id: "",
+
+    scopes: [
+      {
+        temporal_start_date: new Date(),
+        temporal_end_date: new Date(),
+        geographic_scope: "",
+        taxonomic_scope: "",
+        taxonomic_authority: "",
+      },
+    ],
+
+    publishers: [],
+    contacts: [],
+    sources: [{ source_name: "", base_url: "", description: "" }],
+    statistics: [
+      { stat_name: "", stat_value: "", measurement_date: new Date() },
+    ],
   });
 
-  const { data: categoriesList, isLoading: isCategoriesLoading } =
-    useGetCategoriesList();
+  /* ================= HELPERS ================= */
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const updateArrayItem = <T, K extends keyof T>(
+    arr: T[],
+    index: number,
+    key: K,
+    value: T[K]
+  ): T[] => {
+    const copy = [...arr];
+    copy[index] = { ...copy[index], [key]: value };
+    return copy;
   };
 
-  const handleDateChange = (
-    name: keyof InitialDatasetForm,
-    date: Date | undefined
-  ) => {
-    if (date) setFormData((prev) => ({ ...prev, [name]: date }));
+  const addIfLastFilled = <T extends object>(
+    arr: T[],
+    emptyItem: T,
+    label: string
+  ): T[] | null => {
+    const last = arr[arr.length - 1];
+    const filled = Object.values(last).some((v) =>
+      v instanceof Date ? true : String(v).trim()
+    );
+
+    if (!filled) {
+      toast.error(`Please fill the previous ${label} first.`);
+      return null;
+    }
+
+    return [...arr, emptyItem];
   };
+
+  /* ================= FIELD MAPPING ================= */
+
+  const fieldMapping: Record<string, keyof InitialDatasetForm> = {
+    "Dataset Title": "title",
+    "Dataset Type": "dataset_type",
+    Description: "description",
+    Citation: "citation",
+    DOI: "doi",
+    Language: "language",
+    "Data Language": "data_language",
+    License: "license",
+    Keywords: "keywords",
+  };
+
+  /* ================= SUBMIT ================= */
+
+  const selectedCategory = categoriesList.find(
+    (c) => String(c.category_id) === formData.category_id
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
-    const emptyFields = Object.entries(formData).filter(([, value]) => {
-      if (value instanceof Date || typeof value === "boolean") return false; // dates & booleans are always set
-      return value === "" || value === null;
-    });
-
-    if (emptyFields.length > 0) {
-      toast.error(`Please fill all required fields.`);
+    if (!formData.category_id) {
+      toast.error("Category is required");
       return;
     }
 
-    // Format dates before sending
-    const payload: InitialDatasetForm = {
-      ...formData,
-      publication_date: new Date(
-        format(formData.publication_date, "yyyy-MM-dd")
-      ),
-      metadata_modified_date: new Date(
-        format(formData.metadata_modified_date, "yyyy-MM-dd")
-      ),
-      registration_date: new Date(
-        format(formData.registration_date, "yyyy-MM-dd")
-      ),
+    if (!publisherName.trim()) {
+      toast.error("Publisher name is required");
+      return;
+    }
+
+    const payload = {
+      category: {
+        category_id: String(formData.category_id),
+        category_name: selectedCategory?.category_name ?? "",
+      },
+      title: formData.title,
+      description: formData.description,
+      citation: formData.citation,
+      doi: formData.doi,
+      language: formData.language,
+      data_language: formData.data_language,
+      license: formData.license,
+      dataset_type: formData.dataset_type,
+      is_active: true,
+      keywords: formData.keywords,
+      publishers: [
+        {
+          publisher_name: publisherName,
+          record_count: "10",
+        },
+      ],
+      contacts,
+      sources: [],
+      statistics: formData.statistics.map((stat) => ({
+        stat_name: stat.stat_name,
+        stat_value: stat.stat_value,
+      })),
     };
 
     onNext(payload);
   };
 
+  /* ================= RENDER ================= */
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto "
+      className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto"
     >
-      <div className="flex flex-wrap gap-x-4 gap-y-3">
-        {[
-          { id: "title", label: "Title *", value: formData.title },
-          {
-            id: "description",
-            label: "Description *",
-            value: formData.description,
-          },
-          { id: "citation", label: "Citation *", value: formData.citation },
-          {
-            id: "doi",
-            label: "Digital Object Identifier *",
-            value: formData.doi,
-          },
-          { id: "language", label: "Language *", value: formData.language },
-          {
-            id: "data_language",
-            label: "Data Language *",
-            value: formData.data_language,
-          },
-          { id: "license", label: "License *", value: formData.license },
-          { id: "keywords", label: "Keywords *", value: formData.keywords },
-          {
-            id: "dataset_type",
-            label: "Dataset Type *",
-            value: formData.dataset_type,
-          },
-        ].map(({ id, label, value }) => (
-          <div key={id} className="w-full sm:w-[48%] flex flex-col">
-            <Label className="text-sm font-medium text-gray-700 mb-1">
-              {label.replace("*", "")} <span className="text-red-500">*</span>
-            </Label>
-            <Input id={id} name={id} value={value} onChange={handleChange} />
-          </div>
-        ))}
-
-        {/* Category Select */}
-        <div className="w-full sm:w-[48%] flex flex-col">
-          <Label
-            htmlFor="category_id"
-            className="text-sm font-medium text-gray-700 mb-1"
-          >
-            Category <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.category_id}
-            onValueChange={(val) =>
-              setFormData((prev) => ({ ...prev, category_id: val }))
-            }
-            disabled={isCategoriesLoading}
-          >
-            <SelectTrigger id="category_id" className="w-full">
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent className="w-full">
-              {categoriesList?.map(
-                (cat: {
-                  category_id: React.Key | null | undefined;
-                  category_name: string;
-                }) => (
+      <div className="flex flex-wrap gap-x-4 gap-y-4">
+        <div className="flex flex-wrap gap-4 w-full">
+          {/* CATEGORY */}
+          <div className="w-full sm:w-[48%]">
+            <Label className="pb-1">Category</Label>
+            <Select
+              value={formData.category_id}
+              onValueChange={(v) =>
+                setFormData({ ...formData, category_id: v })
+              }
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoriesList.map((c) => (
                   <SelectItem
-                    key={cat.category_id}
-                    value={String(cat.category_id)}
+                    key={c.category_id}
+                    value={String(c.category_id)}
+                    className="pb-1"
                   >
-                    {cat.category_name}
+                    {c.category_name}
                   </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* OTHER BASIC FIELDS */}
+          {Object.entries(fieldMapping).map(([label, key]) => (
+            <div key={key} className="w-full sm:w-[48%]">
+              <Label className="pb-1">{label}</Label>
+              <Input
+                value={formData[key] as string}
+                onChange={(e) =>
+                  setFormData({ ...formData, [key]: e.target.value })
+                }
+              />
+            </div>
+          ))}
         </div>
 
-        {/* Date Pickers */}
-        {[
-          {
-            id: "publication_date",
-            label: "Publication Date",
-            value: formData.publication_date,
-          },
-          {
-            id: "metadata_modified_date",
-            label: "Metadata Modified Date",
-            value: formData.metadata_modified_date,
-          },
-          // {
-          //   id: "registration_date",
-          //   label: "Registration Date",
-          //   value: formData.registration_date,
-          // },
-        ].map(({ id, label, value }) => (
-          <div key={id} className="w-full sm:w-[48%] flex flex-col">
-            <Label className="text-sm font-medium text-gray-700 mb-1">
-              {label} <span className="text-red-500">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
+        {/* PUBLISHER + CONTACTS */}
+        <div className="w-full ">
+          <Label className="font-semibold pb-1">Publisher</Label>
+          <Input
+            placeholder="Publisher Name"
+            value={publisherName}
+            onChange={(e) => setPublisherName(e.target.value)}
+            className="mb-2"
+          />
+
+          <Label className="pb-1">Publisher Contact</Label>
+          {contacts.map((c, i) => (
+            <div
+              key={i}
+              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2"
+            >
+              {(Object.keys(c) as (keyof Contact)[]).map((field) => (
+                <Input
+                  className="bg-white"
+                  key={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={c[field]}
+                  onChange={(e) =>
+                    setContacts(
+                      updateArrayItem(contacts, i, field, e.target.value)
+                    )
+                  }
+                />
+              ))}
+
+              {contacts.length > 1 && (
                 <Button
                   type="button"
-                  variant="outline"
-                  className={cn("justify-start text-left font-normal")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {value ? format(value, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={value}
-                  onSelect={(date) =>
-                    handleDateChange(id as keyof InitialDatasetForm, date)
+                  variant="destructive"
+                  onClick={() =>
+                    setContacts(contacts.filter((_, idx) => idx !== i))
                   }
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        ))}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const next = addIfLastFilled(
+                contacts,
+                {
+                  name: "",
+                  role: "",
+                  email: "",
+                  organization: "",
+                  address: "",
+                  city: "",
+                  state: "",
+                  country: "",
+                },
+                "contact"
+              );
+              if (next) setContacts(next);
+            }}
+          >
+            + Add More
+          </Button>
+        </div>
+
+        {/* SOURCES */}
+        <div className="w-full">
+          <Label className="font-semibold pb-1">Source</Label>
+          {formData.sources.map((s, i) => (
+            <div
+              key={i}
+              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2"
+            >
+              <Input
+                className="bg-white"
+                placeholder="Source Name"
+                value={s.source_name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sources: updateArrayItem(
+                      formData.sources,
+                      i,
+                      "source_name",
+                      e.target.value
+                    ),
+                  })
+                }
+              />
+              <Input
+                className="bg-white"
+                placeholder="Base URL"
+                value={s.base_url}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sources: updateArrayItem(
+                      formData.sources,
+                      i,
+                      "base_url",
+                      e.target.value
+                    ),
+                  })
+                }
+              />
+              <Input
+                className="bg-white"
+                placeholder="Description"
+                value={s.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sources: updateArrayItem(
+                      formData.sources,
+                      i,
+                      "description",
+                      e.target.value
+                    ),
+                  })
+                }
+              />
+              {formData.sources.length > 1 && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      sources: formData.sources.filter((_, idx) => idx !== i),
+                    })
+                  }
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const next = addIfLastFilled(
+                formData.sources,
+                { source_name: "", base_url: "", description: "" },
+                "source"
+              );
+              if (next) setFormData({ ...formData, sources: next });
+            }}
+          >
+            + Add More
+          </Button>
+        </div>
+
+        {/* STATISTICS */}
+        <div className="w-full">
+          <Label className="font-semibold pb-1">Statistic</Label>
+          {formData.statistics.map((s, i) => (
+            <div
+              key={i}
+              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2"
+            >
+              <Input
+                className="bg-white"
+                placeholder="Stat Name"
+                value={s.stat_name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    statistics: updateArrayItem(
+                      formData.statistics,
+                      i,
+                      "stat_name",
+                      e.target.value
+                    ),
+                  })
+                }
+              />
+              <Input
+                className="bg-white"
+                placeholder="Stat Value"
+                type="number"
+                min={0}
+                value={s.stat_value}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    statistics: updateArrayItem(
+                      formData.statistics,
+                      i,
+                      "stat_value",
+                      e.target.value
+                    ),
+                  })
+                }
+              />
+              <Input
+                type="number"
+                placeholder="Record Count"
+                // value={recordCount || ""}
+                // onChange={(e) => setRecordCount(Number(e.target.value))}
+                className=""
+              />
+
+              {formData.statistics.length > 1 && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      statistics: formData.statistics.filter(
+                        (_, idx) => idx !== i
+                      ),
+                    })
+                  }
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const next = addIfLastFilled(
+                formData.statistics,
+                {
+                  stat_name: "",
+                  stat_value: "",
+                  measurement_date: new Date(),
+                },
+                "statistic"
+              );
+              if (next) setFormData({ ...formData, statistics: next });
+            }}
+          >
+            + Add More
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6 flex justify-center">

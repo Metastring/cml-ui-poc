@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,25 +11,25 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 interface Option {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 interface MultiSelectComboboxProps {
-  options: Option[]
-  placeholder?: string
-  onChange: (selectedValues: string[]) => void
-  value?: string[]
-  defaultValues?: string[]
-  className?: string
+  options: Option[];
+  placeholder?: string;
+  onChange: (selectedValues: string[]) => void;
+  value?: string[];
+  defaultValues?: string[];
+  className?: string;
 }
 
 export function MultiSelectCombobox({
@@ -40,28 +40,29 @@ export function MultiSelectCombobox({
   defaultValues = [],
   className = "w-[400px]",
 }: MultiSelectComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [internalValues, setInternalValues] = React.useState<string[]>(defaultValues)
+  const [open, setOpen] = React.useState(false);
+  const [internalValues, setInternalValues] =
+    React.useState<string[]>(defaultValues);
 
   // 🔑 Prefer controlled value if passed
-  const selectedValues = value ?? internalValues
+  const selectedValues = value ?? internalValues;
 
   const toggleValue = (val: string) => {
-    let updatedValues: string[]
+    let updatedValues: string[];
 
     if (selectedValues.includes(val)) {
-      updatedValues = selectedValues.filter((v) => v !== val)
+      updatedValues = selectedValues.filter((v) => v !== val);
     } else {
-      updatedValues = [...selectedValues, val]
+      updatedValues = [...selectedValues, val];
     }
 
     if (value === undefined) {
       // uncontrolled mode → keep internal state
-      setInternalValues(updatedValues)
+      setInternalValues(updatedValues);
     }
 
-    onChange(updatedValues)
-  }
+    onChange(updatedValues);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -70,7 +71,10 @@ export function MultiSelectCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between overflow-hidden w-full max-w-full", className)}
+          className={cn(
+            "justify-between overflow-hidden w-full max-w-full",
+            className
+          )}
         >
           <span className="flex-1 min-w-0 truncate text-left">
             {selectedValues.length === 0
@@ -86,27 +90,35 @@ export function MultiSelectCombobox({
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => toggleValue(option.value)}
-                  value={option.value}
-                >
-                  {option.label}
-                  <Check
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      selectedValues.includes(option.value)
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
+              {options
+                ?.filter(
+                  (option): option is Option =>
+                    Boolean(option) &&
+                    typeof option.value === "string" &&
+                    option.value.trim() !== "" &&
+                    typeof option.label === "string"
+                )
+                .map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    onSelect={() => toggleValue(option.value)}
+                    value={option.value}
+                  >
+                    {option.label}
+                    <Check
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        selectedValues.includes(option.value)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
             </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
