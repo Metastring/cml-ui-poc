@@ -52,13 +52,13 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
   const handleSearch = () => {
     if (categories.length === 0 && (!shapes || shapes.features.length === 0)) {
       toast.error(
-        "Please select a category, datasets and draw at least one polygon."
+        "Please select a datasets and draw at least one polygon."
       );
       return;
     }
 
     if (categories.length === 0) {
-      toast.error("Please select a category.");
+      toast.error("Please select a dataset.");
       return;
     }
 

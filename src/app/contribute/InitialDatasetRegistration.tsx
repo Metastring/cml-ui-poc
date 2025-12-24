@@ -416,7 +416,7 @@ const InitialDatasetRegistration = ({
               <Input
                 className="bg-white"
                 placeholder="Stat Value"
-                type="number"
+                type="text"
                 min={0}
                 value={s.stat_value}
                 onChange={(e) =>
@@ -431,13 +431,13 @@ const InitialDatasetRegistration = ({
                   })
                 }
               />
-              <Input
+              {/* <Input
                 type="number"
                 placeholder="Record Count"
                 // value={recordCount || ""}
                 // onChange={(e) => setRecordCount(Number(e.target.value))}
                 className="bg-white"
-              />
+              /> */}
 
               {formData.statistics.length > 1 && (
                 <Button

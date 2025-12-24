@@ -98,8 +98,8 @@ const DatasetDetailView = ({
           details.publishers.map((p, i) => (
             <div key={i} className="ml-4">
               Publisher Name: {renderValue(p.publisher_name)}, Country:{" "}
-              {renderValue(p.country)}, Record Count:{" "}
-              {renderValue(p.record_count)}
+              {renderValue(p.country)}
+              {/* , Record Count:{" "}{renderValue(p.record_count)} */}
             </div>
           ))
         ) : (
@@ -107,7 +107,7 @@ const DatasetDetailView = ({
         )}
       </div>
 
-      <div>
+      {/* <div>
         <strong>Scopes:</strong>
         {details.scopes.length ? (
           details.scopes.map((s, i) => (
@@ -122,30 +122,29 @@ const DatasetDetailView = ({
         ) : (
           <div className="ml-4">N/A</div>
         )}
-      </div>
+      </div> */}
 
-      <div>
+      {/* <div>
         <strong>Fields:</strong>
         {details.fields.length ? (
           details.fields.map((f, i) => (
             <div key={i} className="ml-4">
               Field Name: {renderValue(f.field_name)},{" "}
-               {/* Ontology Mapping:{" "}{renderValue(f.ontology_mapping)}, */}
                Data Type:{" "}{renderValue(f.data_type)}
             </div>
           ))
         ) : (
           <div className="ml-4">N/A</div>
         )}
-      </div>
+      </div> */}
 
       <div>
         <strong>Statistics:</strong>
         {details.statistics.length ? (
           details.statistics.map((st, i) => (
             <div key={i} className="ml-4">
-               {renderValue(st.stat_name ?? "Stat Name")}{" : "}{renderValue(st.stat_value)}, Measurement Date:{" "}
-              {renderValue(st.measurement_date)}
+               {renderValue(st.stat_name ?? "Stat Name")}{" : "}{renderValue(st.stat_value)}
+               {/* , Measurement Date:{" "}{renderValue(st.measurement_date)} */}
             </div>
           ))
         ) : (
