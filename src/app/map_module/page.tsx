@@ -10,22 +10,16 @@ export default function MapList() {
         loadToC={true}
         showToC={true}
         managePublishing={true}
-        nakshaApiEndpoint={process.env.NEXT_PUBLIC_NAKSHA_BASE_URL}
+        nakshaApiEndpoint={process.env.NEXT_PUBLIC_NAKSHA_ENDPOINT}
         // nakshaEndpointToken={process.env.NEXT_PUBLIC_NAKSHA_TOKEN}
         geoserver={{
-          endpoint: process.env.NEXT_PUBLIC_GEOSERVER_BASE_URL ?? "",
-          store: "map",
-          workspace: "metastring",
+          endpoint: process.env.NEXT_PUBLIC_GEOSERVER_ENDPOINT!,
+          store: process.env.NEXT_PUBLIC_GEOSERVER_STORE!,
+          workspace: process.env.NEXT_PUBLIC_GEOSERVER_WORKSPACE!,
         }}
         onLayerDownload={console.log}
         canLayerShare={true}
-        markers={[
-          {
-            latitude: 23.241346,
-            longitude: 78.046875,
-            colorHex: "07BEF1",
-          },
-        ]}
+       
        
       />
     </div>
