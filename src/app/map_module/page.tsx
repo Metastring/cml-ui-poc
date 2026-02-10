@@ -5,7 +5,7 @@ import  MapListIndex  from "@metastringfoundation/map-list";
 
 export default function MapList() {
   return (
-    <div className={`h-screen w-screen relative`}>
+    <div className={`h-screen w-full relative`}>
       <MapListIndex
         loadToC={true}
         showToC={true}
