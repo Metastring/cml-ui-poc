@@ -8,8 +8,6 @@ import {
   DatabaseZap,
   LocateFixed,
   FileText,
-  Search,
-  Map,
   FileSearch,
 } from 'lucide-react';
 import { useState, ReactNode } from 'react';
