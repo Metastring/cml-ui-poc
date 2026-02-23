@@ -3,13 +3,14 @@
 import {
   Menu,
   ChevronLeft,
-  // Layers,
-  // Triangle,
   Globe,
   LayoutDashboard,
   DatabaseZap,
   LocateFixed,
   FileText,
+  Search,
+  Map,
+  FileSearch,
 } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
@@ -49,6 +50,8 @@ const Sidebar: React.FC = () => {
     if (pathname === '/map_search') return 'Map Search';
     if (pathname === '/contribute') return 'Contribute';
     if (pathname === '/datasets') return 'Datasets';
+    if (pathname === '/metadata_search') return 'Metadata Search';
+    if (pathname === '/map_module') return 'Map Module';
     return '';
   };
 
@@ -117,6 +120,24 @@ const Sidebar: React.FC = () => {
             active={currentTab === 'Datasets'}
           />
         </Link>
+
+        <Link href="/metadata_search">
+          <SidebarItem
+            icon={<FileSearch size={18} />}
+            label="Metadata Search"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Metadata Search'}
+          />
+        </Link>
+
+        {/* <Link href="/map_module">
+          <SidebarItem
+            icon={<Map size={18} />}
+            label="Map Module"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Map Module'}
+          />
+        </Link> */}
       </div>
     </div>
   );
