@@ -92,8 +92,8 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
         k === "Global Biodiversity Info Facility"
           ? "gbif"
           : k === "Kew Plant Database"
-          ? "kew"
-          : k
+          ? "kew" 
+          : k === "Citizens' Portal of Medicinal Plants" ? "cpmp" : k
       ),
       shapes: polygonShapes,
     });

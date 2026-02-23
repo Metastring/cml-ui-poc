@@ -22,12 +22,20 @@ export interface MapSearchParams {
 
 export interface PolygonDataItem {
   scientificName: string;
+  scientific_name?: string;
   eventDate: string;
   basisOfRecord?: string;
   longitude: number;
   latitude: number;
   dataset: string;
   region?: string;
+  family?: string;
+  genus?: string;
+  species?: string;
+  author?: string;
+  state?: string;
+  continent?: string;
+  countryCode?: string;
 }
 
 export interface FederatedSearchDataItem {
