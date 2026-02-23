@@ -32,7 +32,7 @@ const Page = () => {
         ? "gbif"
         : k === "Kew Plant Database"
         ? "kew"
-        : k
+        : k ==="Citizens' Portal of Medicinal Plants" ? "cpmp" : k
     ),
   });
 

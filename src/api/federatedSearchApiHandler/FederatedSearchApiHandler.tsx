@@ -101,6 +101,24 @@ export const useGetDatasetDetails = (
   });
 };
 
+export const useGetMetadataOfDatasetByQuery = (query: string) => {
+  const { data, error, isLoading, isFetching, refetch , isError }= useQuery<DatasetDetail>({
+    queryKey: ["MetadataOfDatasetByQuery",query],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_FEDERATED_BASE_URL}/v2/metadata/search?query=${query}`
+      );
+      if (!res.ok) {
+        throw new Error("Failed to fetch dataset details");
+      }
+      return res.json();
+    },
+    enabled: false,
+  });
+
+  return {data, error, isLoading, isFetching, refetch , isError};
+};
+
 
 
 export const useGetMapDataBasedOnFederatedSearchResult = () => {
