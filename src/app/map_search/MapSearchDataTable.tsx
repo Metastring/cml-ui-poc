@@ -85,6 +85,13 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
       <tr>
         <th className="px-6 py-4">View Distribution</th>
         <th className="px-6 py-4">Scientific Name</th>
+        <th className="px-6 py-4">Family</th>
+        <th className="px-6 py-4">Genus</th>
+        <th className="px-6 py-4">Species</th>
+        <th className="px-6 py-4">Author</th>
+        <th className="px-6 py-4">State</th>
+        <th className="px-6 py-4">Continent</th>
+        <th className="px-6 py-4">Region</th>
         <th className="px-6 py-4">Event Date</th>
         <th className="px-6 py-4">Basis of Record</th>
         <th className="px-6 py-4">Dataset</th>
@@ -148,7 +155,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
 
   return (
     <div className="w-full overflow-x-auto min-w-md">
-      <div className="min-w-full bg-white shadow-xl rounded-xl overflow-hidden">
+      <div className="min-w-full bg-white shadow-xl rounded-xl overflow-x-auto">
         <table className="min-w-full text-sm text-left text-gray-800">
           <TableHeader />
           <tbody className="divide-y divide-gray-200">
@@ -171,9 +178,16 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
                       onCheckedChange={() => handleCheckboxChange(index)}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{row.scientificName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.scientificName || row.scientific_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{row.eventDate || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{row.basisOfRecord || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.family || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.genus || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.species || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.author || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.state || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.continent || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{row.region || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{row.dataset.toUpperCase()}</td>
                 </tr>
               );
