@@ -11,7 +11,7 @@ import {
   FileSearch,
   Settings,
 } from 'lucide-react';
-import { useState, ReactNode } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -42,6 +42,14 @@ const Sidebar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  // Expose sidebar width for full-width content panels (e.g. dataset detail sheet)
+  React.useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      isSidebarOpen ? "13rem" : "4rem"
+    );
+  }, [isSidebarOpen]);
 
   const getCurrentTab = (): string => {
     if (pathname === '/') return 'Dashboard';
