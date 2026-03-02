@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import { Search } from "lucide-react";
 import InstructionPopover from "@/element/popover/InstructionPopover";
 import SearchInput from "./SearchInput";
 
@@ -20,26 +21,39 @@ const DatasetSearchView: React.FC<DatasetSearchViewProps> = ({
   children,
 }) => {
   return (
-    <div className="h-screen overflow-y-auto p-6 bg-white text-sm flex flex-col space-y-4">
-      <InstructionPopover title="Metadata Search">
-        <p>
-          Search across metadata to find relevant data. Enter your query and
-          click Search. Results are shown as cards with dataset title, category,
-          and description.
-        </p>
-      </InstructionPopover>
-      <div className="flex justify-center">
-        <SearchInput
-          value={searchQuery}
-          onChange={onSearchChange}
-          onSubmit={onSearchSubmit}
-          placeholder="Search for data across datasets (e.g. river, rainfall, crop yield)"
-          isLoading={isLoading}
-        />
-      </div>
-      <div className="flex-1 mt-2">
+    <div className="min-h-full bg-background">
+      <header className="border-b border-border/60 bg-gradient-to-b from-primary/5 via-transparent to-transparent">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium mb-2">
+            <Search className="size-4 text-primary" aria-hidden />
+            <span>Metadata search</span>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight sm:text-4xl">
+            Search datasets by metadata
+          </h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground text-base">
+            Find datasets by their descriptive metadata – titles, categories,
+            and textual descriptions from the catalog. Enter a term to discover
+            where relevant data lives.
+          </p>
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <SearchInput
+                value={searchQuery}
+                onChange={onSearchChange}
+                onSubmit={onSearchSubmit}
+                placeholder="Search across dataset metadata (e.g. river basin, rainfall, crop yield)"
+                isLoading={isLoading}
+              />
+            </div>
+          
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
-      </div>
+      </main>
     </div>
   );
 };

@@ -28,7 +28,7 @@ function filterCatalog(data: Category[] | undefined, query: string): Category[] 
   const q = query.trim().toLowerCase();
   if (!q) return data;
   return data
-    .map((cat) => {
+    .map((cat): Category | null => {
       const nameMatch = cat.category_name.toLowerCase().includes(q);
       const datasets = cat.datasets?.filter((ds) =>
         ds.dataset_title.toLowerCase().includes(q)
@@ -107,13 +107,6 @@ const MetadataPage = () => {
                 aria-label="Search catalog"
               />
             </div>
-            <InstructionPopover title="Catalog">
-              <p>
-                Datasets are grouped by category. Use the search to filter by
-                category or dataset name. Click &quot;View details&quot; to open
-                full metadata.
-              </p>
-            </InstructionPopover>
           </div>
         </div>
       </header>
