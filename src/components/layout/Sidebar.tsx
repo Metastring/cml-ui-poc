@@ -9,6 +9,7 @@ import {
   LocateFixed,
   FileText,
   FileSearch,
+  Settings,
 } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
@@ -26,7 +27,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isOpen, active }
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2 rounded-md transition cursor-pointer ${
-        active ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-gray-800'
+        active ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-foreground'
       } ${isOpen ? 'justify-start' : 'justify-center'}`}
       title={label}
     >
@@ -51,6 +52,7 @@ const Sidebar: React.FC = () => {
     if (pathname === '/datasets') return 'Datasets';
     if (pathname === '/metadata_search') return 'Metadata Search';
     if (pathname === '/map_module') return 'Map Module';
+    if (pathname === '/settings') return 'Settings';
     return '';
   };
 
@@ -58,15 +60,15 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className={`bg-white text-gray-800 border-r border-gray-200 shadow-md transition-all duration-300 ${
+      className={`bg-card text-foreground border-r border-border shadow-md transition-all duration-300 ${
         isSidebarOpen ? 'w-52' : 'w-16'
       } h-screen flex flex-col`}
     >
       {/* Toggle Button */}
-      <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+      <div className="p-3 border-b border-border flex justify-between items-center">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded hover:bg-gray-100"
+          className="p-2 rounded hover:bg-muted"
         >
           {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
         </button>
@@ -136,6 +138,15 @@ const Sidebar: React.FC = () => {
             label="Metadata Search"
             isOpen={isSidebarOpen}
             active={currentTab === 'Metadata Search'}
+          />
+        </Link>
+
+        <Link href="/settings">
+          <SidebarItem
+            icon={<Settings size={18} />}
+            label="Settings"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Settings'}
           />
         </Link>
 

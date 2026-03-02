@@ -6,6 +6,7 @@ import "@metastringfoundation/map-list/styles.css"
 import "@watergis/maplibre-gl-terradraw/dist/maplibre-gl-terradraw.css";
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
+import ThemeWrapper from "@/components/layout/ThemeWrapper";
 import TanstackQueryProvider from "@/components/providers/TanstackQueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -36,10 +37,10 @@ export default function RootLayout({
       >
 
         <TanstackQueryProvider>
-          <div className="flex min-h-screen w-full bg-gray-100">
+          <ThemeWrapper>
             <Sidebar />
-            <div className="flex-1 overflow-hidden">{children}</div>
-          </div>
+            <div className="flex-1 min-h-0 overflow-y-auto">{children}</div>
+          </ThemeWrapper>
         </TanstackQueryProvider>
            <Toaster position="top-center" richColors />
       </body>

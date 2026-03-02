@@ -147,7 +147,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
   }, [data]);
 
   return (
-    <div className="flex flex-col space-y-3 w-fit p-4 rounded-xl bg-gray-50 shadow-lg">
+    <div className="flex flex-col space-y-3 w-fit p-4 rounded-xl bg-muted/30 shadow-lg">
       <TreeDropdown
         nodes={nodes}
         buttonLabel="Datasets"
@@ -184,7 +184,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
         <Button
           onClick={handleResetMapData}
           disabled={isLoading}
-          className="w-fit bg-red-600 hover:bg-red-500"
+          variant="destructive"
         >
           Reset
         </Button>

@@ -68,7 +68,7 @@ const Page = () => {
               <div className="flex">
                 <button
                   onClick={() => setSidebarVisible((prev) => !prev)}
-                  className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+                  className="ml-2 p-1 hover:bg-muted rounded-full"
                 >
                   {sidebarVisible ? (
                     <PanelRightOpen size={20} />
@@ -79,7 +79,7 @@ const Page = () => {
 
                 <button
                   onClick={() => setTableVisible((prev) => !prev)}
-                  className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+                  className="ml-2 p-1 hover:bg-muted rounded-full"
                 >
                   {tableVisible ? (
                     <ChevronDown size={20} />
@@ -102,7 +102,7 @@ const Page = () => {
           <div className="flex flex-col">
             <button
               onClick={() => setSidebarVisible((prev) => !prev)}
-              className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+              className="ml-2 p-1 hover:bg-muted rounded-full"
             >
               {sidebarVisible ? (
                 <ChevronDown size={20} />
@@ -112,7 +112,7 @@ const Page = () => {
             </button>
             <button
               onClick={() => setTableVisible((prev) => !prev)}
-              className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+              className="ml-2 p-1 hover:bg-muted rounded-full"
             >
               {tableVisible ? (
                 <ChevronDown size={20} />
@@ -144,14 +144,14 @@ const Page = () => {
         </div>
       ) : (
         <div
-          className="w-full h-10 space-x-2 flex items-center justify-center cursor-pointer border rounded shadow-sm bg-gray-50 hover:bg-gray-100 transition"
+          className="w-full h-10 space-x-2 flex items-center justify-center cursor-pointer border border-border rounded shadow-sm bg-muted/30 hover:bg-muted/50 transition"
           onClick={() => setTableVisible(true)}
         >
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             Click here to expand and view the full data table with detailed
             information
           </span>
-          <ChevronUp size={20} className="text-sm text-gray-600" />
+          <ChevronUp size={20} className="text-sm text-muted-foreground" />
         </div>
       )}
     </div>

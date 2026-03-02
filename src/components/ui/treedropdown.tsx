@@ -161,7 +161,7 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
 
                 {selected.find((s) => s.parent === node.name) && (
                   <button
-                    className="text-red-500 p-1 hover:bg-red-100 rounded"
+                    className="text-destructive p-1 hover:bg-destructive/10 rounded"
                     onClick={(e) => {
                       e.stopPropagation();
                       clearParentSelection(node.name);
@@ -179,9 +179,9 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                     node.children.map((child) => (
                       <div
                         key={child.id}
-                        className={`flex items-center justify-between p-2 rounded-md border transition-colors cursor-pointer ${
+                        className={`flex items-center justify-between p-2 rounded-md border border-border transition-colors cursor-pointer ${
                           isChildSelected(node.name, child.name)
-                            ? "bg-blue-100 hover:bg-blue-200"
+                            ? "bg-primary/10 hover:bg-primary/20"
                             : "hover:bg-accent"
                         }`}
                       >

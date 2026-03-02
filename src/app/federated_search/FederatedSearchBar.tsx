@@ -131,7 +131,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
   }, [data]);
 
   return (
-    <div className="flex flex-col mx-auto items-center justify-center space-y-4 rounded-2xl max-w-3xl w-full drop-shadow-lg p-6 bg-gray-50">
+    <div className="flex flex-col mx-auto items-center justify-center space-y-4 rounded-2xl max-w-3xl w-full drop-shadow-lg p-6 bg-muted/30">
       {/* Filters */}
       <div className="flex flex-wrap justify-center gap-2 w-full">
         <TreeDropdown
@@ -178,7 +178,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
           ref={inputRef}
           type="text"
           placeholder="What's in your mind..."
-          className="w-full sm:w-auto flex-1 p-2 bg-white drop-shadow-md"
+          className="w-full sm:w-auto flex-1 p-2 bg-card drop-shadow-md"
         />
         <Button onClick={handleSearch} className="w-full sm:w-auto">
           Search

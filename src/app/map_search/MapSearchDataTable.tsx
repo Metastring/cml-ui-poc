@@ -81,20 +81,20 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   };
 
   const TableHeader = () => (
-    <thead className="bg-gray-200 font-semibold tracking-wider border-b border-gray-300">
+    <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
-        <th className="px-6 py-4">View Distribution</th>
-        <th className="px-6 py-4">Scientific Name</th>
-        <th className="px-6 py-4">Family</th>
-        <th className="px-6 py-4">Genus</th>
-        <th className="px-6 py-4">Species</th>
-        <th className="px-6 py-4">Author</th>
-        <th className="px-6 py-4">State</th>
-        <th className="px-6 py-4">Continent</th>
-        <th className="px-6 py-4">Region</th>
-        <th className="px-6 py-4">Event Date</th>
-        <th className="px-6 py-4">Basis of Record</th>
-        <th className="px-6 py-4">Dataset</th>
+        <th className="px-6 py-4 text-foreground">View Distribution</th>
+        <th className="px-6 py-4 text-foreground">Scientific Name</th>
+        <th className="px-6 py-4 text-foreground">Family</th>
+        <th className="px-6 py-4 text-foreground">Genus</th>
+        <th className="px-6 py-4 text-foreground">Species</th>
+        <th className="px-6 py-4 text-foreground">Author</th>
+        <th className="px-6 py-4 text-foreground">State</th>
+        <th className="px-6 py-4 text-foreground">Continent</th>
+        <th className="px-6 py-4 text-foreground">Region</th>
+        <th className="px-6 py-4 text-foreground">Event Date</th>
+        <th className="px-6 py-4 text-foreground">Basis of Record</th>
+        <th className="px-6 py-4 text-foreground">Dataset</th>
       </tr>
     </thead>
   );
@@ -102,11 +102,11 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   if (isLoading) {
     return (
       <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+        <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
           <TableHeader />
           <tbody>
             <tr>
-              <td colSpan={5} className="text-center text-gray-500 italic">
+              <td colSpan={5} className="text-center text-muted-foreground italic">
                 <div className="flex items-center justify-center py-6">
                   <Loader2 className="animate-spin mr-2" />
                   <span>Loading...</span>
@@ -122,11 +122,11 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   if (isError) {
     return (
       <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+        <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
           <TableHeader />
           <tbody>
             <tr>
-              <td colSpan={5} className="text-center text-red-500 italic py-6">
+              <td colSpan={5} className="text-center text-destructive italic py-6">
                 Oops! Something went wrong while loading data.
               </td>
             </tr>
@@ -139,11 +139,11 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   if (polygonData.length === 0) {
     return (
       <div className="flex h-full justify-center rounded-2xl">
-        <table className="min-w-full text-sm text-left text-gray-800 border rounded-2xl overflow-hidden">
+        <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
           <TableHeader />
           <tbody>
             <tr>
-              <td colSpan={5} className="text-center text-gray-500 italic py-6">
+              <td colSpan={5} className="text-center text-muted-foreground italic py-6">
                 No data available
               </td>
             </tr>
@@ -155,10 +155,10 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
 
   return (
     <div className="w-full overflow-x-auto min-w-md">
-      <div className="min-w-full bg-white shadow-xl rounded-xl overflow-x-auto">
-        <table className="min-w-full text-sm text-left text-gray-800">
+      <div className="min-w-full bg-card shadow-xl rounded-xl overflow-x-auto">
+        <table className="min-w-full text-sm text-left text-foreground">
           <TableHeader />
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-border">
             {polygonData.map((row, index) => {
               const isSelected = selectedIndex === index;
               const isVisible = visibleRows[index];
@@ -167,7 +167,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
                 <tr
                   key={index}
                   className={`transition-colors duration-200 ${
-                    isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-blue-50"
+                    isSelected ? "bg-primary/10 text-foreground" : "hover:bg-muted/50"
                   }`}
                   onClick={() => handleRowClick(row, index)}
                 >

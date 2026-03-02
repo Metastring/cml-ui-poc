@@ -85,13 +85,13 @@ const Page = () => {
         </div>
 
         {/* Tabs Above Table */}
-        <div className="border-b  flex space-x-2 bg-gray-50">
+        <div className="border-b border-border flex space-x-2 bg-muted/30">
           {resultKeys.map((key) => (
             <button
               key={key}
               className={`px-4 py-2 cursor-pointer ${
                 activeKey === key
-                  ? "border-b-2 border-blue-600 font-bold text-blue-700"
+                  ? "border-b-2 border-primary font-bold text-primary"
                   : ""
               }`}
               onClick={() => setActiveKey(key)}
