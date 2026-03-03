@@ -84,7 +84,7 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
       <div className="flex w-full flex-col gap-6">
         <div className="mb-1 space-y-1">
           <h2 className="text-base font-semibold text-foreground">
-            Step 2 — Ontology mapping (optional)
+            Step 2 — Ontology mapping
           </h2>
           <p className="text-xs text-muted-foreground">
             Connect your dataset fields to shared ontology terms so they&apos;re

@@ -9,6 +9,7 @@ import {
   LocateFixed,
   FileText,
   FileSearch,
+  Network,
   Settings,
 } from 'lucide-react';
 import React, { useState, ReactNode } from 'react';
@@ -57,6 +58,7 @@ const Sidebar: React.FC = () => {
     if (pathname === '/map_search') return 'Map Search';
     if (pathname === '/contribute') return 'Contribute';
     if (pathname === '/datasets') return 'Datasets';
+    if (pathname === '/ontology') return 'Ontology';
     if (pathname === '/metadata_search') return 'Metadata Search';
     if (pathname === '/map_module') return 'Map Module';
     if (pathname === '/settings') return 'Settings';
@@ -127,6 +129,15 @@ const Sidebar: React.FC = () => {
             label="Datasets"
             isOpen={isSidebarOpen}
             active={currentTab === 'Datasets'}
+          />
+        </Link>
+
+        <Link href="/ontology">
+          <SidebarItem
+            icon={<Network size={18} />}
+            label="Ontology"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Ontology'}
           />
         </Link>
 

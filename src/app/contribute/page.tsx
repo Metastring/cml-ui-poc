@@ -12,7 +12,7 @@ const Page = () => {
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-base">
           Contribute any biodiversity, ecological, health, climate, or related dataset to the CML catalog.
-          You can register datasets from any category or data source, then optionally map their fields to shared
+          You can register datasets from any category or data source, then map their fields to shared
           ontology terms so they are easier to discover and reuse.
         </p>
       </header>
