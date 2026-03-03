@@ -56,7 +56,6 @@ const Sidebar: React.FC = () => {
     if (pathname === '/federated_search') return 'Federated Search';
     if (pathname === '/map_search') return 'Map Search';
     if (pathname === '/contribute') return 'Contribute';
-    if (pathname === '/contribute-v2') return 'Contribute v2';
     if (pathname === '/datasets') return 'Datasets';
     if (pathname === '/metadata_search') return 'Metadata Search';
     if (pathname === '/map_module') return 'Map Module';
@@ -119,15 +118,6 @@ const Sidebar: React.FC = () => {
             label="Contribute"
             isOpen={isSidebarOpen}
             active={currentTab === 'Contribute'}
-          />
-        </Link>
-
-        <Link href="/contribute-v2">
-          <SidebarItem
-            icon={<DatabaseZap size={18} />}
-            label="Contribute v2"
-            isOpen={isSidebarOpen}
-            active={currentTab === 'Contribute v2'}
           />
         </Link>
 

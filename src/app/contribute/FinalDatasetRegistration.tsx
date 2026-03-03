@@ -80,8 +80,18 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
   /* ================= RENDER ================= */
 
   return (
-    <div className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto">
-      <div className="w-[50vw] flex flex-col gap-6">
+    <div className="w-full rounded-lg border border-border/60 bg-card p-6 shadow-sm">
+      <div className="flex w-full flex-col gap-6">
+        <div className="mb-1 space-y-1">
+          <h2 className="text-base font-semibold text-foreground">
+            Step 2 — Ontology mapping (optional)
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Connect your dataset fields to shared ontology terms so they&apos;re
+            easier to discover and compare across datasets.
+          </p>
+        </div>
+
         <div className="space-y-2 text-sm text-gray-600">
           <p className="flex gap-1">
             <span className="font-semibold text-gray-800">
@@ -144,12 +154,7 @@ const FinalDatasetRegistration: React.FC<FinalDatasetRegistrationProps> = ({
         ))}
 
         {/* ADD MORE */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={addRow}
-          className="w-fit"
-        >
+        <Button type="button" variant="outline" onClick={addRow} className="w-fit">
           + Add more
         </Button>
       </div>

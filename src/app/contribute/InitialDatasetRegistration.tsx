@@ -21,6 +21,17 @@ import {
   InitialDatasetRegistrationProps,
 } from "@/types/app/contribute.types";
 
+const contactFieldLabels: Record<keyof Contact, string> = {
+  name: "Full name",
+  role: "Role",
+  email: "Email address",
+  organization: "Organization",
+  address: "Address",
+  city: "City",
+  state: "State / Province",
+  country: "Country",
+};
+
 /* ================= COMPONENT ================= */
 
 const InitialDatasetRegistration = ({
@@ -187,12 +198,22 @@ const InitialDatasetRegistration = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-4xl w-full mx-auto p-6 bg-white shadow-md rounded-lg h-[80vh] overflow-y-auto"
+      className="w-full rounded-lg border border-border/60 bg-card p-6 shadow-sm"
     >
+      <div className="mb-4 space-y-1">
+        <h2 className="text-base font-semibold text-foreground">
+          Step 1 — Dataset details
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Tell us about the dataset and who maintains it. You can update these
+          details later if needed.
+        </p>
+      </div>
+
       <div className="flex flex-wrap gap-x-4 gap-y-4">
-        <div className="flex flex-wrap gap-4 w-full">
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
           {/* CATEGORY */}
-          <div className="w-full sm:w-[48%]">
+          <div className="w-full">
             <Label className="pb-1">Category</Label>
             <Select
               value={formData.category_id}
@@ -219,7 +240,7 @@ const InitialDatasetRegistration = ({
           </div>
           {/* OTHER BASIC FIELDS */}
           {Object.entries(fieldMapping).map(([label, key]) => (
-            <div key={key} className="w-full sm:w-[48%]">
+            <div key={key} className="w-full">
               <Label className="pb-1">{label}</Label>
               <Input
                 value={formData[key] as string}
@@ -234,6 +255,9 @@ const InitialDatasetRegistration = ({
         {/* PUBLISHER + CONTACTS */}
         <div className="w-full ">
           <Label className="font-semibold pb-1">Publisher</Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Who is responsible for publishing or stewarding this dataset?
+          </p>
           <Input
             placeholder="Publisher Name"
             value={publisherName}
@@ -242,16 +266,19 @@ const InitialDatasetRegistration = ({
           />
 
           <Label className="pb-1">Publisher Contact</Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Add one or more people we can reach if we have questions.
+          </p>
           {contacts.map((c, i) => (
             <div
               key={i}
-              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2"
+              className="mb-3 grid grid-cols-1 gap-2 rounded-md border border-border/60  p-3 sm:grid-cols-2"
             >
               {(Object.keys(c) as (keyof Contact)[]).map((field) => (
                 <Input
-                  className="bg-white"
                   key={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  type={field === "email" ? "email" : "text"}
+                  placeholder={contactFieldLabels[field]}
                   value={c[field]}
                   onChange={(e) =>
                     setContacts(
@@ -302,14 +329,17 @@ const InitialDatasetRegistration = ({
 
         {/* SOURCES */}
         <div className="w-full">
-          <Label className="font-semibold pb-1">Source</Label>
+          <Label className="pb-1 font-semibold">Sources</Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Where the dataset is hosted and how users can access more
+            information.
+          </p>
           {formData.sources.map((s, i) => (
             <div
               key={i}
-              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2"
+              className="mb-3 grid grid-cols-1 gap-2 rounded-md border border-border/60  p-3 sm:grid-cols-3"
             >
               <Input
-                className="bg-white"
                 placeholder="Source Name"
                 value={s.source_name}
                 onChange={(e) =>
@@ -325,7 +355,6 @@ const InitialDatasetRegistration = ({
                 }
               />
               <Input
-                className="bg-white"
                 placeholder="Base URL"
                 value={s.base_url}
                 onChange={(e) =>
@@ -341,7 +370,6 @@ const InitialDatasetRegistration = ({
                 }
               />
               <Input
-                className="bg-white"
                 placeholder="Description"
                 value={s.description}
                 onChange={(e) =>
@@ -391,14 +419,17 @@ const InitialDatasetRegistration = ({
 
         {/* STATISTICS */}
         <div className="w-full">
-          <Label className="font-semibold pb-1">Statistic</Label>
+          <Label className="pb-1 font-semibold">Statistics</Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            High-level metrics that help users understand the dataset at a
+            glance (for example, record counts or number of species).
+          </p>
           {formData.statistics.map((s, i) => (
             <div
               key={i}
-              className="border p-3 rounded bg-gray-50 mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2"
+              className="mb-3 grid grid-cols-1 gap-2 rounded-md border border-border/60  p-3 sm:grid-cols-3"
             >
               <Input
-                className="bg-white"
                 placeholder="Stat Name"
                 value={s.stat_name}
                 onChange={(e) =>
@@ -414,7 +445,6 @@ const InitialDatasetRegistration = ({
                 }
               />
               <Input
-                className="bg-white"
                 placeholder="Stat Value"
                 type="text"
                 min={0}
