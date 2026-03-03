@@ -8,7 +8,6 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, FileText, Users, Building2, BarChart3 } from "lucide-react";

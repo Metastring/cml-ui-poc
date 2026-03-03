@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  Loader2,
   Search,
   Network,
   ExternalLink,
@@ -55,7 +54,10 @@ const OntologyPage = () => {
   const [pageSize, setPageSize] = useState(10);
 
   const { data: triplesResponse, isLoading, isError, error } = useOntologyTriples();
-  const triples = triplesResponse?.triples ?? [];
+  const triples = useMemo(
+    () => triplesResponse?.triples ?? [],
+    [triplesResponse?.triples]
+  );
   const totalCount = triplesResponse?.count ?? 0;
 
   /** Derive ontology list from triples (from API) */

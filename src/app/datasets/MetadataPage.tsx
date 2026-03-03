@@ -9,7 +9,6 @@ import {
   Search,
   Database,
 } from "lucide-react";
-import InstructionPopover from "@/element/popover/InstructionPopover";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { Category } from "@/types/api/federatedSearch.types";
 import {

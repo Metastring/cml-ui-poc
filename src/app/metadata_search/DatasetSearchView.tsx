@@ -2,7 +2,6 @@
 
 import React, { ReactNode } from "react";
 import { Search } from "lucide-react";
-import InstructionPopover from "@/element/popover/InstructionPopover";
 import SearchInput from "./SearchInput";
 
 interface DatasetSearchViewProps {

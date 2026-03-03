@@ -27,7 +27,10 @@ const Page = () => {
   }, [submittedQuery, refetch]);
 
   const response = data as SearchMetadataResponse | undefined;
-  const results: SearchResultItem[] = response?.results ?? [];
+  const results: SearchResultItem[] = useMemo(
+    () => response?.results ?? [],
+    [response?.results]
+  );
 
   const categories = useMemo(
     () =>

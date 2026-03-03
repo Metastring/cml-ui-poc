@@ -49,7 +49,10 @@ export default function OntologyDetailView({
   const [copiedIri, setCopiedIri] = useState(false);
 
   const { data: triplesResponse, isLoading, isError, error } = useOntologyTriples();
-  const triples = triplesResponse?.triples ?? [];
+  const triples = useMemo(
+    () => triplesResponse?.triples ?? [],
+    [triplesResponse?.triples]
+  );
 
   const summary = useMemo(() => {
     const list = deriveOntologyListFromTriples(triples);
