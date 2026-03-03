@@ -8,8 +8,8 @@ import DatasetDetailView from "../../DatasetDetailView";
 
 export default function DatasetPage() {
   const params = useParams();
-  const category = decodeURIComponent((params.category as string) ?? "");
-  const dataset = decodeURIComponent((params.dataset as string) ?? "");
+  const category = decodeURIComponent((params?.category as string) ?? "");
+  const dataset = decodeURIComponent((params?.dataset as string) ?? "");
 
   if (!category || !dataset) {
     return (
