@@ -1,12 +1,46 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 import { FederatedDataTableProps } from "@/types/app/federatedSearch.types";
 import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
+const MAX_CELL_CHARS = 45;
+
+function TableCellWithMore({
+  text,
+  className = "",
+}: {
+  text: string | null | undefined;
+  className?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const str = text != null ? String(text).trim() : "";
+  const isLong = str.length > MAX_CELL_CHARS;
+  const truncated = isLong ? `${str.slice(0, MAX_CELL_CHARS)}…` : str;
+  if (!str) return <span className={className}>—</span>;
+  if (!isLong) return <span className={className}>{str}</span>;
+  return (
+    <span
+      className={className}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {expanded ? str : truncated}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded((prev) => !prev);
+        }}
+        className="ml-1.5 text-primary font-medium text-xs hover:underline"
+      >
+        {expanded ? "See less" : "See more"}
+      </button>
+    </span>
+  );
+}
 
 // Type for small table components props
 interface TableStateProps {
@@ -48,30 +82,48 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     });
   }, [mapData, addVisibleMarker]);
 
-  // Handle row toggle
+  // Handle row toggle — only set "on map" when API returns occurrence data
   const handleToggleSelection = (row: DataItem, index: number) => {
-    setCheckedRows((prev) => {
-      const newState = [...prev];
-      const newChecked = !newState[index];
-      newState[index] = newChecked;
+    const name = row.scientific_name || row.taxon_name;
+    if (!name) return;
 
-      const name = row.scientific_name || row.taxon_name;
-      if (!name) return newState;
+    const currentlyOnMap = checkedRows[index];
+    if (currentlyOnMap) {
+      setCheckedRows((prev) => {
+        const next = [...prev];
+        next[index] = false;
+        return next;
+      });
+      removeMarkerByName(name);
+      onSearch?.();
+      return;
+    }
 
-      if (newChecked) fetchMapData(name);
-      else removeMarkerByName(name);
-
-      return newState;
+    // View: fetch first; only toggle icon when we get occurrence data
+    fetchMapData(name, {
+      onSuccess: (result) => {
+        if (result && result.length > 0) {
+          setCheckedRows((prev) => {
+            const next = [...prev];
+            data.forEach((r, idx) => {
+              const rn = r.scientific_name || r.taxon_name;
+              if (rn === name) next[idx] = true;
+            });
+            return next;
+          });
+          onSearch?.();
+        }
+      },
     });
-    onSearch?.();
   };
 
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
-        <th className="px-6 py-4 text-foreground">View Distribution</th>
+        <th className="px-6 py-4 text-foreground">Explore on Map</th>
         <th className="px-6 py-4 text-foreground">Scientific Name</th>
         <th className="px-6 py-4 text-foreground">Common Name</th>
+        <th className="px-6 py-4 text-foreground">Dataset</th>
       </tr>
     </thead>
   );
@@ -98,16 +150,44 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                   }`}
                   onClick={() => handleToggleSelection(row, index)}
                 >
-                  <td className="px-6 py-4" title="view/Hide on Map">
-                    <Checkbox
-                      checked={!!checkedRows[index]}
-                      onCheckedChange={() => handleToggleSelection(row, index)}
-                       onClick={(e) => e.stopPropagation()} 
-                    />
+                  <td
+                    className="px-6 py-4"
+                    title={checkedRows[index] ? "Hide from map" : "View on map"}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSelection(row, index)}
+                      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                        checkedRows[index]
+                          ? "bg-primary/20 text-primary hover:bg-primary/30"
+                          : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {checkedRows[index] ? (
+                        <>
+                          <EyeOff className="h-4 w-4" />
+                          Hide
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="h-4 w-4" />
+                          View
+                        </>
+                      )}
+                    </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{name}</td>
-                  <td className="px-6 py-4">
-                    {row.common_names ?? row.common_name}
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <TableCellWithMore text={name} className="whitespace-nowrap" />
+                  </td>
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <TableCellWithMore text={row.common_names ?? row.common_name} />
+                  </td>
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <TableCellWithMore
+                      text={row.dataset ? String(row.dataset).toUpperCase() : null}
+                      className="whitespace-nowrap"
+                    />
                   </td>
                 </tr>
               );
@@ -128,7 +208,7 @@ const LoadingTable: React.FC<TableStateProps> = ({ TableHeader }) => (
       <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={3} className="text-center text-muted-foreground italic">
+          <td colSpan={4} className="text-center text-muted-foreground italic">
             <div className="flex items-center justify-center py-6">
               <Loader2 className="animate-spin mr-2" />
               <span>Loading...</span>
@@ -146,7 +226,7 @@ const ErrorTable: React.FC<TableStateProps> = ({ TableHeader }) => (
       <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={3} className="text-center text-destructive italic py-6">
+          <td colSpan={4} className="text-center text-destructive italic py-6">
             Oops! Something went wrong while loading data.
           </td>
         </tr>
@@ -161,7 +241,7 @@ const EmptyTable: React.FC<TableStateProps> = ({ TableHeader }) => (
       <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={3} className="text-center text-muted-foreground italic py-6">
+          <td colSpan={4} className="text-center text-muted-foreground italic py-6">
             No data available
           </td>
         </tr>

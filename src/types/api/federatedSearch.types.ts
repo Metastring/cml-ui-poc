@@ -78,8 +78,10 @@ export type DataItem = {
   scientific_name?: string;
   scientificName?: string;
   common_name?: string;
-  basisOfRecord?:string
-  eventDate?:string
+  basisOfRecord?: string;
+  eventDate?: string;
+  /** Dataset/source name (e.g. GBIF, iDigBio) when showing combined results */
+  dataset?: string;
 };
 
 export type FederatedSearchData = {

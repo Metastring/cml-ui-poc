@@ -17,7 +17,7 @@ const BaseMap: React.FC = () => {
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: 'https://unpkg.com/maplibre-gl-styles@0.0.1/styles/osm-mapnik/v8/india.json',
       center: [78.9629, 22.5937],
       zoom: 3.6,
     });

@@ -1,91 +1,32 @@
 "use client";
-import React, { useMemo, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useMemo } from "react";
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
-import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import { toast } from "sonner";
-import TreeDropdown from "@/components/ui/treedropdown";
-import { FederatedSearchBarProps, Option } from "@/types/app/federatedSearch.types";
-
+import FederatedSearchTreeDropdown from "./FederatedSearchTreeDropdown";
+import { FederatedSearchBarProps } from "@/types/app/federatedSearch.types";
 
 export type SelectedShape = { parent: string; child: { name: string }[] }[];
 
-const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- mutate passed by parent for refetch API
+const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate }) => {
   const { data, isLoading, error } = useGetFilterData();
+  const { categories, datasets, setCategories, setDatasets, setIndicators } = useFederatedSearchStore();
 
-  const {
-    datasets,
-    categories,
-    indicators,
-    setQuery,
-    setCategories,
-    setDatasets,
-    setIndicators,
-  } = useFederatedSearchStore();
-
-    const [selectedNodes, setSelectedNodes] = useState<SelectedShape>([]);
-
-  // Build indicator list based on selected category + dataset
-  const indicatorList: Option[] = useMemo(() => {
-    if (isLoading || error || !data) return [];
-
-    const matchedCategories = data.filter((item) =>
-      categories.includes(item.category_name)
-    );
-
-    const matchedDatasets = matchedCategories.flatMap(
-      (cat) =>
-        cat.datasets?.filter((ds) => datasets.includes(ds.dataset_title)) ?? []
-    );
-
-    const seen = new Set<string>();
-    const options: Option[] = [];
-
-    matchedDatasets.forEach((ds) => {
-      // Inline TS fix: assert ds.fields is Field[]
-      (
-        ds.fields as
-          | {
-              ontology_mapping_to_display: string;
-              ontology_mapping: string;
-            }[]
-          | undefined
-      )?.forEach((field) => {
-        if (!seen.has(field.ontology_mapping)) {
-          seen.add(field.ontology_mapping);
-          options.push({
-            label: field.ontology_mapping_to_display,
-            value: field.ontology_mapping,
-          });
-        }
-      });
-    });
-
-    return options;
-  }, [data, categories, datasets, isLoading, error]);
-
-  // Handle search button click
-  const handleSearch = () => {
-    const inputValue: string = inputRef.current?.value.trim() ?? "";
-
-    if (!categories.length) return toast.error("Please select a category.");
-    if (!datasets.length) return toast.error("Please select a dataset.");
-    if (!indicators.length)
-      return toast.error("Please select at least one field.");
-    if (!inputValue) return toast.error("Please enter a search term.");
-
-    setQuery(inputValue);
-
-    mutate({
-      category: categories,
-      dataset: datasets,
-      search_text: inputValue,
-      fields: indicators,
-    });
-  };
+  // Derive selected tree shape from store so it stays in sync when categories/datasets are set from indicators
+  const selectedNodes: SelectedShape = useMemo(() => {
+    if (!data || !categories.length) return [];
+    return categories
+      .map((catName) => {
+        const category = data.find((c) => c.category_name === catName);
+        const categoryDatasets = category?.datasets ?? [];
+        const selectedInCat = categoryDatasets
+          .filter((ds) => datasets.includes(ds.dataset_title))
+          .map((ds) => ({ name: ds.dataset_title }));
+        if (selectedInCat.length === 0) return null;
+        return { parent: catName, child: selectedInCat };
+      })
+      .filter((x): x is SelectedShape[number] => x != null);
+  }, [data, categories, datasets]);
 
   // Build TreeDropdown nodes
   const nodes = useMemo(() => {
@@ -131,18 +72,16 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
   }, [data]);
 
   return (
-    <div className="flex flex-col mx-auto items-center justify-center space-y-4 rounded-2xl max-w-3xl w-full drop-shadow-lg p-6 bg-muted/30">
+    <div className="flex flex-1 flex-col min-h-0 mx-auto items-center rounded-2xl max-w-3xl w-full drop-shadow-lg bg-muted/30">
       {/* Filters */}
-      <div className="flex flex-wrap justify-center gap-2 w-full">
-        <TreeDropdown
+      <div className="flex flex-1 flex-col min-h-0 w-full">
+        <FederatedSearchTreeDropdown
         nodes={nodes}
         buttonLabel="Datasets"
         isLoading={isLoading}
         isError={!!error}
         selected={selectedNodes}
         onChange={(selected) => {
-          setSelectedNodes(selected);
-
           if (!selected.length) {
             setCategories([]);
             setDatasets([]);
@@ -162,27 +101,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate }) => {
           setIndicators([]);
         }}
         />
-
-        <MultiSelectCombobox
-          options={indicatorList ?? []}
-          placeholder="Fields"
-          value={indicators}
-          onChange={(val: string[]) => setIndicators(val)}
-          className="flex-1 min-w-0 w-full drop-shadow-md"
-        />
-      </div>
-
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-2 w-full max-w-2xl">
-        <Input
-          ref={inputRef}
-          type="text"
-          placeholder="What's in your mind..."
-          className="w-full sm:w-auto flex-1 p-2 bg-card drop-shadow-md"
-        />
-        <Button onClick={handleSearch} className="w-full sm:w-auto">
-          Search
-        </Button>
       </div>
     </div>
   );
