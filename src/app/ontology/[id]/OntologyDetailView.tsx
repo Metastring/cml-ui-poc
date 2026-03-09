@@ -12,10 +12,10 @@ import {
   Tag,
   FileCode,
 } from "lucide-react";
-import { deriveOntologyListFromTriples, getTermsForOntology } from "./ontologyTriples";
-import { useOntologyTriples } from "./api";
+import { deriveOntologyListFromTriples } from "../ontologyTriples";
+import { useOntologyTriples, useOntologyTermsByTab, ONTOLOGY_DETAIL_API_ID } from "../api";
+import { dummyOntologyList } from "../dummyOntologyList";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -36,6 +36,23 @@ import {
 
 type TermFilter = "all" | "classes" | "properties";
 
+/** Column keys for the detail table (API/data shape). */
+export type OntologyDetailColumnKey =
+  | "dataset_area"
+  | "dataset_column"
+  | "ontology_element_type"
+  | "ontology_element"
+  | "description";
+
+/** Display labels for columns (Real Data style: spaces, no underscores). */
+export const ONTOLOGY_DETAIL_COLUMNS: Record<OntologyDetailColumnKey, string> = {
+  dataset_area: "Dataset Area",
+  dataset_column: "Dataset Column",
+  ontology_element_type: "Ontology Element Type",
+  ontology_element: "Ontology Element",
+  description: "Description",
+};
+
 interface OntologyDetailViewProps {
   ontologyId: string;
 }
@@ -48,7 +65,7 @@ export default function OntologyDetailView({
   const [pageSize, setPageSize] = useState(25);
   const [copiedIri, setCopiedIri] = useState(false);
 
-  const { data: triplesResponse, isLoading, isError, error } = useOntologyTriples();
+  const { data: triplesResponse, isLoading: triplesLoading, isError: triplesError, error: triplesErrorObj } = useOntologyTriples();
   const triples = useMemo(
     () => triplesResponse?.triples ?? [],
     [triplesResponse?.triples]
@@ -56,31 +73,31 @@ export default function OntologyDetailView({
 
   const summary = useMemo(() => {
     const list = deriveOntologyListFromTriples(triples);
-    return list.find((o) => o.id === ontologyId);
+    const fromTriples = list.find((o) => o.id === ontologyId);
+    if (fromTriples) return fromTriples;
+    return dummyOntologyList.find((o) => o.id === ontologyId);
   }, [ontologyId, triples]);
 
-  const allTerms = useMemo(
-    () => getTermsForOntology(ontologyId, triples),
-    [ontologyId, triples]
-  );
+  const { terms: tabTerms, isLoading: termsLoading, isError: termsError, error: termsErrorObj } = useOntologyTermsByTab(ontologyId, termFilter);
 
-  const filteredByType = useMemo(() => {
-    if (termFilter === "classes")
-      return allTerms.filter((t) => t.type === "Class");
-    if (termFilter === "properties")
-      return allTerms.filter((t) => t.type === "Property");
-    return allTerms;
-  }, [allTerms, termFilter]);
+  const isLoading =
+    triplesLoading ||
+    (ontologyId === ONTOLOGY_DETAIL_API_ID && termsLoading);
+  const isError = triplesError || (ontologyId === ONTOLOGY_DETAIL_API_ID && termsError);
+  const error = ontologyId === ONTOLOGY_DETAIL_API_ID && termsError ? termsErrorObj : triplesErrorObj;
+
+  const filteredByType = tabTerms;
 
   const filteredTerms = useMemo(() => {
     if (!searchQuery.trim()) return filteredByType;
     const q = searchQuery.trim().toLowerCase();
     return filteredByType.filter(
-      (t) =>
-        t.id.toLowerCase().includes(q) ||
-        t.label.toLowerCase().includes(q) ||
-        t.comment.toLowerCase().includes(q) ||
-        (t.parentId && t.parentId.toLowerCase().includes(q))
+      (item) =>
+        item.dataset_area.toLowerCase().includes(q) ||
+        item.dataset_column.toLowerCase().includes(q) ||
+        item.ontology_element_type.toLowerCase().includes(q) ||
+        item.ontology_element.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q)
     );
   }, [filteredByType, searchQuery]);
 
@@ -105,7 +122,7 @@ export default function OntologyDetailView({
     );
   }
 
-  if (isError) {
+  if (isError && !summary) {
     return (
       <div className="min-h-full bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
@@ -208,13 +225,13 @@ export default function OntologyDetailView({
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Layers className="size-4 text-primary" />
-              <strong className="text-foreground">{summary.numClasses}</strong>{" "}
+              <strong className="text-foreground">{ontologyId === "biodiversity" ? 1 : summary.numClasses}</strong>{" "}
               classes
             </span>
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Tag className="size-4 text-primary" />
               <strong className="text-foreground">
-                {summary.numProperties}
+                {ontologyId === "biodiversity" ? 20 : summary.numProperties}
               </strong>{" "}
               properties
             </span>
@@ -222,9 +239,9 @@ export default function OntologyDetailView({
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
         {/* Tabs: All | Classes | Properties (OLS separates these) */}
-        <div className="flex flex-wrap items-center gap-4 mb-4">
+        <div className="flex flex-wrap items-center gap-4 mb-2">
           <div className="flex rounded-md border border-border/60 p-0.5 bg-muted/30">
             {(
               [
@@ -281,21 +298,26 @@ export default function OntologyDetailView({
           </div>
         </div>
 
-        {/* Terms table (OLS-style: IRI/ID, label, type, parent, description) */}
-        <Card className="border-border/60 overflow-hidden">
-          <Table>
+        {/* Terms table: scroll container is direct parent of table so sticky header works */}
+        <Card className="border-border/60 overflow-hidden py-0">
+          <div className="max-h-[60vh] overflow-auto">
+            <table className="w-full caption-bottom text-sm border-collapse">
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-b bg-muted/30">
-                <TableHead className="font-semibold w-[140px]">
-                  Term ID
+              <TableRow className="hover:bg-transparent border-b bg-muted">
+                <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-[140px] align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                  {ONTOLOGY_DETAIL_COLUMNS.dataset_area}
                 </TableHead>
-                <TableHead className="font-semibold">Label</TableHead>
-                <TableHead className="font-semibold w-24">Type</TableHead>
-                <TableHead className="font-semibold w-32 hidden md:table-cell">
-                  Parent
+                <TableHead className="sticky top-0 z-10 bg-muted font-semibold align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                  {ONTOLOGY_DETAIL_COLUMNS.dataset_column}
                 </TableHead>
-                <TableHead className="font-semibold hidden sm:table-cell max-w-xs">
-                  Description
+                <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-28 align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                  {ONTOLOGY_DETAIL_COLUMNS.ontology_element_type}
+                </TableHead>
+                <TableHead className="sticky top-0 z-10 bg-muted font-semibold min-w-[180px] hidden md:table-cell align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                  {ONTOLOGY_DETAIL_COLUMNS.ontology_element}
+                </TableHead>
+                <TableHead className="sticky top-0 z-10 bg-muted font-semibold hidden sm:table-cell max-w-xs align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                  {ONTOLOGY_DETAIL_COLUMNS.description}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -310,38 +332,42 @@ export default function OntologyDetailView({
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedTerms.map((term) => (
-                  <TableRow key={term.id} className="group">
-                    <TableCell className="font-mono text-xs align-top py-3">
-                      <span className="text-foreground">{term.id}</span>
+                paginatedTerms.map((item, index) => (
+                  <TableRow
+                    key={`${item.dataset_area}-${item.dataset_column}-${item.ontology_element}-${index}`}
+                    className="group"
+                  >
+                    <TableCell className="font-mono text-xs align-middle py-3">
+                      <span className="text-foreground">{item.dataset_area}</span>
                     </TableCell>
-                    <TableCell className="font-medium align-top py-3">
-                      {term.label}
+                    <TableCell className="font-medium align-middle py-3">
+                      {item.dataset_column}
                     </TableCell>
-                    <TableCell className="align-top py-3">
+                    <TableCell className="align-middle py-3">
                       <Badge
-                        variant={term.type === "Class" ? "secondary" : "outline"}
+                        variant="outline"
                         className="font-normal text-xs"
                       >
-                        {term.type}
+                        {item.ontology_element_type}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground align-top py-3 hidden md:table-cell">
-                      {term.parentId ?? "—"}
+                    <TableCell className="font-mono text-xs text-muted-foreground align-middle py-3 hidden md:table-cell">
+                      {item.ontology_element}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-sm align-top py-3 hidden sm:table-cell max-w-xs">
-                      {term.comment || "—"}
+                    <TableCell className="text-muted-foreground text-sm align-middle py-3 hidden sm:table-cell max-w-xs">
+                      {item.description || "—"}
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
-          </Table>
+            </table>
+          </div>
         </Card>
 
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
           Showing 1 to {paginatedTerms.length} of {filteredTerms.length} terms
-          {filteredTerms.length !== allTerms.length && " (filtered)"}.
+          {filteredTerms.length !== tabTerms.length && " (filtered)"}.
         </p>
 
         {/* OLS-style: short info card */}
@@ -353,11 +379,10 @@ export default function OntologyDetailView({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground leading-relaxed pt-0">
-            Terms are identified by a local name (Term ID) within the ontology
-            IRI. Classes represent concepts; properties represent relationships
-            or attributes. Use the Parent column to see hierarchy (e.g. rdfs:subClassOf).
-            Map your dataset fields to these terms in the Contribute flow for
-            consistent discovery.
+            Each row describes a mapping from a dataset field (Dataset Area, Dataset
+            Column) to an ontology term (Ontology Element Type, Ontology Element)
+            with a short description. Use these terms when mapping your dataset
+            fields in the Contribute flow for consistent discovery.
           </CardContent>
         </Card>
       </main>

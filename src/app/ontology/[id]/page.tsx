@@ -1,5 +1,5 @@
 import React from "react";
-import OntologyDetailView from "../OntologyDetailView";
+import OntologyDetailView from "./OntologyDetailView";
 
 /** Pre-declare known ontology IDs so the dynamic route is recognized (fixes 404). */
 export function generateStaticParams() {

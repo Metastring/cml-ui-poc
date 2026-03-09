@@ -8,8 +8,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { deriveOntologyListFromTriples, type OntologySummary } from "./ontologyTriples";
-import { useOntologyTriples } from "./api";
+import { type OntologySummary } from "./ontologyTriples";
+import { dummyOntologyList } from "./dummyOntologyList";
 import {
   Table,
   TableBody,
@@ -53,46 +53,12 @@ const OntologyPage = () => {
   const [exactMatch, setExactMatch] = useState(false);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: triplesResponse, isLoading, isError, error } = useOntologyTriples();
-  const triples = useMemo(
-    () => triplesResponse?.triples ?? [],
-    [triplesResponse?.triples]
-  );
-  const totalCount = triplesResponse?.count ?? 0;
-
-  /** Derive ontology list from triples (from API) */
-  const ontologyList = useMemo(
-    () => deriveOntologyListFromTriples(triples),
-    [triples]
-  );
+  const ontologyList = dummyOntologyList;
 
   const filtered = useMemo(
     () => filterOntologies(ontologyList, searchQuery, exactMatch),
     [ontologyList, searchQuery, exactMatch]
   );
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <span className="text-muted-foreground">Loading ontologies...</span>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-8">
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardContent className="pt-6">
-            <p className="text-destructive font-medium">Failed to load ontologies</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {error instanceof Error ? error.message : "Please try again later."}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-full bg-background">
@@ -236,7 +202,7 @@ const OntologyPage = () => {
             <p className="mt-4 text-sm text-muted-foreground">
               Showing {Math.min(filtered.length, pageSize)} of {filtered.length}{" "}
               ontologies
-              {filtered.length < ontologyList.length && " (filtered)"}. Total triples: {totalCount}.
+              {filtered.length < ontologyList.length && " (filtered)"}.
             </p>
           </>
         )}
