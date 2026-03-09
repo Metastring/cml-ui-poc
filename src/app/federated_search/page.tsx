@@ -3,8 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import FederatedSearchBar from "@/app/federated_search/FederatedSearchBar";
-import InstructionPopover from "@/element/popover/InstructionPopover";
 import { LocateFixed, LocateOff, MapPin, Search, Table2 } from "lucide-react";
+import InstructionPopover from "@/element/popover/InstructionPopover";
 import BaseMap from "@/components/map/BaseMap";
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import {
@@ -163,38 +163,41 @@ const Page = () => {
   return (
     <div className="h-screen flex">
       {/* Sidebar */}
-      <div className="w-96 border-r flex flex-col  min-h-0 overflow-hidden">
-        {/* Top bar merged here */}
-        <div className="flex items-center justify-between border-b p-4">
-          <InstructionPopover title="Federated Search">
-            <p>
-              Federated Search queries multiple remote databases and returns
-              unified results in a single view.
-            </p>
-          </InstructionPopover>
-
-          {isMapVisible ? (
-            <button
-              type="button"
-              title="Hide Map"
-              onClick={() => setIsMapVisible(false)}
-              className="inline-flex items-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary shadow-sm hover:bg-primary/25 hover:border-primary/50 transition-colors"
-            >
-              <span>Hide map</span>
-              <LocateOff className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              title="Show Map"
-              onClick={() => setIsMapVisible(true)}
-              className="inline-flex items-center gap-2 rounded-lg border-2 border-primary bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-md hover:bg-primary/90 hover:border-primary transition-colors"
-            >
-              <span>Show map</span>
-              <LocateFixed className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+      <div className="w-[350px] shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-hidden">
+        {/* Header: Federated Search + Show/Hide map */}
+        <header className="shrink-0 border-b border-border bg-muted/20">
+          <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
+            <InstructionPopover title="Federated Search" icon={<Search className="h-4 w-4" />}>
+              <p>
+                Federated Search queries multiple remote databases and returns
+                unified results in a single view.
+              </p>
+            </InstructionPopover>
+            {isMapVisible ? (
+              <button
+                type="button"
+                title="Hide Map"
+                onClick={() => setIsMapVisible(false)}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                aria-label="Hide map"
+              >
+                <LocateOff size={14} />
+                <span className="whitespace-nowrap">Hide map</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                title="Show Map"
+                onClick={() => setIsMapVisible(true)}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Show map"
+              >
+                <LocateFixed size={14} />
+                <span className="whitespace-nowrap">Show map</span>
+              </button>
+            )}
+          </div>
+        </header>
 
         <FederatedSearchBar mutate={mutate} />
       </div>

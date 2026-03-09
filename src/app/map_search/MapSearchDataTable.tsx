@@ -84,8 +84,6 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
     });
   };
 
-  const colSpan = 12;
-
   const TableToolbar: React.FC<{ label: React.ReactNode }> = ({ label }) => (
     <div className="shrink-0 px-3 py-1.5 border-b border-border bg-muted/30 flex items-center justify-between gap-2">
       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground min-w-0">

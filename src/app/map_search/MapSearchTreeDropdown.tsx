@@ -113,7 +113,7 @@ const MapSearchTreeDropdown: React.FC<MapSearchTreeDropdownProps> = ({
       id={treeId}
       role="tree"
       aria-label="Tree selection"
-      className="w-full min-w-[200px] max-w-[min(400px,100vw)] flex-1 min-h-0 flex flex-col border border-border bg-card text-card-foreground shadow-sm overflow-hidden"
+      className="w-full min-w-[200px] max-w-[min(350px,100vw)] flex-1 min-h-0 flex flex-col border border-border bg-card text-card-foreground shadow-sm overflow-hidden"
     >
       {/* Header: label + total selected count */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30 shrink-0">
@@ -240,7 +240,7 @@ const MapSearchTreeDropdown: React.FC<MapSearchTreeDropdownProps> = ({
                                 className="mt-0.5 shrink-0"
                               />
                               <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm font-medium truncate">
+                                <span className="text-sm font-medium truncate" title={child.name}>
                                   {child.name}
                                 </span>
                                 {child.description && (

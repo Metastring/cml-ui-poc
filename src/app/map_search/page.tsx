@@ -21,6 +21,7 @@ import PolygonEditor from "@/components/mapFeatures/polygonEditor/PolygonEditor"
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import MapSearchBar from "@/app/map_search/MapSearchBar";
 import MapSearchDataTable from "@/app/map_search/MapSearchDataTable";
+import InstructionPopover from "@/element/popover/InstructionPopover";
 
 const Page = () => {
   const [tableVisible, setTableVisible] = useState(false);
@@ -50,16 +51,15 @@ const Page = () => {
       <div className="relative flex flex-1 min-h-0 w-full">
         {/* Sidebar: search panel and controls */}
         {sidebarVisible ? (
-          <aside className="w-[300px] shrink-0 flex flex-col border-r border-border bg-card">
+          <aside className="w-[350px] shrink-0 flex flex-col border-r border-border bg-card">
             {/* Header: Map Search + View data table */}
             <header className="shrink-0 border-b border-border bg-muted/20">
               <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
-                <div className="flex items-center gap-2 min-w-0 shrink">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <Map className="h-4 w-4" />
-                  </div>
-                  <h1 className="text-sm font-semibold text-foreground truncate">Map Search</h1>
-                </div>
+                <InstructionPopover title="Map Search" icon={<Map className="h-4 w-4" />}>
+                  <p>
+                    Map Search lets you explore data on the map. Select datasets, draw a region or search by location, and view results on the map or in the data table.
+                  </p>
+                </InstructionPopover>
                 <button
                   type="button"
                   onClick={() => setTableVisible((prev) => !prev)}
