@@ -101,22 +101,30 @@ export const useGetDatasetDetails = (
   });
 };
 
-export const useGetMetadataOfDatasetByQuery = (query: string) => {
-  const { data, error, isLoading, isFetching, refetch , isError }= useQuery<DatasetDetail>({
-    queryKey: ["MetadataOfDatasetByQuery",query],
-    queryFn: async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_FEDERATED_BASE_URL}/v2/metadata/search?query=${query}`
-      );
-      if (!res.ok) {
-        throw new Error("Failed to fetch dataset details");
-      }
-      return res.json();
-    },
-    enabled: false,
-  });
+export type MetadataSearchWhere = "anywhere" | "indicator";
 
-  return {data, error, isLoading, isFetching, refetch , isError};
+export const useGetMetadataOfDatasetByQuery = (
+  query: string,
+  whereToSearch: MetadataSearchWhere = "anywhere"
+) => {
+  const { data, error, isLoading, isFetching, refetch, isError } =
+    useQuery<DatasetDetail>({
+      queryKey: ["MetadataOfDatasetByQuery", query, whereToSearch],
+      queryFn: async () => {
+        const params = new URLSearchParams({ query });
+        params.set("where_to_search", whereToSearch);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_FEDERATED_BASE_URL}/v2/metadata/search?${params.toString()}`
+        );
+        if (!res.ok) {
+          throw new Error("Failed to fetch dataset details");
+        }
+        return res.json();
+      },
+      enabled: false,
+    });
+
+  return { data, error, isLoading, isFetching, refetch, isError };
 };
 
 

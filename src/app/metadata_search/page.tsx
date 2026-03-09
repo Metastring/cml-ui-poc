@@ -10,21 +10,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import DatasetSearchView from "./DatasetSearchView";
-import { useGetMetadataOfDatasetByQuery } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import DatasetSearchView from "@/app/metadata_search/DatasetSearchView";
+import {
+  useGetMetadataOfDatasetByQuery,
+  type MetadataSearchWhere,
+} from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { SearchMetadataResponse, SearchResultItem } from "./types";
 
 const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const [whereToSearch, setWhereToSearch] = useState<MetadataSearchWhere>("anywhere");
+  const [submittedWhereToSearch, setSubmittedWhereToSearch] =
+    useState<MetadataSearchWhere>("anywhere");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const { data, error, isLoading, refetch, isError } =
-    useGetMetadataOfDatasetByQuery(submittedQuery);
+  const { data, error, isLoading, isFetching, refetch, isError } =
+    useGetMetadataOfDatasetByQuery(submittedQuery, submittedWhereToSearch);
+
+  const isBusy = isLoading || isFetching;
 
   useEffect(() => {
     if (submittedQuery) refetch();
-  }, [submittedQuery, refetch]);
+  }, [submittedQuery, submittedWhereToSearch, refetch]);
 
   const response = data as SearchMetadataResponse | undefined;
   const results: SearchResultItem[] = useMemo(
@@ -60,7 +68,19 @@ const Page = () => {
     e.preventDefault();
     const q = searchQuery.trim();
     if (!q) return;
-    setSubmittedQuery(q);
+
+    const isSameQuery = q === submittedQuery;
+    const isSameWhere = whereToSearch === submittedWhereToSearch;
+
+    // If either query text or where_to_search changed, update state and let the effect refetch.
+    if (!isSameQuery || !isSameWhere) {
+      setSubmittedQuery(q);
+      setSubmittedWhereToSearch(whereToSearch);
+    } else {
+      // Same inputs: force a manual refetch using the existing query params.
+      refetch();
+    }
+
     setSelectedCategories([]);
   };
 
@@ -68,7 +88,9 @@ const Page = () => {
     searchQuery,
     onSearchChange: setSearchQuery,
     onSearchSubmit: handleSearch,
-    isLoading,
+    isLoading: isBusy,
+    whereToSearch,
+    onWhereToSearchChange: setWhereToSearch,
   };
 
   if (!submittedQuery) {
@@ -87,7 +109,7 @@ const Page = () => {
     );
   }
 
-  if (isLoading) {
+  if (isBusy) {
     return (
       <DatasetSearchView {...viewProps}>
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
@@ -201,9 +223,11 @@ const Page = () => {
                       {item.description}
                     </p>
                   )}
-                  <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>View metadata</span>
-                    <ArrowRight className="size-3.5 opacity-0 translate-x-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition" />
+                  <div className="mt-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary group-hover:bg-primary/20 group-hover:border-primary/60 transition-colors">
+                      Explore dataset
+                      <ArrowRight className="size-3.5" />
+                    </span>
                   </div>
                 </CardContent>
               </Card>
