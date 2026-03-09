@@ -7,6 +7,8 @@ export type DataItem = FederatedSearchDataItem;
 export interface MapSearchDataTableProps {
   isLoading: boolean;
   isError: boolean;
-  // optionally include data if needed
-  // data?: DataItem[];
+  onExpandFull?: () => void;
+  onCollapseTable?: () => void;
+  onRestoreSplit?: () => void;
+  isTableExpanded?: boolean;
 }

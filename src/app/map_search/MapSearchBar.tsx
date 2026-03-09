@@ -6,13 +6,14 @@ import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearc
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { toast } from "sonner";
 import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
-import TreeDropdown from "@/components/ui/treedropdown";
+import MapSearchTreeDropdown from "@/app/map_search/MapSearchTreeDropdown";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
   MapSearchParams,
   PolygonDataItem,
   PolygonDetail,
 } from "@/types/api/mapSearch.types";
+import { Loader2, Search, RotateCcw } from "lucide-react";
 
 interface MapSearchBarProps {
   onSearch?: () => void;
@@ -50,25 +51,13 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
   };
 
   const handleSearch = () => {
-    if (categories.length === 0 && (!shapes || shapes.features.length === 0)) {
-      toast.error(
-        "Please select a datasets and draw at least one polygon."
-      );
-      return;
-    }
-
-    if (categories.length === 0) {
-      toast.error("Please select a dataset.");
-      return;
-    }
-
     if (!datasets.length) {
-      toast.error("Please select at least one dataset.");
+      toast.error("Select at least one dataset to search.");
       return;
     }
 
     if (!shapes || shapes.features.length === 0) {
-      toast.error("Please draw at least one polygon.");
+      toast.error("Draw a region on the map first, then run Search.");
       return;
     }
 
@@ -82,7 +71,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
       }));
 
     if (!polygonShapes.length) {
-      toast.error("Please draw at least one polygon feature.");
+      toast.error("Draw a polygon on the map, then try again.");
       return;
     }
 
@@ -146,49 +135,80 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
     }));
   }, [data]);
 
+  const hasPolygon = shapes && shapes.features.length > 0;
+  const canSearch = datasets.length > 0 && hasPolygon;
+
   return (
-    <div className="flex flex-col space-y-3 w-fit p-4 rounded-xl bg-muted/30 shadow-lg">
-      <TreeDropdown
-        nodes={nodes}
-        buttonLabel="Datasets"
-        isLoading={isLoading}
-        isError={isError}
-        selected={selectedNodes}
-        onChange={(selected) => {
-          setSelectedNodes(selected);
-
-          if (!selected.length) {
-            setCategories([]);
-            setDatasets([]);
-            setIndicators([]);
-            return;
-          }
-
-          const selectedCategories = Array.from(
-            new Set(selected.map((item) => item.parent))
-          );
-          const selectedDatasets = selected.flatMap((item) =>
-            item.child.map((c) => c.name)
-          );
-
-          setCategories(selectedCategories);
-          setDatasets(selectedDatasets);
-          setIndicators([]);
-        }}
-      />
-
-      <div className="flex space-x-2">
-        <Button onClick={handleSearch} disabled={isLoading} className="flex-1">
-          {isMapDataLoading ? "Searching..." : "Search"}
+    <div className="flex flex-1 min-h-0 flex-col gap-4 w-full">
+      <div className="shrink-0 flex gap-2 px-3 pt-3">
+        <Button
+          onClick={handleSearch}
+          disabled={isLoading || isMapDataLoading || !canSearch}
+          size="sm"
+          className="flex-1 gap-1.5 h-8 text-xs font-medium"
+        >
+          {isMapDataLoading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+              Searching…
+            </>
+          ) : (
+            <>
+              <Search className="h-3.5 w-3.5 shrink-0" />
+              Search
+            </>
+          )}
         </Button>
         <Button
           onClick={handleResetMapData}
           disabled={isLoading}
-          variant="destructive"
+          variant="outline"
+          size="sm"
+          className="gap-1.5 h-8 shrink-0 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/5"
         >
+          <RotateCcw className="h-3.5 w-3.5" />
           Reset
         </Button>
       </div>
+
+      <div className="flex-1 min-h-0 flex flex-col">
+        <MapSearchTreeDropdown
+          nodes={nodes}
+          buttonLabel="Select datasets"
+          isLoading={isLoading}
+          isError={isError}
+          selected={selectedNodes}
+          onChange={(selected) => {
+            setSelectedNodes(selected);
+
+            if (!selected.length) {
+              setCategories([]);
+              setDatasets([]);
+              setIndicators([]);
+              return;
+            }
+
+            const selectedCategories = Array.from(
+              new Set(selected.map((item) => item.parent))
+            );
+            const selectedDatasets = selected.flatMap((item) =>
+              item.child.map((c) => c.name)
+            );
+
+            setCategories(selectedCategories);
+            setDatasets(selectedDatasets);
+            setIndicators([]);
+          }}
+        />
+      </div>
+
+      {!hasPolygon && datasets.length > 0 && (
+        <div className="shrink-0 rounded-md border border-border bg-muted/50 px-2.5 py-2">
+          <p className="text-[11px] text-muted-foreground">
+            <span className="font-medium text-foreground">Step 2.</span> Draw a region on the map, then click Search.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
