@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import {
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
   ChevronUp,
-  PanelLeftClose,
-  PanelRightOpen,
+  Map,
+  Table2,
 } from "lucide-react";
-import InstructionPopover from "@/element/popover/InstructionPopover";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import {
   useGetMapSearchData,
@@ -23,6 +24,7 @@ import MapSearchDataTable from "@/app/map_search/MapSearchDataTable";
 
 const Page = () => {
   const [tableVisible, setTableVisible] = useState(false);
+  const [tableExpanded, setTableExpanded] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const { selectedCoordinates, visibleMarkers } = useMapSearchData();
   const { datasets } = useMapSearchFilter();
@@ -44,116 +46,106 @@ const Page = () => {
   } = useGetMapSearchData();
 
   return (
-    <div className="w-full h-screen flex flex-col p-4 space-y-4 overflow-hidden">
-      {/* Top Section: Map + Sidebar */}
-      <div
-        className={`flex flex-col md:flex-row w-full ${
-          tableVisible ? "flex-[0.5]" : "flex-1"
-        } gap-4 transition-all duration-300 overflow-hidden`}
-      >
-        {/* Sidebar with instructions and search */}
+    <div className="w-full h-screen flex flex-col bg-background overflow-hidden">
+      <div className="relative flex flex-1 min-h-0 w-full">
+        {/* Sidebar: search panel and controls */}
         {sidebarVisible ? (
-          <div className="flex flex-col gap-4 w-auto shrink-0">
-            <div className="flex items-center justify-between">
-              <InstructionPopover title="Explore Instructions">
-                <p className="font-medium">How to Draw on the Map:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Select a shape: polygon, circle, rectangle, etc.</li>
-                  <li>Click to start drawing on the map.</li>
-                  <li>Draw the shape wherever you want.</li>
-                  <li>Use delete/trash buttons to delete shapes.</li>
-                  <li>Click download to save GeoJSON.</li>
-                </ul>
-              </InstructionPopover>
-              <div className="flex">
+          <aside className="w-[300px] shrink-0 flex flex-col border-r border-border bg-card">
+            {/* Header: Map Search + View data table */}
+            <header className="shrink-0 border-b border-border bg-muted/20">
+              <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
+                <div className="flex items-center gap-2 min-w-0 shrink">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Map className="h-4 w-4" />
+                  </div>
+                  <h1 className="text-sm font-semibold text-foreground truncate">Map Search</h1>
+                </div>
                 <button
-                  onClick={() => setSidebarVisible((prev) => !prev)}
-                  className="ml-2 p-1 hover:bg-muted rounded-full"
-                >
-                  {sidebarVisible ? (
-                    <PanelRightOpen size={20} />
-                  ) : (
-                    <PanelRightOpen size={20} />
-                  )}
-                </button>
-
-                <button
+                  type="button"
                   onClick={() => setTableVisible((prev) => !prev)}
-                  className="ml-2 p-1 hover:bg-muted rounded-full"
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                    tableVisible
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                  title={tableVisible ? "Hide data table" : "Show data table"}
+                  aria-label={tableVisible ? "Hide data table" : "Show data table"}
                 >
-                  {tableVisible ? (
-                    <ChevronDown size={20} />
-                  ) : (
-                    <ChevronUp size={20} />
-                  )}
+                  <Table2 size={14} />
+                  <span className="whitespace-nowrap">View data table</span>
+                  {tableVisible ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                 </button>
               </div>
+            </header>
+
+            {/* Sidebar content */}
+            <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+              <MapSearchBar
+                onSearch={() => setTableVisible(true)}
+                mutate={mutate}
+                clearDataMapSearchData={clearDataMapSearchData}
+                isMapDataLoading={isMapDataLoading}
+              />
             </div>
+          </aside>
+        ) : null}
 
-            {/* Search Input */}
-            <MapSearchBar
-              onSearch={() => setTableVisible(true)}
-              mutate={mutate}
-              clearDataMapSearchData={clearDataMapSearchData}
-              isMapDataLoading={isMapDataLoading}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col">
+        {/* Main: map + results; floating sidebar toggle on the right part (left edge of main) */}
+        <main className="group/main relative flex-1 min-w-0 flex flex-col p-2 gap-2 overflow-hidden bg-muted/20">
+          {/* Floating sidebar toggle — text shows on hover */}
+          {sidebarVisible ? (
             <button
-              onClick={() => setSidebarVisible((prev) => !prev)}
-              className="ml-2 p-1 hover:bg-muted rounded-full"
+              type="button"
+              onClick={() => setSidebarVisible(false)}
+              className="absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-sm font-medium text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all"
+              title="Close sidebar"
+              aria-label="Close sidebar"
             >
-              {sidebarVisible ? (
-                <ChevronDown size={20} />
-              ) : (
-                <PanelLeftClose size={20} />
-              )}
+              <ChevronsLeft size={18} />
+              <span>Close sidebar</span>
             </button>
+          ) : (
             <button
-              onClick={() => setTableVisible((prev) => !prev)}
-              className="ml-2 p-1 hover:bg-muted rounded-full"
+              type="button"
+              onClick={() => setSidebarVisible(true)}
+              className="absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-sm font-medium text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all"
+              title="Open sidebar"
+              aria-label="Open sidebar"
             >
-              {tableVisible ? (
-                <ChevronDown size={20} />
-              ) : (
-                <ChevronUp size={20} />
-              )}
+              <ChevronsRight size={18} />
+              <span>Open sidebar</span>
             </button>
-            <div></div>
-          </div>
-        )}
-
-        {/* Map Area */}
-        <div className="flex-1 h-full relative rounded-lg overflow-hidden shadow-md">
-          <BaseMap />
-          <PolygonEditor />
-          <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
-          <AddLayer layers={WMS_SOURCE ?? []} />
-        </div>
+          )}
+          {!tableExpanded && (
+            <div
+              className={`relative rounded-lg overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 ${
+                tableVisible ? "flex-1 min-h-[240px]" : "flex-1 min-h-0"
+              }`}
+            >
+              <BaseMap />
+              <PolygonEditor />
+              <AddMarker markers={visibleMarkers} flyTo={selectedCoordinates} />
+              <AddLayer layers={WMS_SOURCE ?? []} />
+            </div>
+          )}
+          {tableVisible && (
+            <div
+              className={`min-h-0 flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all duration-300 ${
+                tableExpanded ? "flex-1 min-h-0" : "flex-[0_1_42%]"
+              }`}
+            >
+              <MapSearchDataTable
+                isLoading={isMapDataLoading}
+                isError={isError}
+                onExpandFull={() => setTableExpanded(true)}
+                onRestoreSplit={() => setTableExpanded(false)}
+                onCollapseTable={() => { setTableVisible(false); setTableExpanded(false); }}
+                isTableExpanded={tableExpanded}
+              />
+            </div>
+          )}
+        </main>
       </div>
-
-      {/* Data Table or Toggle Strip */}
-      {tableVisible ? (
-        <div className="flex-[0.5] w-full overflow-auto">
-          {/* <MapSearchDataTable /> */}
-           <MapSearchDataTable
-            isLoading={isMapDataLoading}
-            isError={isError}
-          />
-        </div>
-      ) : (
-        <div
-          className="w-full h-10 space-x-2 flex items-center justify-center cursor-pointer border border-border rounded shadow-sm bg-muted/30 hover:bg-muted/50 transition"
-          onClick={() => setTableVisible(true)}
-        >
-          <span className="text-sm text-muted-foreground">
-            Click here to expand and view the full data table with detailed
-            information
-          </span>
-          <ChevronUp size={20} className="text-sm text-muted-foreground" />
-        </div>
-      )}
     </div>
   );
 };
