@@ -82,6 +82,8 @@ export type DataItem = {
   eventDate?: string;
   /** Dataset/source name (e.g. GBIF, iDigBio) when showing combined results */
   dataset?: string;
+  /** When false, occurrence data is not available for this dataset; "Explore on map" is disabled. */
+  is_occurance_available?: boolean;
   /** Dynamic field keys returned by API (e.g. sanskrit_name, recipe, drug_name) */
   [key: string]: unknown;
 };
@@ -100,6 +102,8 @@ export type FederatedSearchData = {
           results?: DataItem[];
         };
       };
+      /** When false, this dataset has no occurrence data for map; "Explore on map" should be disabled. */
+      is_occurance_available?: boolean;
     }
   >;
 };

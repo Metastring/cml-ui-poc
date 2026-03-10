@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2, ExternalLink, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2, ExternalLink, MoreVertical } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 import { FederatedDataTableProps, fieldLabel } from "@/types/app/federatedSearch.types";
@@ -51,6 +58,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   fieldColumns = [],
   onSearch,
 }) => {
+  const router = useRouter();
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
   const { addVisibleMarker, removeMarkerByName } = useFederatedSearchMapData();
 
@@ -79,6 +87,17 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
       }
     });
   }, [mapData, addVisibleMarker]);
+
+  const handleExploreDataset = (row: DataItem) => {
+    const datasetName = row.dataset ? String(row.dataset).trim() : null;
+    if (!datasetName) return;
+    const category =
+      (row as Record<string, unknown>).category != null
+        ? String((row as Record<string, unknown>).category)
+        : "Biodiversity";
+    const path = `/datasets/${encodeURIComponent(category)}/${encodeURIComponent(datasetName)}`;
+    router.push(path);
+  };
 
   // Handle row toggle — only set "on map" when API returns occurrence data
   const handleToggleSelection = (row: DataItem, index: number) => {
@@ -118,7 +137,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
-        <th className="px-6 py-4 text-foreground">Explore on Map</th>
+        <th className="px-6 py-4 text-foreground">Explore</th>
         {fieldColumns.map((field) => (
           <th key={field} className="px-6 py-4 text-foreground">
             {fieldLabel(field)}
@@ -143,44 +162,54 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
           <TableHeader />
           <tbody className="divide-y divide-border">
             {data.map((row, index) => {
-              const name = row.scientific_name || row.taxon_name;
               return (
-                <tr
-                  key={index}
-                  className={`cursor-pointer transition-colors ${
-                    checkedRows[index]
-                      ? "bg-primary/10 hover:bg-primary/20"
-                      : "hover:bg-muted/50"
-                  }`}
-                  onClick={() => handleToggleSelection(row, index)}
-                >
-                  <td
-                    className="px-6 py-4"
-                    title={checkedRows[index] ? "Hide from map" : "View on map"}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSelection(row, index)}
-                      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                <ContextMenu key={index}>
+                  <ContextMenuTrigger asChild>
+                    <tr
+                      className={`transition-colors ${
                         checkedRows[index]
-                          ? "bg-primary/20 text-primary hover:bg-primary/30"
-                          : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          ? "bg-primary/10 hover:bg-primary/20"
+                          : "hover:bg-muted/50"
                       }`}
                     >
-                      {checkedRows[index] ? (
-                        <>
-                          <EyeOff className="h-4 w-4" />
-                          Hide
-                        </>
-                      ) : (
-                        <>
-                          <ExternalLink className="h-4 w-4" />
-                          View
-                        </>
-                      )}
-                    </button>
-                  </td>
+                      <td
+                        className="px-6 py-4"
+                        title="View records"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              const ev = new MouseEvent("contextmenu", {
+                                bubbles: true,
+                                cancelable: true,
+                                clientX: e.clientX,
+                                clientY: e.clientY,
+                              });
+                              (e.currentTarget as HTMLElement).dispatchEvent(ev);
+                            }}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            title="More options"
+                            aria-label="Open menu"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push("/federated_search/records");
+                            }}
+                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            View records
+                          </button>
+                        </div>
+                      </td>
                   {fieldColumns.map((field) => {
                     const value = row[field];
                     const text =
@@ -201,7 +230,28 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                       className="whitespace-nowrap"
                     />
                   </td>
-                </tr>
+                    </tr>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      onSelect={() => handleExploreDataset(row)}
+                      description="Open the dataset page for this result in the catalog."
+                    >
+                      Explore dataset
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onSelect={() => handleToggleSelection(row, index)}
+                      disabled={row.is_occurance_available !== true}
+                      description={
+                        row.is_occurance_available === true
+                          ? "Add this result to the map to view occurrence locations."
+                          : "Sorry — occurrence data is not available for this dataset."
+                      }
+                    >
+                      Explore on map
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               );
             })}
           </tbody>
