@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
-import { FederatedDataTableProps } from "@/types/app/federatedSearch.types";
+import { FederatedDataTableProps, fieldLabel } from "@/types/app/federatedSearch.types";
 import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
 const MAX_CELL_CHARS = 45;
 
@@ -42,15 +42,13 @@ function TableCellWithMore({
   );
 }
 
-// Type for small table components props
-interface TableStateProps {
-  TableHeader: React.FC;
-}
+// Minimal state tables (no proper header until data is loaded)
 
 const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isLoading,
   isError,
   data = [],
+  fieldColumns = [],
   onSearch,
 }) => {
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
@@ -121,21 +119,27 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
         <th className="px-6 py-4 text-foreground">Explore on Map</th>
-        <th className="px-6 py-4 text-foreground">Scientific Name</th>
-        <th className="px-6 py-4 text-foreground">Common Name</th>
+        {fieldColumns.map((field) => (
+          <th key={field} className="px-6 py-4 text-foreground">
+            {fieldLabel(field)}
+          </th>
+        ))}
         <th className="px-6 py-4 text-foreground">Dataset</th>
       </tr>
     </thead>
   );
 
-  if (isLoading) return <LoadingTable TableHeader={TableHeader} />;
-  if (isError) return <ErrorTable TableHeader={TableHeader} />;
-  if (data.length === 0) return <EmptyTable TableHeader={TableHeader} />;
+  // Before data is fetched: show minimal table with no proper header
+  if (isLoading) return <LoadingTable />;
+  if (isError) return <ErrorTable />;
+  if (data.length === 0) return <EmptyTable />;
+
+  // Only after data is loaded: show full table with dynamic header from API
 
   return (
-    <div className="overflow-x-auto w-full">
-      <div className="min-w-full bg-card shadow-xl rounded-xl overflow-hidden">
-        <table className="min-w-full text-sm text-left text-foreground">
+    <div className="w-full min-w-0 overflow-x-auto">
+      <div className="min-w-max w-full bg-card shadow-xl rounded-xl overflow-hidden">
+        <table className="min-w-max w-full text-sm text-left text-foreground">
           <TableHeader />
           <tbody className="divide-y divide-border">
             {data.map((row, index) => {
@@ -177,12 +181,20 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                       )}
                     </button>
                   </td>
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <TableCellWithMore text={name} className="whitespace-nowrap" />
-                  </td>
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <TableCellWithMore text={row.common_names ?? row.common_name} />
-                  </td>
+                  {fieldColumns.map((field) => {
+                    const value = row[field];
+                    const text =
+                      value !== undefined && value !== null ? String(value) : null;
+                    return (
+                      <td
+                        key={field}
+                        className="px-6 py-4"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <TableCellWithMore text={text} />
+                      </td>
+                    );
+                  })}
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <TableCellWithMore
                       text={row.dataset ? String(row.dataset).toUpperCase() : null}
@@ -201,16 +213,15 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
 
 export default FederatedDataTable;
 
-// Small table components with proper types
-const LoadingTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+// Minimal table with no header — shown until data is fetched
+const LoadingTable: React.FC = () => (
   <div className="flex h-full justify-center rounded-2xl">
     <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
-      <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={4} className="text-center text-muted-foreground italic">
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="animate-spin mr-2" />
+          <td className="text-center text-muted-foreground italic py-12">
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
               <span>Loading...</span>
             </div>
           </td>
@@ -220,13 +231,12 @@ const LoadingTable: React.FC<TableStateProps> = ({ TableHeader }) => (
   </div>
 );
 
-const ErrorTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+const ErrorTable: React.FC = () => (
   <div className="flex h-full justify-center rounded-2xl">
     <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
-      <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={4} className="text-center text-destructive italic py-6">
+          <td className="text-center text-destructive italic py-12">
             Oops! Something went wrong while loading data.
           </td>
         </tr>
@@ -235,14 +245,13 @@ const ErrorTable: React.FC<TableStateProps> = ({ TableHeader }) => (
   </div>
 );
 
-const EmptyTable: React.FC<TableStateProps> = ({ TableHeader }) => (
+const EmptyTable: React.FC = () => (
   <div className="flex h-full justify-center rounded-2xl">
     <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">
-      <TableHeader />
       <tbody>
         <tr>
-          <td colSpan={4} className="text-center text-muted-foreground italic py-6">
-            No data available
+          <td className="text-center text-muted-foreground italic py-12">
+            No data available. Run a search to see results.
           </td>
         </tr>
       </tbody>

@@ -82,9 +82,13 @@ export type DataItem = {
   eventDate?: string;
   /** Dataset/source name (e.g. GBIF, iDigBio) when showing combined results */
   dataset?: string;
+  /** Dynamic field keys returned by API (e.g. sanskrit_name, recipe, drug_name) */
+  [key: string]: unknown;
 };
 
 export type FederatedSearchData = {
+  /** Ordered list of field names returned by API; drives table column order */
+  fields?: string[];
   results?: Record<
     string,
     {

@@ -27,10 +27,22 @@ export type FederatedSearchBarProps = {
 
 //FederatedDataTable
 
+/** Human-readable label for a field key (e.g. vernacular_name_common_names → Vernacular Name (Common Names)) */
+export function fieldLabel(fieldKey: string): string {
+  if (fieldKey === "vernacular_name_common_names") {
+    return "Vernacular Name (Common Names)";
+  }
+  return fieldKey
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export interface FederatedDataTableProps {
   isLoading: boolean;
   isError: boolean;
   data: DataItem[];
+  /** Ordered field names from API; columns shown between Explore on Map and Dataset */
+  fieldColumns?: string[];
   onSearch: () => void;
 }

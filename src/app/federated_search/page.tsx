@@ -40,13 +40,25 @@ const Page = () => {
   const [showResultsView, setShowResultsView] = useState(false);
   const searchJustSubmittedRef = useRef(false);
 
-  const { totalResultCount, flattenedData, sourcesWithResults, sourcesQueried } = useMemo(() => {
+  const { totalResultCount, flattenedData, sourcesWithResults, sourcesQueried, fieldColumns } = useMemo(() => {
     if (!data?.results) {
-      return { totalResultCount: 0, flattenedData: [] as DataItem[], sourcesWithResults: 0, sourcesQueried: 0 };
+      return {
+        totalResultCount: 0,
+        flattenedData: [] as DataItem[],
+        sourcesWithResults: 0,
+        sourcesQueried: 0,
+        fieldColumns: [] as string[],
+      };
     }
     const resultKeys = Object.keys(data.results);
     const flattened: DataItem[] = [];
     let sourcesWithResultsCount = 0;
+    // Use API's top-level fields for column order; fallback to first dataset's field_results keys
+    const apiFields = data.fields && data.fields.length > 0 ? data.fields : null;
+    const firstSource = Object.values(data.results)[0];
+    const derivedFields = firstSource?.field_results ? Object.keys(firstSource.field_results) : [];
+    const fieldColumnsList = apiFields ?? derivedFields;
+
     Object.entries(data.results).forEach(([datasetKey, source]) => {
       const fieldResults = source?.field_results ?? {};
       const rows = Object.values(fieldResults).flatMap(
@@ -61,8 +73,9 @@ const Page = () => {
       flattenedData: flattened,
       sourcesWithResults: sourcesWithResultsCount,
       sourcesQueried: resultKeys.length,
+      fieldColumns: fieldColumnsList,
     };
-  }, [data?.results]);
+  }, [data?.results, data?.fields]);
 
   // All possible indicators from all categories/datasets (no dependency on selection)
   const indicatorList: Option[] = useMemo(() => {
@@ -280,12 +293,13 @@ const Page = () => {
             </header>
 
             {/* Table Section — single table with Dataset column */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 min-w-0 overflow-auto">
               <FederatedDataTable
                 onSearch={() => setIsMapVisible(true)}
                 isLoading={isLoading}
                 isError={isError}
                 data={flattenedData}
+                fieldColumns={fieldColumns}
               />
             </div>
           </div>
