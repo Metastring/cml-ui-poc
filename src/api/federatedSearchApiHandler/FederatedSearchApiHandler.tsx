@@ -89,8 +89,12 @@ export const useGetDatasetDetails = (
   return useQuery<DatasetDetail>({
     queryKey: ["dataset-details", categoryName, datasetTitle],
     queryFn: async () => {
+      const params = new URLSearchParams({
+        title: datasetTitle,
+        category_name: categoryName,
+      });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_FEDERATED_BASE_URL}/metadata?title=${datasetTitle}&category_name=${categoryName}`
+        `${process.env.NEXT_PUBLIC_FEDERATED_BASE_URL}/metadata?${params.toString()}`
       );
       if (!res.ok) {
         throw new Error("Failed to fetch dataset details");

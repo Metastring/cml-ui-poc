@@ -15,7 +15,7 @@ import {
   InitialDatasetSubmitPayload,
 } from "@/types/app/contribute.types";
 
-const ACCEPT_FILES = ".json,.xlsx,.xls";
+const ACCEPT_FILES = ".json";
 
 interface UploadModeState {
   file: File | null;
@@ -113,12 +113,12 @@ const InitialUploadPane: React.FC<InitialUploadPaneProps> = ({
           Step 1 — Upload metadata file
         </h2>
         <p className="text-xs text-muted-foreground">
-          Upload a JSON or spreadsheet file that contains your dataset metadata. We&apos;ll soon
-          use this to pre-fill the registration details for you.
+          Upload a JSON file that contains your dataset metadata. We&apos;ll soon use this to
+          pre-fill the registration details for you.
         </p>
       </div>
 
-      <Label className="pb-2 block text-sm font-medium">Upload metadata (JSON or Excel)</Label>
+      <Label className="pb-2 block text-sm font-medium">Upload metadata (JSON)</Label>
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -142,7 +142,7 @@ const InitialUploadPane: React.FC<InitialUploadPaneProps> = ({
           Drag and drop a file here, or click to browse
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Accepted formats: .json, .xlsx, .xls
+          Accepted formats: .json
         </p>
         {file && (
           <p className="mt-3 text-sm font-medium text-foreground">

@@ -10,7 +10,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, FileText, Users, Building2, BarChart3 } from "lucide-react";
+import { Loader2, FileText, Users, Building2, BarChart3, ListFilter } from "lucide-react";
 
 const renderVal = (value: string | number | boolean | null | undefined) => {
   if (value === null || value === undefined) return <span className="text-muted-foreground">—</span>;
@@ -100,6 +100,26 @@ const DatasetDetailView = ({
           </Table>
         </div>
       </section>
+
+      {/* Indicator — ontology_mapping_to_display from fields */}
+      {d.fields?.length ? (
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ListFilter className="size-4 text-primary" />
+            Indicator
+          </h2>
+          <ul className="rounded-lg border border-border overflow-hidden divide-y divide-border max-h-[280px] overflow-y-auto">
+            {d.fields.map((f, i) => (
+              <li
+                key={i}
+                className="px-4 py-2.5 text-sm"
+              >
+                {renderVal(f.ontology_mapping_to_display)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Contacts */}
       <section>

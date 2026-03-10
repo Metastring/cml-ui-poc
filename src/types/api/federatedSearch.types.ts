@@ -39,6 +39,7 @@ export interface Scope {
 export interface Field {
   field_name: string | null;
   ontology_mapping: string | null;
+  ontology_mapping_to_display: string | null;
   data_type: string | null;
 }
 
