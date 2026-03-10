@@ -1,11 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { PostContributeBaseApiHandler } from "./ContributeBaseApiHandler";
+import {
+  PostContributeBaseApiHandler,
+  PostDatasetRegistryWithFile,
+} from "./ContributeBaseApiHandler";
 import { GetFederatedSearchBaseApiHandler } from "../federatedSearchApiHandler/FederatedSearchBaseApiHandler";
 import {
   FinalDatasetResponse,
   InitialDatasetResponse,
   MutationPayload,
 } from "@/types/api/contribute.types";
+
+export interface RegisterDatasetByFilePayload {
+  file: File;
+  dataset_description: string;
+}
 
 export const useRegisterYourDataset = () => {
   const initialDatasetMutation = useMutation<
@@ -17,6 +25,15 @@ export const useRegisterYourDataset = () => {
       PostContributeBaseApiHandler(endpoint, params),
   });
 
+  const uploadFileMutation = useMutation<
+    InitialDatasetResponse,
+    Error,
+    RegisterDatasetByFilePayload
+  >({
+    mutationFn: ({ file, dataset_description }) =>
+      PostDatasetRegistryWithFile(file, dataset_description),
+  });
+
   const finalDatasetMutation = useMutation<
     FinalDatasetResponse,
     Error,
@@ -26,7 +43,11 @@ export const useRegisterYourDataset = () => {
       PostContributeBaseApiHandler(endpoint, params),
   });
 
-  return { initialDatasetMutation, finalDatasetMutation };
+  return {
+    initialDatasetMutation,
+    uploadFileMutation,
+    finalDatasetMutation,
+  };
 };
 
 export const useGetCategoriesList = () => {

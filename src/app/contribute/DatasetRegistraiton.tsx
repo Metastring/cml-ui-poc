@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
 import InitialDatasetRegistraion from "./InitialDatasetRegistration";
@@ -22,7 +23,15 @@ interface UploadModeState {
   isDragging: boolean;
 }
 
-const InitialUploadPane: React.FC = () => {
+interface InitialUploadPaneProps {
+  onSubmit: (payload: { file: File; dataset_description: string }) => void;
+  isSubmitting: boolean;
+}
+
+const InitialUploadPane: React.FC<InitialUploadPaneProps> = ({
+  onSubmit,
+  isSubmitting,
+}) => {
   const [state, setState] = useState<UploadModeState>({
     file: null,
     error: null,
@@ -88,9 +97,11 @@ const InitialUploadPane: React.FC = () => {
   };
 
   const handleNext = () => {
-    toast.info(
-      "File-based metadata upload is being wired to the backend. We’ve captured your metadata details."
-    );
+    if (!file) return;
+    onSubmit({
+      file,
+      dataset_description: metadata.description.trim(),
+    });
   };
 
   const { file, error, isDragging } = state;
@@ -163,26 +174,23 @@ const InitialUploadPane: React.FC = () => {
         <button
           type="button"
           onClick={handleNext}
-          disabled={!file}
+          disabled={!file || isSubmitting}
           className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:w-1/3"
         >
-          Continue
+          {isSubmitting ? "Submitting..." : "Continue"}
         </button>
-        <p className="text-xs text-muted-foreground text-center">
-          Ontology mapping and full registration flow will work the same way as with the form-based
-          option once file upload is fully enabled.
-        </p>
       </div>
     </div>
   );
 };
 
 const DatasetRegistration = () => {
+  const router = useRouter();
   const [step, setStep] = useState<"initial" | "final">("initial");
   const [initialMode, setInitialMode] = useState<"form" | "upload">("upload");
   const [datasetId, setDatasetId] = useState<string>("");
 
-  const { initialDatasetMutation, finalDatasetMutation } =
+  const { initialDatasetMutation, uploadFileMutation, finalDatasetMutation } =
     useRegisterYourDataset();
 
   const handleInitialSubmit = (data: InitialDatasetSubmitPayload) => {
@@ -190,7 +198,6 @@ const DatasetRegistration = () => {
       { endpoint: "/dataset-registry", params: data },
       {
         onSuccess: (res: InitialDatasetResponse) => {
-          // toast.success("Initial dataset !");
           setDatasetId(res.dataset_id);
           setStep("final");
         },
@@ -202,6 +209,26 @@ const DatasetRegistration = () => {
       }
     );
   };
+
+  const handleUploadSubmit = (payload: {
+    file: File;
+    dataset_description: string;
+  }) => {
+    uploadFileMutation.mutate(payload, {
+      onSuccess: (res: InitialDatasetResponse) => {
+        setDatasetId(res.dataset_id);
+        setStep("final");
+      },
+      onError: (err: { message: string }) => {
+        toast.error(
+          err.message || "Failed to submit file. Please try again."
+        );
+      },
+    });
+  };
+
+  const initialStepComplete =
+    initialDatasetMutation.isSuccess || uploadFileMutation.isSuccess;
 
   const handleFinalSubmit = (data: FinalDatasetForm) => {
     if (!datasetId) {
@@ -219,6 +246,7 @@ const DatasetRegistration = () => {
   {
     onSuccess: () => {
       toast.success("Dataset mapping updated successfully!");
+      router.replace("/contribute/success");
     },
     onError: (err: { message: string }) => {
       toast.error(err.message || "Failed to update dataset mapping");
@@ -265,7 +293,7 @@ const DatasetRegistration = () => {
           >
             <span
               className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
-                initialDatasetMutation.isSuccess
+                initialStepComplete
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground"
               }`}
@@ -274,15 +302,13 @@ const DatasetRegistration = () => {
             </span>
             <button
               type="button"
-              onClick={() =>
-                initialDatasetMutation.isSuccess && setStep("final")
-              }
+              onClick={() => initialStepComplete && setStep("final")}
               className={`border-b-2 pb-1 text-left text-sm transition-colors ${
                 step === "final"
                   ? "border-primary text-foreground font-semibold"
                   : "border-transparent text-muted-foreground"
               } ${
-                !initialDatasetMutation.isSuccess
+                !initialStepComplete
                   ? "cursor-not-allowed opacity-60"
                   : ""
               }`}
@@ -338,7 +364,12 @@ const DatasetRegistration = () => {
         />
       )}
 
-      {step === "initial" && initialMode === "upload" && <InitialUploadPane />}
+      {step === "initial" && initialMode === "upload" && (
+        <InitialUploadPane
+          onSubmit={handleUploadSubmit}
+          isSubmitting={uploadFileMutation.isPending}
+        />
+      )}
       {step === "final" && (
         <FinalDatasetRegistration
           datasetId={datasetId}
