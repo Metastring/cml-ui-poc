@@ -5,8 +5,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { Loader2, AlertCircle, Inbox, MapPin, Maximize2, Minimize2, Table2 } from "lucide-react";
-import { PolygonDataItem } from "@/types/api/mapSearch.types";
+import { PolygonDataItem, MapSearchResult } from "@/types/api/mapSearch.types";
 import { MapSearchDataTableProps } from "@/types/app/mapSearch.types";
+
+const EMPTY_RESULT: MapSearchResult = { rows: [], displayFields: [] };
 
 const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
   isLoading,
@@ -21,14 +23,32 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
     useMapSearchData();
 
   // Fetch polygon data from cache (mutated by SearchBar)
-  const { data: polygonData = [] } = useQuery<PolygonDataItem[]>({
+  const { data: mapSearchResult } = useQuery<MapSearchResult>({
     queryKey: ["polygonData"],
-    queryFn: () => [],
-    initialData: () => queryClient.getQueryData<PolygonDataItem[]>(["polygonData"]) || [],
+    queryFn: () => EMPTY_RESULT,
+    initialData: () =>
+      queryClient.getQueryData<MapSearchResult>(["polygonData"]) ?? EMPTY_RESULT,
   });
+  const polygonData = mapSearchResult?.rows ?? [];
+  const displayFields = mapSearchResult?.displayFields ?? [];
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [visibleRows, setVisibleRows] = useState<boolean[]>([]);
+
+  const getCellValue = (row: PolygonDataItem, field: string): string => {
+    const v = row[field] ?? row[field.toLowerCase()];
+    if (v === undefined || v === null) return "—";
+    return String(v);
+  };
+
+  const getMarkerLabel = (row: PolygonDataItem): string => {
+    const name =
+      row.scientificName ??
+      row.scientific_name ??
+      (row.scientificname as string) ??
+      (displayFields[0] ? getCellValue(row, displayFields[0]) : "");
+    return name !== "—" ? name : "Record";
+  };
 
   // Keep all checked when data changes
   useEffect(() => {
@@ -40,17 +60,18 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
     polygonData.forEach((row) => {
       if (row.latitude != null && row.longitude != null) {
         addVisibleMarker({
-          scientificName: row.scientificName,
+          scientificName: getMarkerLabel(row),
           lat: row.latitude,
           lng: row.longitude,
         });
       }
     });
-  }, [polygonData, addVisibleMarker]);
+  }, [polygonData, addVisibleMarker, displayFields]);
 
   const handleCheckboxChange = (index: number) => {
     const row = polygonData[index];
-    const { latitude: lat, longitude: lng, scientificName } = row;
+    const { latitude: lat, longitude: lng } = row;
+    const scientificName = getMarkerLabel(row);
 
     if (lat == null || lng == null) return;
 
@@ -74,13 +95,17 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
 
   const handleRowClick = (row: PolygonDataItem, index: number) => {
     if (!visibleRows[index]) return;
-    if (row.latitude == null || row.longitude == null) return;
+    const lat = row.latitude;
+    const lng = row.longitude;
+    // Don't select/fly when coords are missing or defaulted to 0,0 (no real location)
+    if (lat == null || lng == null || (!Number.isFinite(lat) || !Number.isFinite(lng))) return;
+    if (lat === 0 && lng === 0) return;
 
     setSelectedIndex(index);
     setSelectedCoordinates({
-      scientificName: row.scientificName,
-      lat: row.latitude,
-      lng: row.longitude,
+      scientificName: getMarkerLabel(row),
+      lat,
+      lng,
     });
   };
 
@@ -131,45 +156,27 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
     </div>
   );
 
+  const showDatasetColumn = displayFields.length > 0 && !displayFields.includes("dataset");
+
   const TableHeader = () => (
     <thead className="sticky top-0 z-10 bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/80 border-b border-border">
       <tr>
         <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
           Show
         </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Scientific Name
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Family
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Genus
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Species
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Author
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          State
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Continent
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Region
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Event Date
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Basis of Record
-        </th>
-        <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
-          Dataset
-        </th>
+        {displayFields.map((field) => (
+          <th
+            key={field}
+            className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap"
+          >
+            {field}
+          </th>
+        ))}
+        {showDatasetColumn && (
+          <th className="px-2 py-2 text-left text-xs font-semibold text-foreground uppercase tracking-wider whitespace-nowrap">
+            dataset
+          </th>
+        )}
       </tr>
     </thead>
   );
@@ -208,7 +215,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
           <Inbox className="h-10 w-10 text-muted-foreground/70" />
           <p className="text-sm font-medium text-foreground">No results yet</p>
           <p className="text-xs text-muted-foreground max-w-[240px]">
-            Select datasets, draw a region on the map, then click Search to see occurrences here.
+            Select datasets, then click Search. Optionally draw a region on the map to filter by area.
           </p>
         </div>
       </div>
@@ -251,23 +258,21 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
                     onCheckedChange={() => handleCheckboxChange(index)}
                   />
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap font-medium text-foreground">
-                  {row.scientificName || row.scientific_name || "—"}
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.family || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.genus || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.species || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.author || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.state || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.continent || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.region || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.eventDate || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">{row.basisOfRecord || "—"}</td>
-                <td className="px-2 py-2 whitespace-nowrap">
-                  <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
-                    {row.dataset?.toUpperCase() ?? "—"}
-                  </span>
-                </td>
+                {displayFields.map((field) => (
+                  <td
+                    key={field}
+                    className={`px-2 py-2 whitespace-nowrap text-muted-foreground ${field === "scientificname" ? "font-medium text-foreground" : ""}`}
+                  >
+                    {getCellValue(row, field)}
+                  </td>
+                ))}
+                {showDatasetColumn && (
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                      {row.dataset?.toUpperCase() ?? "—"}
+                    </span>
+                  </td>
+                )}
               </tr>
             );
           })}

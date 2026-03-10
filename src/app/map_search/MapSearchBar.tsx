@@ -10,14 +10,14 @@ import MapSearchTreeDropdown from "@/app/map_search/MapSearchTreeDropdown";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
   MapSearchParams,
-  PolygonDataItem,
+  MapSearchResult,
   PolygonDetail,
 } from "@/types/api/mapSearch.types";
 import { Loader2, Search, RotateCcw } from "lucide-react";
 
 interface MapSearchBarProps {
   onSearch?: () => void;
-  mutate: UseMutateFunction<PolygonDataItem[], Error, MapSearchParams, unknown>;
+  mutate: UseMutateFunction<MapSearchResult, Error, MapSearchParams, unknown>;
   clearDataMapSearchData: () => void;
   isMapDataLoading: boolean;
 }
@@ -56,24 +56,17 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
       return;
     }
 
-    if (!shapes || shapes.features.length === 0) {
-      toast.error("Draw a region on the map first, then run Search.");
-      return;
-    }
-
-    const polygonShapes: PolygonDetail[] = shapes.features
-      .filter(
-        (f): f is GeoJSON.Feature<GeoJSON.Polygon> =>
-          f.geometry.type === "Polygon"
-      )
-      .map((feature) => ({
-        geometry: feature.geometry as PolygonDetail["geometry"],
-      }));
-
-    if (!polygonShapes.length) {
-      toast.error("Draw a polygon on the map, then try again.");
-      return;
-    }
+    const polygonShapes: PolygonDetail[] =
+      shapes && shapes.features.length > 0
+        ? shapes.features
+            .filter(
+              (f): f is GeoJSON.Feature<GeoJSON.Polygon> =>
+                f.geometry.type === "Polygon"
+            )
+            .map((feature) => ({
+              geometry: feature.geometry as PolygonDetail["geometry"],
+            }))
+        : [];
 
     mutate({
       category: categories[0],
@@ -81,8 +74,10 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
         k === "Global Biodiversity Info Facility"
           ? "gbif"
           : k === "Kew Plant Database"
-          ? "kew" 
-          : k === "Citizens' Portal of Medicinal Plants" ? "cpmp" : k
+          ? "kew"
+          : k === "Citizens' Portal of Medicinal Plants"
+          ? "cpmp"
+          : k
       ),
       shapes: polygonShapes,
     });
@@ -135,8 +130,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
     }));
   }, [data]);
 
-  const hasPolygon = shapes && shapes.features.length > 0;
-  const canSearch = datasets.length > 0 && hasPolygon;
+  const canSearch = datasets.length > 0;
 
   return (
     <div className="flex flex-1 min-h-0 flex-col gap-4 w-full">
@@ -180,6 +174,9 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
           selected={selectedNodes}
           onChange={(selected) => {
             setSelectedNodes(selected);
+            // When datasets change, immediately clear existing markers + cached results
+            clearCoordinates();
+            clearDataMapSearchData();
 
             if (!selected.length) {
               setCategories([]);
@@ -202,10 +199,10 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
         />
       </div>
 
-      {!hasPolygon && datasets.length > 0 && (
+      {datasets.length > 0 && (
         <div className="shrink-0 rounded-md border border-border bg-muted/50 px-2.5 py-2">
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-medium text-foreground">Step 2.</span> Draw a region on the map, then click Search.
+            <span className="font-medium text-foreground">Optional:</span> Draw a region on the map to filter by area, then click Search.
           </p>
         </div>
       )}

@@ -4,6 +4,13 @@ import React, { useEffect } from "react";
 import maplibregl from "maplibre-gl";
 import useMapStore from "@/store/base_map_store/useMapStore";
 
+/**
+ * Fly-to flow:
+ * - Page passes flyTo={selectedCoordinates} from the store (e.g. map search table row click).
+ * - When flyTo is set with valid lat/lng, this effect runs mapRef.flyTo(center, zoom) so the map pans to that point.
+ * - We only fly when lat/lng are finite; otherwise we skip (avoids flying to 0,0 when data has no coordinates).
+ */
+
 interface AddMarkerProps {
   markers: {
     lat: number;
@@ -116,12 +123,14 @@ const AddMarker: React.FC<AddMarkerProps> = ({ markers, flyTo }) => {
       el.addEventListener("mouseleave", () => m.togglePopup());
 
       markerRefs.push(m);
-
-      markerRefs.push(m);
     });
 
-    // 🛫 Perform flyTo if requested
-    if (flyTo) {
+    // 🛫 Fly to point only when we have valid coordinates (avoids flying to 0,0 when lat/lng are missing)
+    const hasValidCoords =
+      flyTo != null &&
+      Number.isFinite(flyTo.lat) &&
+      Number.isFinite(flyTo.lng);
+    if (hasValidCoords) {
       mapRef.flyTo({
         center: [flyTo.lng, flyTo.lat],
         zoom: 10,

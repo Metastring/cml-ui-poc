@@ -9,17 +9,29 @@ export interface PolygonDetail {
 }
 
 export interface MapSearchParams {
-  category: string;
+  category?: string;
   dataset: string[];
-  shapes: PolygonDetail[];
+  shapes?: PolygonDetail[];
   limit?: number;
   offset?: number;
 }
 
-// export type PolygonDataItem = Record<string, unknown>;
+/** API response per dataset: display_fields + data rows */
+export interface DatasetDisplayResult {
+  display_fields: string[];
+  data: Record<string, unknown>[];
+}
 
-// src/types/api/mapSearch.types.ts
+/** getMultiPolygonDataWithDisplayFields.results shape (keyed by dataset) */
+export type MultiPolygonDisplayResults = Record<string, DatasetDisplayResult>;
 
+/** Cached map search result: flattened rows + columns to show */
+export interface MapSearchResult {
+  rows: PolygonDataItem[];
+  displayFields: string[];
+}
+
+/** Row item with known map fields + any display field keys from API */
 export interface PolygonDataItem {
   scientificName: string;
   scientific_name?: string;
@@ -36,6 +48,8 @@ export interface PolygonDataItem {
   state?: string;
   continent?: string;
   countryCode?: string;
+  /** Allow display field keys from API (e.g. scientificname, eventdate) */
+  [key: string]: string | number | undefined;
 }
 
 export interface FederatedSearchDataItem {

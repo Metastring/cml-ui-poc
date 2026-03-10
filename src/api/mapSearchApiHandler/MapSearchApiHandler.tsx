@@ -1,7 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GetMapSearchBaseApiHandler } from "./MapSearchBaseApiHandler";
 import { toast } from "sonner";
-import { MapSearchParams, PolygonDataItem } from "@/types/api/mapSearch.types";
+import {
+  MapSearchParams,
+  PolygonDataItem,
+  MapSearchResult,
+  MultiPolygonDisplayResults,
+} from "@/types/api/mapSearch.types";
+
+/** Normalize API response keys (e.g. scientificname, eventdate) to PolygonDataItem shape */
+function normalizePolygonItem(raw: Record<string, unknown>, datasetKey: string): PolygonDataItem {
+  const get = (camel: string, lower: string) =>
+    (raw[camel] ?? raw[lower]) as string | number | undefined;
+  const lat = (raw.latitude ?? raw.decimallatitude) as number | undefined;
+  const lng = (raw.longitude ?? raw.decimallongitude) as number | undefined;
+  return {
+    scientificName: String(get("scientificName", "scientificname") ?? get("scientific_name", "scientific_name") ?? ""),
+    scientific_name: raw.scientific_name as string | undefined,
+    eventDate: String(raw.eventDate ?? raw.eventdate ?? ""),
+    basisOfRecord: (raw.basisOfRecord ?? raw.basisofrecord) as string | undefined,
+    longitude: Number(lng ?? 0),
+    latitude: Number(lat ?? 0),
+    dataset: datasetKey,
+    region: raw.region as string | undefined,
+    family: raw.family as string | undefined,
+    genus: raw.genus as string | undefined,
+    species: raw.species as string | undefined,
+    author: raw.author as string | undefined,
+    state: raw.state as string | undefined,
+    continent: raw.continent as string | undefined,
+    countryCode: (raw.countryCode ?? raw.countrycode) as string | undefined,
+  };
+}
 
 export const useGetWMSLayerByDataset = ({
   dataset,
@@ -34,13 +64,11 @@ export const useGetWMSLayerByDataset = ({
 
 
 const fetchPolygonData = async ({
-  category,
   dataset,
-  shapes,
+  shapes = [],
   limit = 500,
   offset = 0,
-}: MapSearchParams): Promise<PolygonDataItem[]> => {
-  console.log(dataset);
+}: MapSearchParams): Promise<MapSearchResult> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v1/spatial_search`,
     {
@@ -48,15 +76,14 @@ const fetchPolygonData = async ({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: `
-          query ($input: SpatialQueryInput!) {
-  getMultiPolygonData(input: $input) {
-    results
-  }
-}
+          query GetMultiPolygonDataWithDisplayFields($input: SpatialQueryInput!) {
+            getMultiPolygonDataWithDisplayFields(input: $input) {
+              results
+            }
+          }
         `,
         variables: {
           input: {
-            category,
             dataset,
             polygonDetail: shapes,
             limit,
@@ -71,50 +98,65 @@ const fetchPolygonData = async ({
     throw new Error(`HTTP error: ${res.status}`);
   }
   const json = await res.json();
-  // console.log("✅ API JSON:", json);
+  const results: MultiPolygonDisplayResults =
+    json.data?.getMultiPolygonDataWithDisplayFields?.results ?? {};
 
-  const multiPolygonData: Record<string, PolygonDataItem[]> =
-    json.data?.getMultiPolygonData?.results || {};
+  const allDisplayFields = new Set<string>();
+  const rows: PolygonDataItem[] = [];
 
-  const results = Object.entries(multiPolygonData).flatMap(([key, items]) =>
-    (items || []).map((item) => ({
-      ...item,
-      dataset: key,
-    }))
-  );
+  for (const [datasetKey, payload] of Object.entries(results)) {
+    const displayFields = payload?.display_fields ?? [];
+    const data = payload?.data ?? [];
+    displayFields.forEach((f) => allDisplayFields.add(f));
+    for (const item of data) {
+      const normalized = normalizePolygonItem(
+        (item ?? {}) as Record<string, unknown>,
+        datasetKey
+      );
+      // Keep all raw keys for table display (so display_fields columns resolve)
+      const row: PolygonDataItem = { ...normalized };
+      for (const [k, v] of Object.entries(item ?? {})) {
+        if (v !== undefined && row[k] === undefined) {
+          row[k] = v as string | number;
+        }
+      }
+      rows.push(row);
+    }
+  }
 
-  // console.log("✅ Results prepared:", results);
+  return {
+    rows,
+    displayFields: Array.from(allDisplayFields),
+  };
+};
 
-  return results ?? [];
+const EMPTY_MAP_SEARCH_RESULT: MapSearchResult = {
+  rows: [],
+  displayFields: [],
 };
 
 export const useGetMapSearchData = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<PolygonDataItem[], Error, MapSearchParams>({
+  const mutation = useMutation<MapSearchResult, Error, MapSearchParams>({
     mutationFn: fetchPolygonData,
     onSuccess: (data) => {
-      // ✅ Cache the result under 'polygonData' key
       queryClient.setQueryData(["polygonData"], data);
-
-      // ✅ Set the query options so it stays in cache for 10 minutes (600_000 ms)
       queryClient.setQueryDefaults(["polygonData"], {
         staleTime: 600_000,
         gcTime: 600_000,
       });
 
-      if (!data || data.length === 0) {
+      if (!data?.rows?.length) {
         toast.error(
           "No data found for your search. Please try with another polygon."
         );
-
-        // alert("No data found for your search. Please try with another polygon.");
       }
     },
   });
 
   const clearDataMapSearchData = () => {
-    queryClient.setQueryData(["polygonData"], []);
+    queryClient.setQueryData(["polygonData"], EMPTY_MAP_SEARCH_RESULT);
   };
 
   return {
