@@ -15,40 +15,20 @@ import {
   DatabaseZap,
   FileText,
   FileSearch,
-  Leaf,
-  BarChart3,
   Users,
   Layers,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+import { useGetPlatformStatistics } from "@/api/dashboard/DashboardApiHandler";
 
-const stats = [
-  {
-    label: "Species documented",
-    value: "2.4M+",
-    icon: Leaf,
-    description: "Across India",
-  },
-  {
-    label: "Datasets",
-    value: "180+",
-    icon: Layers,
-    description: "Federated sources",
-  },
-  {
-    label: "Observations",
-    value: "12M+",
-    icon: BarChart3,
-    description: "Georeferenced",
-  },
-  {
-    label: "Contributors",
-    value: "450+",
-    icon: Users,
-    description: "Research & citizen science",
-  },
-];
+const formatNumber = (value: number | undefined | null) => {
+  if (value === undefined || value === null) return "—";
+  const formatted = new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(value);
+  return value === 0 ? formatted : `${formatted}+`;
+};
 
 const actions = [
   {
@@ -86,6 +66,23 @@ const actions = [
 ];
 
 const Dashboard = () => {
+  const { data: statsData, isLoading } = useGetPlatformStatistics();
+
+  const stats = [
+    {
+      label: "Datasets",
+      value: formatNumber(statsData?.total_datasets),
+      icon: Layers,
+      description: "Federated sources",
+    },
+    {
+      label: "Contributors",
+      value: formatNumber(statsData?.contributors),
+      icon: Users,
+      description: "Research & citizen science",
+    },
+  ];
+
   return (
     <div className="min-h-full bg-background">
       {/* Hero */}
@@ -136,7 +133,9 @@ const Dashboard = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-semibold text-foreground">{value}</p>
+                  <p className="text-2xl font-semibold text-foreground">
+                    {isLoading ? "…" : value}
+                  </p>
                   <p className="text-muted-foreground text-xs">{description}</p>
                 </CardContent>
               </Card>
