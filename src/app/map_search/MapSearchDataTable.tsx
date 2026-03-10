@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import useMapSearchData from "@/store/map_search_store/useMapSearchData";
@@ -29,33 +29,42 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
     initialData: () =>
       queryClient.getQueryData<MapSearchResult>(["polygonData"]) ?? EMPTY_RESULT,
   });
-  const polygonData = mapSearchResult?.rows ?? [];
-  const displayFields = mapSearchResult?.displayFields ?? [];
+  const polygonData = useMemo(
+    () => mapSearchResult?.rows ?? [],
+    [mapSearchResult]
+  );
+  const displayFields = useMemo(
+    () => mapSearchResult?.displayFields ?? [],
+    [mapSearchResult]
+  );
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [visibleRows, setVisibleRows] = useState<boolean[]>([]);
 
-  const getCellValue = (row: PolygonDataItem, field: string): string => {
+  const getCellValue = useCallback((row: PolygonDataItem, field: string): string => {
     const v = row[field] ?? row[field.toLowerCase()];
     if (v === undefined || v === null) return "—";
     return String(v);
-  };
+  }, []);
 
-  const getMarkerLabel = (row: PolygonDataItem): string => {
-    const name =
-      row.scientificName ??
-      row.scientific_name ??
-      (row.scientificname as string) ??
-      (displayFields[0] ? getCellValue(row, displayFields[0]) : "");
-    return name !== "—" ? name : "Record";
-  };
+  const getMarkerLabel = useCallback(
+    (row: PolygonDataItem): string => {
+      const name =
+        row.scientificName ??
+        row.scientific_name ??
+        (row.scientificname as string) ??
+        (displayFields[0] ? getCellValue(row, displayFields[0]) : "");
+      return name !== "—" ? name : "Record";
+    },
+    [displayFields, getCellValue]
+  );
 
   // Keep all checked when data changes
   useEffect(() => {
     setVisibleRows(new Array(polygonData.length).fill(true));
   }, [polygonData]);
 
-  // Add all markers on mount
+  // Add all markers when polygon data or label fn changes
   useEffect(() => {
     polygonData.forEach((row) => {
       if (row.latitude != null && row.longitude != null) {
@@ -66,7 +75,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
         });
       }
     });
-  }, [polygonData, addVisibleMarker, displayFields]);
+  }, [polygonData, addVisibleMarker, getMarkerLabel]);
 
   const handleCheckboxChange = (index: number) => {
     const row = polygonData[index];
