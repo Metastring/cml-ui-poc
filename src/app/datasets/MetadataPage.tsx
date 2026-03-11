@@ -134,7 +134,7 @@ const MetadataPage = () => {
                       className="flex flex-col border-border/60 bg-card transition-shadow hover:shadow-md"
                     >
                       <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2">
                           <FileText className="size-5 shrink-0 text-primary mt-0.5" />
                           <CardTitle className="text-base leading-snug line-clamp-2">
                             {ds.dataset_title}

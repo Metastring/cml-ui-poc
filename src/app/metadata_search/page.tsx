@@ -203,7 +203,7 @@ const Page = () => {
             >
               <Card className="flex h-full flex-col border-border/60 bg-card transition-all hover:shadow-md hover:border-primary/40 cursor-pointer">
                 <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="rounded-lg bg-primary/10 p-2 text-primary group-hover:bg-primary/20 transition-colors mt-0.5">
                       <FileText className="size-4" aria-hidden />
                     </div>

@@ -36,7 +36,7 @@ const keyMap: Record<string, string> = {
 // If you also want to map dataset values to full names
 const datasetMap: Record<string, string> = {
   gbif: "Global Biodiversity Information Facility",
-  cpmp: "Citizens' Portal of Medicinal Plants",
+  cpmp: "CPMP Botanical Source",
   kew: "Kew Plant Database",
 };
 

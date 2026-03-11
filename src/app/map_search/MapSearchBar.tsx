@@ -75,7 +75,7 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
           ? "gbif"
           : k === "Kew Plant Database"
           ? "kew"
-          : k === "Citizens' Portal of Medicinal Plants"
+          : k === "CPMP Botanical Source"
           ? "cpmp"
           : k
       ),

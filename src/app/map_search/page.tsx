@@ -35,7 +35,7 @@ const Page = () => {
         ? "gbif"
         : k === "Kew Plant Database"
         ? "kew"
-        : k ==="Citizens' Portal of Medicinal Plants" ? "cpmp" : k
+        : k ==="CPMP Botanical Source" ? "cpmp" : k
     ),
   });
 
