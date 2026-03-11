@@ -30,7 +30,8 @@ function TableCellWithMore({
   if (!isLong) return <span className={className}>{str}</span>;
   return (
     <span
-      className={className}
+      className={`${className} inline-block max-w-xs align-top`}
+      style={{ whiteSpace: "normal", wordBreak: "break-all" }}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -227,7 +228,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <TableCellWithMore
                       text={row.dataset ? String(row.dataset).toUpperCase() : null}
-                      className="whitespace-nowrap"
+                      className=""
                     />
                   </td>
                     </tr>
