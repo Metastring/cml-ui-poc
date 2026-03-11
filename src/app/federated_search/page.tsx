@@ -182,12 +182,12 @@ const Page = () => {
     <div className="h-screen flex">
       {/* Sidebar */}
       <div className="w-[350px] shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-hidden">
-        {/* Header: Federated Search + Show/Hide map */}
+        {/* Header: Explore Dataset + Show/Hide map */}
         <header className="shrink-0 border-b border-border bg-muted/20">
           <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
-            <InstructionPopover title="Federated Search" icon={<Search className="h-4 w-4" />}>
+            <InstructionPopover title="Explore Dataset" icon={<Search className="h-4 w-4" />}>
               <p>
-                Federated Search queries multiple remote databases and returns
+                Explore Dataset queries multiple remote databases and returns
                 unified results in a single view.
               </p>
             </InstructionPopover>
@@ -338,8 +338,8 @@ const Page = () => {
                 {/* Headline + description */}
                 <div className="text-center space-y-3">
                   <h1 className="text-2xl font-semibold tracking-tight">
-                    <span className="text-primary">Federated</span>{" "}
-                    <span className="text-foreground">Search</span>
+                    <span className="text-primary">Explore</span>{" "}
+                    <span className="text-foreground">Dataset</span>
                   </h1>
                   <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
                     One query across multiple remote databases. Select categories and datasets in the sidebar, choose indicators below, and get combined results in a single view.

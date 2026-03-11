@@ -32,7 +32,7 @@ const formatNumber = (value: number | undefined | null) => {
 
 const actions = [
   {
-    title: "Federated Search",
+    title: "Explore Dataset",
     description:
       "Query multiple remote databases and get unified results in a single view.",
     href: "/federated_search",
@@ -103,7 +103,7 @@ const Dashboard = () => {
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild size="lg" className="gap-2">
               <Link href="/federated_search">
-                Start searching
+                Explore datasets
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -175,7 +175,7 @@ const Dashboard = () => {
         {/* Footer note */}
         <p className="mt-10 text-center text-muted-foreground text-sm">
           CML brings together species, ecological and climate data from
-          multiple sources. Use federated search for cross-database queries or
+          multiple sources. Use the dataset explorer for cross-database queries or
           map search for spatial exploration.
         </p>
       </main>
