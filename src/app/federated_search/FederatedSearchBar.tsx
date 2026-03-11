@@ -10,7 +10,14 @@ export type SelectedShape = { parent: string; child: { name: string }[] }[];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- mutate passed by parent for refetch API
 const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate }) => {
   const { data, isLoading, error } = useGetFilterData();
-  const { categories, datasets, setCategories, setDatasets, setIndicators } = useFederatedSearchStore();
+  const {
+    categories,
+    datasets,
+    indicators,
+    setCategories,
+    setDatasets,
+    setIndicators,
+  } = useFederatedSearchStore();
 
   // Derive selected tree shape from store so it stays in sync when categories/datasets are set from indicators
   const selectedNodes: SelectedShape = useMemo(() => {
@@ -71,6 +78,31 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
     }));
   }, [data]);
 
+  // Map each indicator value to datasets that provide it (for syncing indicator state
+  // when datasets are toggled from the tree)
+  const fieldToDatasets = useMemo(() => {
+    const map = new Map<string, string[]>();
+    if (!data) return map;
+
+    data.forEach((category) => {
+      category.datasets?.forEach((ds) => {
+        const dsTitle = ds.dataset_title;
+        const fields = (ds as { fields?: { ontology_mapping: string }[] }).fields ?? [];
+        fields.forEach((field) => {
+          const value = field.ontology_mapping;
+          if (!value) return;
+          const existing = map.get(value) ?? [];
+          if (!existing.includes(dsTitle)) {
+            existing.push(dsTitle);
+          }
+          map.set(value, existing);
+        });
+      });
+    });
+
+    return map;
+  }, [data]);
+
   return (
     <div className="flex flex-1 flex-col min-h-0 mx-auto items-center rounded-2xl max-w-3xl w-full drop-shadow-lg bg-muted/30">
       {/* Filters */}
@@ -98,7 +130,14 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
 
           setCategories(selectedCategories);
           setDatasets(selectedDatasets);
-          setIndicators([]);
+
+          // Drop any indicators that no longer have at least one selected dataset
+          const dsSet = new Set(selectedDatasets);
+          const nextIndicators = indicators.filter((indicator) => {
+            const linkedDatasets = fieldToDatasets.get(indicator) ?? [];
+            return linkedDatasets.some((dsTitle) => dsSet.has(dsTitle));
+          });
+          setIndicators(nextIndicators);
         }}
         />
       </div>
