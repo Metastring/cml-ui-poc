@@ -23,7 +23,7 @@ const ContributeSuccessPage = () => {
           <Button asChild size="lg" className="gap-2">
             <Link href="/datasets">
               <Database className="h-5 w-5" />
-              Explore Dataset catalog
+              Explore Datasets catalog
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">

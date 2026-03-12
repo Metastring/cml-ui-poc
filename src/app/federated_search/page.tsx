@@ -182,12 +182,12 @@ const Page = () => {
     <div className="h-screen flex">
       {/* Sidebar */}
       <div className="w-[350px] shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-hidden">
-        {/* Header: Explore Dataset + Show/Hide map */}
+        {/* Header: Explore Datasets + Show/Hide map */}
         <header className="shrink-0 border-b border-border bg-muted/20">
           <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
-            <InstructionPopover title="Explore Dataset" icon={<Search className="h-4 w-4" />}>
+            <InstructionPopover title="Explore Datasets" icon={<Search className="h-4 w-4" />}>
               <p>
-                Explore Dataset queries multiple remote databases and returns
+                Explore Datasets queries multiple remote databases and returns
                 unified results in a single view.
               </p>
             </InstructionPopover>
@@ -339,7 +339,7 @@ const Page = () => {
                 <div className="text-center space-y-3">
                   <h1 className="text-2xl font-semibold tracking-tight">
                     <span className="text-primary">Explore</span>{" "}
-                    <span className="text-foreground">Dataset</span>
+                    <span className="text-foreground">Datasets</span>
                   </h1>
                   <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
                     One query across multiple remote databases. Select categories and datasets in the sidebar, choose indicators below, and get combined results in a single view.

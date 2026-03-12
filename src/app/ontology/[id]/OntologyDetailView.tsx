@@ -10,7 +10,6 @@ import {
   Check,
   Layers,
   Tag,
-  FileCode,
 } from "lucide-react";
 import { deriveOntologyListFromTriples } from "../ontologyTriples";
 import {
@@ -18,7 +17,7 @@ import {
   useOntologyTermsByTab,
   useOntologyClasses,
   useOntologyDatatypeProperties,
-  ONTOLOGY_DETAIL_API_ID,
+  isOntologyWithDetailApis,
 } from "../api";
 import { dummyOntologyList } from "../dummyOntologyList";
 import {
@@ -31,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -67,6 +66,7 @@ export default function OntologyDetailView({
   const [searchQuery, setSearchQuery] = useState("");
   const [termFilter, setTermFilter] = useState<TermFilter>("all");
   const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(1);
   const [copiedIri, setCopiedIri] = useState(false);
 
   const { data: triplesResponse, isLoading: triplesLoading, isError: triplesError, error: triplesErrorObj } = useOntologyTriples();
@@ -103,9 +103,11 @@ export default function OntologyDetailView({
     error: propertiesErrorObj,
   } = useOntologyDatatypeProperties(ontologyId);
 
+  const hasDetailApis = isOntologyWithDetailApis(ontologyId);
+
   const isLoading =
     triplesLoading ||
-    (ontologyId === ONTOLOGY_DETAIL_API_ID &&
+    (hasDetailApis &&
       (termFilter === "classes"
         ? classesLoading
         : termFilter === "properties"
@@ -113,14 +115,14 @@ export default function OntologyDetailView({
           : termsLoading));
   const isError =
     triplesError ||
-    (ontologyId === ONTOLOGY_DETAIL_API_ID &&
+    (hasDetailApis &&
       (termFilter === "classes"
         ? classesError
         : termFilter === "properties"
           ? propertiesError
           : termsError));
   const error =
-    ontologyId === ONTOLOGY_DETAIL_API_ID
+    hasDetailApis
       ? termFilter === "classes"
         ? classesErrorObj
         : termFilter === "properties"
@@ -164,20 +166,36 @@ export default function OntologyDetailView({
     );
   }, [properties, searchQuery, termFilter]);
 
-  const paginatedTerms = useMemo(
-    () => filteredTerms.slice(0, pageSize),
-    [filteredTerms, pageSize]
-  );
+  // Reset to page 1 when changing filter/search/pageSize/ontology.
+  React.useEffect(() => {
+    setPage(1);
+  }, [ontologyId, termFilter, searchQuery, pageSize]);
 
-  const paginatedClasses = useMemo(
-    () => filteredClasses.slice(0, pageSize),
-    [filteredClasses, pageSize]
-  );
+  const activeTotal =
+    termFilter === "classes"
+      ? filteredClasses.length
+      : termFilter === "properties"
+        ? filteredProperties.length
+        : filteredTerms.length;
+  const totalPages = Math.max(1, Math.ceil(activeTotal / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStartIdx = (safePage - 1) * pageSize;
+  const pageEndIdxExclusive = pageStartIdx + pageSize;
 
-  const paginatedProperties = useMemo(
-    () => filteredProperties.slice(0, pageSize),
-    [filteredProperties, pageSize]
-  );
+  const paginatedTerms = useMemo(() => {
+    if (termFilter !== "all") return [];
+    return filteredTerms.slice(pageStartIdx, pageEndIdxExclusive);
+  }, [filteredTerms, pageEndIdxExclusive, pageStartIdx, termFilter]);
+
+  const paginatedClasses = useMemo(() => {
+    if (termFilter !== "classes") return [];
+    return filteredClasses.slice(pageStartIdx, pageEndIdxExclusive);
+  }, [filteredClasses, pageEndIdxExclusive, pageStartIdx, termFilter]);
+
+  const paginatedProperties = useMemo(() => {
+    if (termFilter !== "properties") return [];
+    return filteredProperties.slice(pageStartIdx, pageEndIdxExclusive);
+  }, [filteredProperties, pageEndIdxExclusive, pageStartIdx, termFilter]);
 
   const ontologyIri = summary?.graphIri ?? `http://cml.org/ontology/${ontologyId}`;
 
@@ -299,18 +317,14 @@ export default function OntologyDetailView({
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Layers className="size-4 text-primary" />
               <strong className="text-foreground">
-                {ontologyId === ONTOLOGY_DETAIL_API_ID
-                  ? classes.length
-                  : summary.numClasses}
+                {hasDetailApis ? classes.length : summary.numClasses}
               </strong>{" "}
               classes
             </span>
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Tag className="size-4 text-primary" />
               <strong className="text-foreground">
-                {ontologyId === ONTOLOGY_DETAIL_API_ID
-                  ? properties.length
-                  : summary.numProperties}
+                {hasDetailApis ? properties.length : summary.numProperties}
               </strong>{" "}
               properties
             </span>
@@ -374,6 +388,36 @@ export default function OntologyDetailView({
               </Select>
               entries
             </span>
+          </div>
+        </div>
+
+        {/* Pagination controls */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <p className="text-sm text-muted-foreground">
+            Page <span className="text-foreground font-medium">{safePage}</span> of{" "}
+            <span className="text-foreground font-medium">{totalPages}</span>
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={safePage <= 1}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safePage >= totalPages}
+            >
+              Next
+            </Button>
           </div>
         </div>
 
@@ -483,18 +527,9 @@ export default function OntologyDetailView({
         </Card>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Showing 1 to{" "}
-          {termFilter === "classes"
-            ? paginatedClasses.length
-            : termFilter === "properties"
-              ? paginatedProperties.length
-              : paginatedTerms.length}{" "}
-          of{" "}
-          {termFilter === "classes"
-            ? filteredClasses.length
-            : termFilter === "properties"
-              ? filteredProperties.length
-              : filteredTerms.length}{" "}
+          Showing{" "}
+          {activeTotal === 0 ? 0 : pageStartIdx + 1} to{" "}
+          {Math.min(pageStartIdx + pageSize, activeTotal)} of {activeTotal}{" "}
           {termFilter === "classes"
             ? "classes"
             : termFilter === "properties"
@@ -505,22 +540,6 @@ export default function OntologyDetailView({
             " (filtered)"}
           .
         </p>
-
-        {/* OLS-style: short info card */}
-        <Card className="mt-8 border-border/60 bg-muted/10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <FileCode className="size-4 text-primary" />
-              About this ontology
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground leading-relaxed pt-0">
-            Each row describes a mapping from a dataset field (Dataset Area, Dataset
-            Column) to an ontology term (Ontology Element Type, Ontology Element)
-            with a short description. Use these terms when mapping your dataset
-            fields in the Contribute flow for consistent discovery.
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

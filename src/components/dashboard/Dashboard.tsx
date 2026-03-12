@@ -32,7 +32,7 @@ const formatNumber = (value: number | undefined | null) => {
 
 const actions = [
   {
-    title: "Explore Dataset",
+    title: "Explore Datasets",
     description:
       "Query multiple remote databases and get unified results in a single view.",
     href: "/federated_search",

@@ -7,6 +7,7 @@ export function generateStaticParams() {
     { id: "biodiversity" },
     { id: "climate" },
     { id: "economy" },
+    { id: "metadata" },
   ];
 }
 

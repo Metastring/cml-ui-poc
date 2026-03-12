@@ -54,7 +54,7 @@ const Sidebar: React.FC = () => {
 
   const getCurrentTab = (): string => {
     if (pathname === '/') return 'Dashboard';
-    if (pathname === '/federated_search') return 'Explore Dataset';
+    if (pathname === '/federated_search') return 'Explore Datasets';
     if (pathname === '/map_search') return 'Map Search';
     if (pathname === '/contribute') return 'Contribute';
     if (pathname === '/datasets') return 'Datasets';
@@ -98,9 +98,9 @@ const Sidebar: React.FC = () => {
         <Link href="/federated_search">
           <SidebarItem
             icon={<Globe size={18} />}
-            label="Explore Dataset"
+            label="Explore Datasets"
             isOpen={isSidebarOpen}
-            active={currentTab === 'Explore Dataset'}
+            active={currentTab === 'Explore Datasets'}
           />
         </Link>
 

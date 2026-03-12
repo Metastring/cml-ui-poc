@@ -105,8 +105,16 @@ export function useOntologyTriples(limit: number = DEFAULT_LIMIT) {
   };
 }
 
-/** Ontology id that has detail tab APIs; others show blank terms. */
-export const ONTOLOGY_DETAIL_API_ID = "biodiversity" as const;
+/**
+ * Ontology ids that have detail tab APIs; others show blank terms.
+ * - `biodiversity`: legacy endpoints already integrated
+ * - `metadata`: dataset metadata ontology endpoints
+ */
+export const ONTOLOGY_DETAIL_API_IDS = ["biodiversity", "metadata"] as const;
+export type OntologyDetailApiId = (typeof ONTOLOGY_DETAIL_API_IDS)[number];
+export function isOntologyWithDetailApis(id: string): id is OntologyDetailApiId {
+  return (ONTOLOGY_DETAIL_API_IDS as readonly string[]).includes(id);
+}
 
 const NEW_ONTOLOGY_APIS_PATH = "/ontology/new-ontology-apis";
 const BIODIVERSITY_CLASSES_PATH = "/ontology/biodiversity-classes";
@@ -115,16 +123,21 @@ const BIODIVERSITY_DATATYPE_PROPERTIES_PATH =
 
 export type OntologyDetailTab = "all" | "classes" | "properties";
 
+const METADATA_ONTOLOGY_APIS_PATH = "/ontology/metadata-ontology-apis";
+const METADATA_CLASSES_PATH = "/ontology/metadata-classes";
+const METADATA_DATATYPE_PROPERTIES_PATH =
+  "/ontology/metadata-datatype-properties";
+
 /**
  * Fetches terms for the detail page from /ontology/new-ontology-apis.
- * Only biodiversity is supported; for other ontologies returns [] without calling.
+ * Only biodiversity + metadata are supported; for other ontologies returns [] without calling.
  * Maps the new response into the existing `OntologyDetailItem` table shape so UI logic stays unchanged.
  */
 export async function fetchOntologyTerms(
   ontologyId: string,
   tab: OntologyDetailTab
 ): Promise<OntologyDetailItem[]> {
-  if (ontologyId !== ONTOLOGY_DETAIL_API_ID) {
+  if (!isOntologyWithDetailApis(ontologyId)) {
     return [];
   }
   if (!BASE_URL) {
@@ -133,7 +146,9 @@ export async function fetchOntologyTerms(
   // Classes tab has its own dedicated endpoint and UI (list), so this fetcher is
   // only for the table-driven tabs.
   if (tab === "classes" || tab === "properties") return [];
-  const url = `${BASE_URL}${NEW_ONTOLOGY_APIS_PATH}`;
+  const path =
+    ontologyId === "metadata" ? METADATA_ONTOLOGY_APIS_PATH : NEW_ONTOLOGY_APIS_PATH;
+  const url = `${BASE_URL}${path}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Ontology terms API error: ${res.status} ${res.statusText}`);
@@ -172,11 +187,13 @@ export type OntologyPropertyItem =
 export async function fetchOntologyClasses(
   ontologyId: string
 ): Promise<OntologyClassItem[]> {
-  if (ontologyId !== ONTOLOGY_DETAIL_API_ID) return [];
+  if (!isOntologyWithDetailApis(ontologyId)) return [];
   if (!BASE_URL) {
     throw new Error("NEXT_PUBLIC_FEDERATED_BASE_URL is not set");
   }
-  const url = `${BASE_URL}${BIODIVERSITY_CLASSES_PATH}`;
+  const path =
+    ontologyId === "metadata" ? METADATA_CLASSES_PATH : BIODIVERSITY_CLASSES_PATH;
+  const url = `${BASE_URL}${path}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(
@@ -203,11 +220,15 @@ export async function fetchOntologyClasses(
 export async function fetchOntologyDatatypeProperties(
   ontologyId: string
 ): Promise<OntologyPropertyItem[]> {
-  if (ontologyId !== ONTOLOGY_DETAIL_API_ID) return [];
+  if (!isOntologyWithDetailApis(ontologyId)) return [];
   if (!BASE_URL) {
     throw new Error("NEXT_PUBLIC_FEDERATED_BASE_URL is not set");
   }
-  const url = `${BASE_URL}${BIODIVERSITY_DATATYPE_PROPERTIES_PATH}`;
+  const path =
+    ontologyId === "metadata"
+      ? METADATA_DATATYPE_PROPERTIES_PATH
+      : BIODIVERSITY_DATATYPE_PROPERTIES_PATH;
+  const url = `${BASE_URL}${path}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(
@@ -235,8 +256,7 @@ export function useOntologyTermsByTab(
   ontologyId: string,
   tab: OntologyDetailTab
 ) {
-  const shouldFetch =
-    ontologyId === ONTOLOGY_DETAIL_API_ID && Boolean(BASE_URL);
+  const shouldFetch = isOntologyWithDetailApis(ontologyId) && Boolean(BASE_URL);
 
   const query = useQuery({
     // Bump key to avoid serving cached data from the previous endpoint/shape.
@@ -260,7 +280,7 @@ export function useOntologyTermsByTab(
  * Hook to fetch biodiversity classes for the Classes tab.
  */
 export function useOntologyClasses(ontologyId: string) {
-  const shouldFetch = ontologyId === ONTOLOGY_DETAIL_API_ID && Boolean(BASE_URL);
+  const shouldFetch = isOntologyWithDetailApis(ontologyId) && Boolean(BASE_URL);
   const query = useQuery({
     queryKey: ["ontology-classes-v1", ontologyId],
     queryFn: () => fetchOntologyClasses(ontologyId),
@@ -282,7 +302,7 @@ export function useOntologyClasses(ontologyId: string) {
  * Hook to fetch biodiversity datatype properties for the Properties tab.
  */
 export function useOntologyDatatypeProperties(ontologyId: string) {
-  const shouldFetch = ontologyId === ONTOLOGY_DETAIL_API_ID && Boolean(BASE_URL);
+  const shouldFetch = isOntologyWithDetailApis(ontologyId) && Boolean(BASE_URL);
   const query = useQuery({
     queryKey: ["ontology-datatype-properties-v1", ontologyId],
     queryFn: () => fetchOntologyDatatypeProperties(ontologyId),
