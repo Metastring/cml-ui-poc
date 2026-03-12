@@ -24,8 +24,8 @@ export const dummyOntologyList = [
     title: "CML Metadata Ontology",
     description:
       "Ontology representing dataset metadata structure for CML platform.",
-    numClasses: 14,
-    numProperties: 0,
+    numClasses: 21,
+    numProperties: 83,
     graphIri: "http://cml.org/ontology/metadata",
   },
 ];
