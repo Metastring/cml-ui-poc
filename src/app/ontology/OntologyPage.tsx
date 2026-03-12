@@ -75,16 +75,7 @@ const OntologyPage = () => {
           <p className="mt-2 max-w-2xl text-muted-foreground text-base">
             Browse and search ontologies used across the platform. Each ontology
             provides a shared vocabulary of classes and properties for
-            consistent data annotation—similar to{" "}
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline underline-offset-2 hover:no-underline"
-            >
-              EBI OLS
-            </a>
-            .
+            consistent data annotation.
           </p>
 
           {/* Search + filters row (OLS-style) */}
@@ -215,10 +206,8 @@ const OntologyPage = () => {
               About this service
             </CardTitle>
             <CardContent className="text-sm text-muted-foreground leading-relaxed pt-0">
-              Ontologies are listed by graph. Each row shows the ontology ID,
-              title, description, number of classes and properties, and a link to
-              browse terms. Data is derived from RDF triples; you can map your
-              dataset fields to these terms in the Contribute flow.
+              Ontologies are listed by ID. Open an ontology to browse its classes
+              and datatype properties fetched from the backend APIs.
             </CardContent>
           </CardHeader>
         </Card>

@@ -13,7 +13,13 @@ import {
   FileCode,
 } from "lucide-react";
 import { deriveOntologyListFromTriples } from "../ontologyTriples";
-import { useOntologyTriples, useOntologyTermsByTab, ONTOLOGY_DETAIL_API_ID } from "../api";
+import {
+  useOntologyTriples,
+  useOntologyTermsByTab,
+  useOntologyClasses,
+  useOntologyDatatypeProperties,
+  ONTOLOGY_DETAIL_API_ID,
+} from "../api";
 import { dummyOntologyList } from "../dummyOntologyList";
 import {
   TableBody,
@@ -38,18 +44,16 @@ type TermFilter = "all" | "classes" | "properties";
 
 /** Column keys for the detail table (API/data shape). */
 export type OntologyDetailColumnKey =
-  | "dataset_area"
-  | "dataset_column"
-  | "ontology_element_type"
-  | "ontology_element"
+  | "entity"
+  | "label"
+  | "type"
   | "description";
 
 /** Display labels for columns (Real Data style: spaces, no underscores). */
 export const ONTOLOGY_DETAIL_COLUMNS: Record<OntologyDetailColumnKey, string> = {
-  dataset_area: "Dataset Area",
-  dataset_column: "Dataset Column",
-  ontology_element_type: "Ontology Element Type",
-  ontology_element: "Ontology Element",
+  entity: "Entity",
+  label: "Label",
+  type: "Type",
   description: "Description",
 };
 
@@ -78,32 +82,101 @@ export default function OntologyDetailView({
     return dummyOntologyList.find((o) => o.id === ontologyId);
   }, [ontologyId, triples]);
 
-  const { terms: tabTerms, isLoading: termsLoading, isError: termsError, error: termsErrorObj } = useOntologyTermsByTab(ontologyId, termFilter);
+  const {
+    terms: tableTerms,
+    isLoading: termsLoading,
+    isError: termsError,
+    error: termsErrorObj,
+  } = useOntologyTermsByTab(ontologyId, termFilter);
+
+  const {
+    classes,
+    isLoading: classesLoading,
+    isError: classesError,
+    error: classesErrorObj,
+  } = useOntologyClasses(ontologyId);
+
+  const {
+    properties,
+    isLoading: propertiesLoading,
+    isError: propertiesError,
+    error: propertiesErrorObj,
+  } = useOntologyDatatypeProperties(ontologyId);
 
   const isLoading =
     triplesLoading ||
-    (ontologyId === ONTOLOGY_DETAIL_API_ID && termsLoading);
-  const isError = triplesError || (ontologyId === ONTOLOGY_DETAIL_API_ID && termsError);
-  const error = ontologyId === ONTOLOGY_DETAIL_API_ID && termsError ? termsErrorObj : triplesErrorObj;
+    (ontologyId === ONTOLOGY_DETAIL_API_ID &&
+      (termFilter === "classes"
+        ? classesLoading
+        : termFilter === "properties"
+          ? propertiesLoading
+          : termsLoading));
+  const isError =
+    triplesError ||
+    (ontologyId === ONTOLOGY_DETAIL_API_ID &&
+      (termFilter === "classes"
+        ? classesError
+        : termFilter === "properties"
+          ? propertiesError
+          : termsError));
+  const error =
+    ontologyId === ONTOLOGY_DETAIL_API_ID
+      ? termFilter === "classes"
+        ? classesErrorObj
+        : termFilter === "properties"
+          ? propertiesErrorObj
+          : termsErrorObj
+      : triplesErrorObj;
 
-  const filteredByType = tabTerms;
+  const filteredByType = tableTerms;
 
   const filteredTerms = useMemo(() => {
     if (!searchQuery.trim()) return filteredByType;
     const q = searchQuery.trim().toLowerCase();
     return filteredByType.filter(
       (item) =>
-        item.dataset_area.toLowerCase().includes(q) ||
-        item.dataset_column.toLowerCase().includes(q) ||
-        item.ontology_element_type.toLowerCase().includes(q) ||
-        item.ontology_element.toLowerCase().includes(q) ||
+        item.entity.toLowerCase().includes(q) ||
+        item.label.toLowerCase().includes(q) ||
+        item.type.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q)
     );
   }, [filteredByType, searchQuery]);
 
+  const filteredClasses = useMemo(() => {
+    if (termFilter !== "classes") return [];
+    if (!searchQuery.trim()) return classes;
+    const q = searchQuery.trim().toLowerCase();
+    return classes.filter(
+      (c) =>
+        c.local_name.toLowerCase().includes(q) ||
+        c.class_uri.toLowerCase().includes(q)
+    );
+  }, [classes, searchQuery, termFilter]);
+
+  const filteredProperties = useMemo(() => {
+    if (termFilter !== "properties") return [];
+    if (!searchQuery.trim()) return properties;
+    const q = searchQuery.trim().toLowerCase();
+    return properties.filter(
+      (p) =>
+        p.local_name.toLowerCase().includes(q) ||
+        p.property_uri.toLowerCase().includes(q)
+    );
+  }, [properties, searchQuery, termFilter]);
+
   const paginatedTerms = useMemo(
     () => filteredTerms.slice(0, pageSize),
     [filteredTerms, pageSize]
+  );
+
+  const paginatedClasses = useMemo(
+    () => filteredClasses.slice(0, pageSize),
+    [filteredClasses, pageSize]
+  );
+
+  const paginatedProperties = useMemo(
+    () => filteredProperties.slice(0, pageSize),
+    [filteredProperties, pageSize]
   );
 
   const ontologyIri = summary?.graphIri ?? `http://cml.org/ontology/${ontologyId}`;
@@ -225,13 +298,19 @@ export default function OntologyDetailView({
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Layers className="size-4 text-primary" />
-              <strong className="text-foreground">{ontologyId === "biodiversity" ? 1 : summary.numClasses}</strong>{" "}
+              <strong className="text-foreground">
+                {ontologyId === ONTOLOGY_DETAIL_API_ID
+                  ? classes.length
+                  : summary.numClasses}
+              </strong>{" "}
               classes
             </span>
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Tag className="size-4 text-primary" />
               <strong className="text-foreground">
-                {ontologyId === "biodiversity" ? 20 : summary.numProperties}
+                {ontologyId === ONTOLOGY_DETAIL_API_ID
+                  ? properties.length
+                  : summary.numProperties}
               </strong>{" "}
               properties
             </span>
@@ -300,74 +379,131 @@ export default function OntologyDetailView({
 
         {/* Terms table: scroll container is direct parent of table so sticky header works */}
         <Card className="border-border/60 overflow-hidden py-0">
-          <div className="max-h-[60vh] overflow-auto">
-            <table className="w-full caption-bottom text-sm border-collapse">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-b bg-muted">
-                <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-[140px] align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
-                  {ONTOLOGY_DETAIL_COLUMNS.dataset_area}
-                </TableHead>
-                <TableHead className="sticky top-0 z-10 bg-muted font-semibold align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
-                  {ONTOLOGY_DETAIL_COLUMNS.dataset_column}
-                </TableHead>
-                <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-28 align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
-                  {ONTOLOGY_DETAIL_COLUMNS.ontology_element_type}
-                </TableHead>
-                <TableHead className="sticky top-0 z-10 bg-muted font-semibold min-w-[180px] hidden md:table-cell align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
-                  {ONTOLOGY_DETAIL_COLUMNS.ontology_element}
-                </TableHead>
-                <TableHead className="sticky top-0 z-10 bg-muted font-semibold hidden sm:table-cell max-w-xs align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
-                  {ONTOLOGY_DETAIL_COLUMNS.description}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTerms.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center text-muted-foreground py-12"
-                  >
-                    No terms match your search. Try a different filter or query.
-                  </TableCell>
-                </TableRow>
+          {termFilter === "classes" ? (
+            <div className="max-h-[60vh] overflow-auto p-4">
+              {paginatedClasses.length === 0 ? (
+                <div className="text-center text-muted-foreground py-12 text-sm">
+                  No classes match your search.
+                </div>
               ) : (
-                paginatedTerms.map((item, index) => (
-                  <TableRow
-                    key={`${item.dataset_area}-${item.dataset_column}-${item.ontology_element}-${index}`}
-                    className="group"
-                  >
-                    <TableCell className="font-mono text-xs align-middle py-3">
-                      <span className="text-foreground">{item.dataset_area}</span>
-                    </TableCell>
-                    <TableCell className="font-medium align-middle py-3">
-                      {item.dataset_column}
-                    </TableCell>
-                    <TableCell className="align-middle py-3">
-                      <Badge
-                        variant="outline"
-                        className="font-normal text-xs"
-                      >
-                        {item.ontology_element_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground align-middle py-3 hidden md:table-cell">
-                      {item.ontology_element}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm align-middle py-3 hidden sm:table-cell max-w-xs">
-                      {item.description || "—"}
+                <ul className="space-y-2">
+                  {paginatedClasses.map((c) => (
+                    <li
+                      key={c.class_uri}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background px-3 py-2"
+                    >
+                      <span className="font-medium text-foreground">
+                        {c.local_name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : termFilter === "properties" ? (
+            <div className="max-h-[60vh] overflow-auto p-4">
+              {paginatedProperties.length === 0 ? (
+                <div className="text-center text-muted-foreground py-12 text-sm">
+                  No properties match your search.
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {paginatedProperties.map((p) => (
+                    <li
+                      key={p.property_uri}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background px-3 py-2"
+                    >
+                      <span className="font-medium text-foreground">
+                        {p.local_name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-auto">
+              <table className="w-full caption-bottom text-sm border-collapse">
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-b bg-muted">
+                  <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-[180px] align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                    {ONTOLOGY_DETAIL_COLUMNS.entity}
+                  </TableHead>
+                  <TableHead className="sticky top-0 z-10 bg-muted font-semibold align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                    {ONTOLOGY_DETAIL_COLUMNS.label}
+                  </TableHead>
+                  <TableHead className="sticky top-0 z-10 bg-muted font-semibold w-28 align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                    {ONTOLOGY_DETAIL_COLUMNS.type}
+                  </TableHead>
+                  <TableHead className="sticky top-0 z-10 bg-muted font-semibold hidden sm:table-cell max-w-xs align-middle py-3 shadow-[0_1px_0_0_hsl(var(--border))]">
+                    {ONTOLOGY_DETAIL_COLUMNS.description}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedTerms.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="text-center text-muted-foreground py-12"
+                    >
+                      No terms match your search. Try a different filter or query.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-            </table>
-          </div>
+                ) : (
+                  paginatedTerms.map((item, index) => (
+                    <TableRow
+                      key={`${item.entity}-${item.label}-${index}`}
+                      className="group"
+                    >
+                      <TableCell className="font-mono text-xs align-middle py-3">
+                        <span className="text-foreground">{item.entity}</span>
+                      </TableCell>
+                      <TableCell className="font-medium align-middle py-3">
+                        {item.label}
+                      </TableCell>
+                      <TableCell className="align-middle py-3">
+                        <Badge
+                          variant="outline"
+                          className="font-normal text-xs"
+                        >
+                          {item.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm align-middle py-3 hidden sm:table-cell max-w-xs">
+                        {item.description || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+              </table>
+            </div>
+          )}
         </Card>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Showing 1 to {paginatedTerms.length} of {filteredTerms.length} terms
-          {filteredTerms.length !== tabTerms.length && " (filtered)"}.
+          Showing 1 to{" "}
+          {termFilter === "classes"
+            ? paginatedClasses.length
+            : termFilter === "properties"
+              ? paginatedProperties.length
+              : paginatedTerms.length}{" "}
+          of{" "}
+          {termFilter === "classes"
+            ? filteredClasses.length
+            : termFilter === "properties"
+              ? filteredProperties.length
+              : filteredTerms.length}{" "}
+          {termFilter === "classes"
+            ? "classes"
+            : termFilter === "properties"
+              ? "properties"
+              : "terms"}
+          {termFilter === "all" &&
+            filteredTerms.length !== tableTerms.length &&
+            " (filtered)"}
+          .
         </p>
 
         {/* OLS-style: short info card */}
