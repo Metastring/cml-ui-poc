@@ -95,10 +95,9 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold mb-4 text-foreground tracking-tight sm:text-4xl lg:text-[2.5rem]">
             Cataloging and Mapping Life of India
           </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground text-base sm:text-lg">
-            Explore geographically referenced ecological, health and climate data.
-            Search, map, and contribute to a unified view of life across the
-            subcontinent.
+          <p className="mt-3 max-w-2xl text-muted-foreground text-base ">
+          An ontology driven federated data platform for discovering, sharing, and collaborating on FAIR social, ecological, health, and biodiversity data.
+          Search across domains, explore connections between datasets, and contribute to a unified view of life across the subcontinent.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild size="lg" className="gap-2">
