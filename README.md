@@ -6,7 +6,7 @@ A single platform that allows researchers to search and federate datasets from m
 ## Tech Stack
 
 ### Frontend
-- **Framework:** Next.js (v15.3.4)
+- **Framework:** Next.js (v15.3.6)
 - **Language:** TypeScript (v5)
 - **Styling:** Tailwind CSS (v4) with `tailwind-merge` for class management
 - **UI Components:** shadcn/ui, Radix UI (`@radix-ui/react-*`)
@@ -18,6 +18,7 @@ A single platform that allows researchers to search and federate datasets from m
 ### Maps & Geospatial
 - **Map Library:** MapLibre GL (v5.6.0)
 - **Drawing & Layers:** Terra Draw, Terra Draw MapLibre GL Adapter, @watergis/maplibre-gl-terradraw
+- **Layer Catalog/Publishing UI:** `@metastringfoundation/map-list`
 
 ### Data & Queries
 - **Data Fetching & Caching:** React Query (`@tanstack/react-query` & devtools)
@@ -83,58 +84,70 @@ NEXT_PUBLIC_FEDERATED_BASE_URL=your_federated_api_base_url_here
 
 # Base URL for Map Tiles / Map API
 NEXT_PUBLIC_MAP_BASE_URL=your_map_base_url_here
+
+# Map module (layer catalog / publishing)
+NEXT_PUBLIC_NAKSHA_ENDPOINT=your_naksha_api_endpoint_here
+NEXT_PUBLIC_GEOSERVER_ENDPOINT=your_geoserver_endpoint_here
+NEXT_PUBLIC_GEOSERVER_STORE=your_geoserver_store_here
+NEXT_PUBLIC_GEOSERVER_WORKSPACE=your_geoserver_workspace_here
 ```
 
 
 ## Features
 
-### 1. Federated Search
+### 1. Dashboard
 
-- Search across all onboarded datasets (biodiversity, climate, health).
+- Landing page with quick links into key tools (federated search, map search, contribute, catalog, metadata search).
+- Platform statistics (datasets, contributors) fetched from the backend.
 
+### 2. Explore Dataset (`/federated_search`)
 
-- Query across metadata and attributes (common name, scientific name, etc.).
+- Search across multiple remote datasets and view **unified results** in a single table.
+- Select **categories**, **datasets**, and **indicators** (ontology-mapped fields).
+- Indicator-first workflow: choosing indicators can auto-select relevant categories/datasets.
+- Optional map preview for returned occurrences/records.
 
+### 3. Map Search (`/map_search`)
 
-- Users can select fields for search.
+- Select layers on the map to inspect available data.
+- Draw polygons for more precise spatial filtering and exploration.
+- Visualize results on MapLibre (points/layers depending on returned data) and review them in a tabular view.
 
+### 4. Metadata Search (`/metadata_search`)
 
-### 2. Map Search
-- Users can draw polygons and select attributes on the map.
+- Search the dataset catalog by metadata (title/category/description, etc.).
+- Filter results by category and jump directly into dataset detail pages.
 
+### 5. Dataset Catalog & Details (`/datasets`)
 
-- Based on the drawn region/filters, details are fetched from the backend.
+- Browse categories and datasets, then open dataset detail pages.
+- View dataset metadata, description, and related information exposed by the backend.
 
+### 6. Contribute / Dataset Registration (`/contribute`)
 
-- Map will display points (lat/long) or distribution layers.
+- Two-step dataset registration flow (initial + final registration).
+- Success confirmation page after submission.
 
+### 7. Ontology Browser (`/ontology`)
 
-### 3. Dataset Onboarding
+- Browse ontology resources and open ontology detail views (`/ontology/[id]`).
+- Ontology data is fetched from the backend API layer in this app.
 
-- Upload datasets via links.
+### 8. Map Module (`/map_module`)
 
+- Layer catalog and publishing UI backed by Naksha + GeoServer configuration.
 
-- Provide ontology mapping for uniform representation.
+## Routes (quick reference)
 
-
-<!-- - Mark datasets as map-data or non-map-data. -->
-
-
-
-### 4. Dataset Details
-
-
-- Display metadata of all registered datasets.
-
-
-- Include source and other details.
-
-
-### 5. Pointer/Marker Behavior
-
-- When a marker appears on the map, hovering over it displays key metadata.
-- Metadata includes name, type, and relevant attributes.
-- Allows users to quickly understand the dataset without opening additional details.
+- **`/`**: Dashboard
+- **`/federated_search`**: Federated search (combined results + optional map)
+- **`/map_search`**: Spatial/map search
+- **`/metadata_search`**: Search dataset metadata/catalog
+- **`/datasets`**: Catalog; **`/datasets/[category]/[dataset]`**: Dataset details
+- **`/contribute`**: Dataset registration flow
+- **`/ontology`**: Ontology list; **`/ontology/[id]`**: Ontology details
+- **`/map_module`**: Map layer catalog/publishing
+- **`/settings`**: Settings
 
 
 
@@ -144,9 +157,9 @@ NEXT_PUBLIC_MAP_BASE_URL=your_map_base_url_here
 A biodiversity researcher wants to find specific data across multiple datasets.
 
 **How Federated Search Works:**
-1. **Select Datasets:** The user chooses one or more datasets to search from (e.g., biodiversity, climate, health).
-2. **Select Fields:** The user selects the fields/attributes they want to query, such as common name, scientific name, or location.
-3. **Enter Search Input:** The user types the search query (e.g., "neem") and enter the search button.
+1. **Select Sources:** The user selects categories and datasets to query (or selects indicators first to auto-select relevant sources).
+2. **Select Indicators:** The user selects one or more indicators (ontology-mapped fields) to search within.
+3. **Enter Search Input:** The user types the search query (e.g., "neem") and runs the search.
 4. **Search Execution:** The platform sends the query to all selected datasets.
 5. **Results Display:** The platform aggregates results and presents them in a unified view, including:
    - Tables with relevant metadata
