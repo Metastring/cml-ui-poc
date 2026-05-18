@@ -1,12 +1,5 @@
-import React from "react";
-import OntologyPage from "./OntologyPage";
+import OntologyExplorer from "./OntologyExplorer";
 
-const Page = () => {
-  return (
-    <div>
-      <OntologyPage />
-    </div>
-  );
-};
-
-export default Page;
+export default function OntologyPage() {
+  return <OntologyExplorer />;
+}

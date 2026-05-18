@@ -81,6 +81,10 @@ Create a `.env.local` file in the root of your project and add the following var
 # Base URL for Federated Search API
 NEXT_PUBLIC_FEDERATED_BASE_URL=your_federated_api_base_url_here
 
+# Optional: CPHR ontology API (GET /ontology/*). When unset, the same URL as
+# NEXT_PUBLIC_FEDERATED_BASE_URL is used for ontology requests.
+NEXT_PUBLIC_ONTOLOGY_BASE_URL=http://localhost:8000
+
 # Base URL for Map Tiles / Map API
 NEXT_PUBLIC_MAP_BASE_URL=your_map_base_url_here
 ```

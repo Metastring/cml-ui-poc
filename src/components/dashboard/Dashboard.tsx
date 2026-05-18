@@ -93,7 +93,7 @@ const Dashboard = () => {
             <span>CML</span>
           </div>
           <h1 className="text-4xl font-bold mb-4 text-foreground tracking-tight sm:text-4xl lg:text-[2.5rem]">
-            Cataloging and Mapping Life of India
+            CPHR Platform
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground text-base ">
           An ontology driven federated data platform for discovering, sharing, and collaborating on FAIR social, ecological, health, and biodiversity data.

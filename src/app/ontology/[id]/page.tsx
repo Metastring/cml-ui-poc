@@ -1,25 +1,13 @@
-import React from "react";
-import OntologyDetailView from "./OntologyDetailView";
+import { redirect } from "next/navigation";
 
-/** Pre-declare known ontology IDs so the dynamic route is recognized (fixes 404). */
-export function generateStaticParams() {
-  return [
-    { id: "biodiversity" },
-    { id: "climate" },
-    { id: "economy" },
-    { id: "metadata" },
-  ];
-}
-
-/** Allow other IDs to be resolved at request time. */
-export const dynamicParams = true;
-
-export default async function OntologyDetailPage({
+/**
+ * Legacy per-ontology routes; CPHR explorer is unified at /ontology.
+ */
+export default async function OntologyLegacyDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const ontologyId = decodeURIComponent(id);
-  return <OntologyDetailView ontologyId={ontologyId} />;
+  await params;
+  redirect("/ontology");
 }

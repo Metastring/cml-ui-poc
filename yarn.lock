@@ -482,34 +482,34 @@
     pbf "^4.0.1"
     supercluster "^8.0.1"
 
-"@metastringfoundation/map-common@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-common/-/map-common-0.1.2.tgz#d3a4f411327cda8ffb2c9e9e119b74d25fc0a1cf"
-  integrity sha512-+7NzTt9cALFB0m5MfDseT990YytnqnKkITTAIpP+l5n5L9rKN+0OoT45WLSvpHs8ZKEKs1X12DUHNh7Z+Vnrrw==
+"@metastringfoundation/map-common@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-common/-/map-common-0.1.3.tgz#7ce6f2251ffff8e10e83f61252149519f8aedf57"
+  integrity sha512-LQF6r4AXVmQWB7XPrJBJVa1RvAeKmY2fuFnYzSe8adPmhv9HgsCpf+jz61UG9OELVFKKzhRzDlBssgP3ckj4Ww==
 
-"@metastringfoundation/map-draw@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-draw/-/map-draw-0.1.4.tgz#ce53ad4a045e55d370933d9dc3a63707ea4b61bd"
-  integrity sha512-WIHjYaoG8egKFHWciiU9GUDemWecLbDz+yZ6xgROqZnO6rE7miDpwAMLJ69Z9PS/Xc0D+ggZWEj8axUWEgsz7g==
+"@metastringfoundation/map-draw@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-draw/-/map-draw-0.1.5.tgz#8e11b5b4b7744788b3416c5c164131f303a7b54b"
+  integrity sha512-draWMdO+G9u+I296hHgzenklYqht7ih4I42VnZ15QDRqsRsmLHFEBQzcLA4pEcEgSWaNoVfpywd1LgDQGEWrKQ==
   dependencies:
-    "@metastringfoundation/map-common" "0.1.2"
+    "@metastringfoundation/map-common" "0.1.3"
     "@watergis/maplibre-gl-terradraw" "^1.10.0"
     maplibre-gl "^5.13.0"
     react-map-gl "^8.1.0"
     terra-draw "^1.21.2"
     terra-draw-maplibre-gl-adapter "^1.2.3"
 
-"@metastringfoundation/map-list@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-list/-/map-list-0.1.7.tgz#d5799906f446d60bfce98d57a8584c3d74e2b1f3"
-  integrity sha512-0cAGDHf30kCAwbVi6AkIkaVytU5lpBTO6RMtODwqXFg48MM7yaAIvJYhLDl4HucZjcp3h/6VuNxNIJh/3ToSYA==
+"@metastringfoundation/map-list@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@metastringfoundation/map-list/-/map-list-0.1.8.tgz#468f3305a0c21304c09a3811db596240332ca295"
+  integrity sha512-w/lyn5LjDgfTK9zXQYOGi1BFRBwweTVAqT3cMfNuiC2kxxgroDrIO0zlf634Ht+lqeJjY8lXAqrJnwW9Cy5EAA==
   dependencies:
     "@dnd-kit/core" "^6.3.1"
     "@dnd-kit/modifiers" "^9.0.0"
     "@dnd-kit/sortable" "^10.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@metastringfoundation/map-common" "0.1.2"
-    "@metastringfoundation/map-draw" "0.1.4"
+    "@metastringfoundation/map-common" "0.1.3"
+    "@metastringfoundation/map-draw" "0.1.5"
     "@tanstack/react-virtual" "^3.13.12"
     boundingbox "^1.4.0"
     colorbrewer "^1.6.1"
