@@ -6,8 +6,7 @@ pipeline {
     }
 
     environment {
-        YARN_VERSION = '1.22.22'
-        PORT = '4100'
+        YARN_VERSION = '1.22.22' 
     }
 
     stages {
@@ -17,17 +16,19 @@ pipeline {
                     sshUserPrivateKey(credentialsId: 'jenkins-key', keyFileVariable: 'SSH_KEY'),
                     string(credentialsId: 'FRONTEND_SERVER_SSH', variable: 'FRONTEND_SERVER_SSH'),
                     string(credentialsId: 'FRONTEND_GITHUB_KEY', variable: 'GITHUB_PAT'),
-                    string(credentialsId: 'FRONTEND_CML_DEPLOYMENT_DIRECTORY', variable: 'DEPLOYMENT_DIRECTORY'),
-                    string(credentialsId: 'FRONTEND_CML_DEPLOYMENT_BRANCH', variable: 'DEPLOYMENT_BRANCH'),
-                    string(credentialsId: 'FRONTEND_CML_DEPLOYMENT_NAME', variable: 'DEPLOYMENT_NAME'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_HHM_BASE_URL', variable: 'NEXT_PUBLIC_HHM_BASE_URL'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_FEDERATED_BASE_URL', variable: 'NEXT_PUBLIC_FEDERATED_BASE_URL'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_MAP_BASE_URL', variable: 'NEXT_PUBLIC_MAP_BASE_URL'),
+                    string(credentialsId: 'FRONTEND_CPHR_DEPLOYMENT_DIRECTORY', variable: 'DEPLOYMENT_DIRECTORY'),
+                    string(credentialsId: 'FRONTEND_CPHR_DEPLOYMENT_BRANCH', variable: 'DEPLOYMENT_BRANCH'),
+                    string(credentialsId: 'FRONTEND_CPHR_DEPLOYMENT_NAME', variable: 'DEPLOYMENT_NAME'),
+                    string(credentialsId: 'FRONTEND_CPHR_DEPLOYMENT_PORT', variable: 'DEPLOYMENT_PORT'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_HHM_BASE_URL', variable: 'NEXT_PUBLIC_HHM_BASE_URL'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_FEDERATED_BASE_URL', variable: 'NEXT_PUBLIC_FEDERATED_BASE_URL'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_MAP_BASE_URL', variable: 'NEXT_PUBLIC_MAP_BASE_URL'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_ONTOLOGY_BASE_URL', variable: 'NEXT_PUBLIC_ONTOLOGY_BASE_URL'),
 
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_NAKSHA_ENDPOINT', variable: 'NEXT_PUBLIC_NAKSHA_ENDPOINT'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_GEOSERVER_ENDPOINT', variable: 'NEXT_PUBLIC_GEOSERVER_ENDPOINT'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_GEOSERVER_STORE', variable: 'NEXT_PUBLIC_GEOSERVER_STORE'),
-                    string(credentialsId: 'FRONTEND_CML_NEXT_PUBLIC_GEOSERVER_WORKSPACE', variable: 'NEXT_PUBLIC_GEOSERVER_WORKSPACE')
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_NAKSHA_ENDPOINT', variable: 'NEXT_PUBLIC_NAKSHA_ENDPOINT'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_GEOSERVER_ENDPOINT', variable: 'NEXT_PUBLIC_GEOSERVER_ENDPOINT'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_GEOSERVER_STORE', variable: 'NEXT_PUBLIC_GEOSERVER_STORE'),
+                    string(credentialsId: 'FRONTEND_CPHR_NEXT_PUBLIC_GEOSERVER_WORKSPACE', variable: 'NEXT_PUBLIC_GEOSERVER_WORKSPACE')
                 ]) {
                     sh """
 
@@ -84,6 +85,7 @@ pipeline {
 NEXT_PUBLIC_HHM_BASE_URL=${NEXT_PUBLIC_HHM_BASE_URL}
 NEXT_PUBLIC_FEDERATED_BASE_URL=${NEXT_PUBLIC_FEDERATED_BASE_URL}
 NEXT_PUBLIC_MAP_BASE_URL=${NEXT_PUBLIC_MAP_BASE_URL}
+NEXT_PUBLIC_ONTOLOGY_BASE_URL=${NEXT_PUBLIC_ONTOLOGY_BASE_URL}
 
 NEXT_PUBLIC_NAKSHA_ENDPOINT=${NEXT_PUBLIC_NAKSHA_ENDPOINT} 
 NEXT_PUBLIC_GEOSERVER_ENDPOINT=${NEXT_PUBLIC_GEOSERVER_ENDPOINT}
@@ -92,7 +94,7 @@ NEXT_PUBLIC_GEOSERVER_WORKSPACE=${NEXT_PUBLIC_GEOSERVER_WORKSPACE}
 
 
 
-PORT=${PORT}
+PORT=${DEPLOYMENT_PORT}
 DEPLOY_NAME=${DEPLOYMENT_NAME}
 EOF_ENV
 
@@ -122,8 +124,7 @@ EOF_ENV
                         echo "Application restarted successfully!"
                     else
                         echo "PM2 restart failed. Starting application..."
-                        # pm2 start --name "\$DEPLOY_NAME" "yarn start -p \$PORT"
-                        pm2 start yarn --interpreter bash --name "\$DEPLOY_NAME" -- start
+                        pm2 start --name "\$DEPLOY_NAME" "yarn start -p \$PORT"
                         echo "Application started successfully!"
                     fi
 
