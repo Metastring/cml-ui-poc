@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import FederatedSearchBar from "@/app/federated_search/FederatedSearchBar";
 import { LocateFixed, LocateOff, MapPin, Search, Table2 } from "lucide-react";
 import InstructionPopover from "@/element/popover/InstructionPopover";
@@ -10,6 +11,7 @@ import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import {
   useGetFilterData,
   useMutateFederatedSearch,
+  useMutatePreFederatedSearch,
 } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import FederatedDataTable from "./FederatedDataTable";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
@@ -21,7 +23,9 @@ import { Option } from "@/types/app/federatedSearch.types";
 import { DataItem } from "@/types/api/federatedSearch.types";
 import { toast } from "sonner";
 
-const Page = () => {
+const FederatedSearchContent = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMapVisible, setIsMapVisible] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { selectedCoordinates, visibleMarkers } = useFederatedSearchMapData();
@@ -34,11 +38,22 @@ const Page = () => {
     mutate,
     isMutating: isLoading,
   } = useMutateFederatedSearch();
+  const {
+    data: preData,
+    mutate: mutatePre,
+    isMutating: isPreLoading,
+  } = useMutatePreFederatedSearch();
+
+  const hasOverviewCache = Boolean(
+    preData?.datasets?.some((ds) => ds.available && ds.count > 0)
+  );
 
   const resultKeys = Object.keys(data?.results || {});
-  // When true: show results (single table). When false: show search/indicator UI.
-  const [showResultsView, setShowResultsView] = useState(false);
-  const searchJustSubmittedRef = useRef(false);
+  // When true: show results table. When false: show search/indicator UI.
+  const [showResultsView, setShowResultsView] = useState(
+    () => searchParams?.get("table") === "1"
+  );
+  const tableDatasetFilter = searchParams?.get("dataset") ?? "";
 
   const { totalResultCount, flattenedData, sourcesWithResults, sourcesQueried, fieldColumns } = useMemo(() => {
     if (!data?.results) {
@@ -73,14 +88,18 @@ const Page = () => {
       if (rows.length > 0) sourcesWithResultsCount += 1;
       flattened.push(...rows);
     });
+    const filtered = tableDatasetFilter
+      ? flattened.filter((row) => row.dataset === tableDatasetFilter)
+      : flattened;
+
     return {
-      totalResultCount: flattened.length,
-      flattenedData: flattened,
+      totalResultCount: filtered.length,
+      flattenedData: filtered,
       sourcesWithResults: sourcesWithResultsCount,
       sourcesQueried: resultKeys.length,
       fieldColumns: fieldColumnsList,
     };
-  }, [data?.results, data?.fields]);
+  }, [data?.results, data?.fields, tableDatasetFilter]);
 
   // All possible indicators from all categories/datasets (no dependency on selection)
   const indicatorList: Option[] = useMemo(() => {
@@ -160,23 +179,24 @@ const Page = () => {
       return toast.error("Please select at least one indicator.");
     if (!inputValue) return toast.error("Please enter a search term.");
     setQuery(inputValue);
-    searchJustSubmittedRef.current = true; // so when results arrive we switch to results view
-    mutate({
-      category: categories,
-      dataset: datasets,
-      search_text: inputValue,
-      fields: indicators,
-    });
+    mutatePre(
+      {
+        category: categories,
+        dataset: datasets,
+        search_text: inputValue,
+        fields: indicators,
+      },
+      { onSuccess: () => router.push("/federated_search/overview") }
+    );
   };
 
   useEffect(() => {
-    const hasResults = resultKeys.length > 0;
-    if (hasResults && searchJustSubmittedRef.current) {
-      searchJustSubmittedRef.current = false;
+    if (searchParams?.get("table") === "1" && resultKeys.length > 0) {
       setShowResultsView(true);
     }
-    if (!hasResults) setShowResultsView(false);
-  }, [resultKeys]);
+    if (!resultKeys.length) setShowResultsView(false);
+    if (searchParams?.get("map") === "1") setIsMapVisible(true);
+  }, [searchParams, resultKeys.length]);
 
   return (
     <div className="h-screen flex">
@@ -246,12 +266,11 @@ const Page = () => {
                   variant="outline"
                   size="sm"
                   className="shrink-0 h-8 text-xs font-medium"
-                  onClick={() => {
-                    setShowResultsView(false);
-                    setIsMapVisible(false);
-                  }}
+                  asChild
                 >
-                  ← Back to search
+                  <Link href="/federated_search/overview">
+                    ← Back to overview
+                  </Link>
                 </Button>
                 <span className="text-muted-foreground/70 hidden sm:inline">·</span>
                 <span className="text-sm text-foreground flex items-center gap-2 flex-wrap" aria-live="polite">
@@ -297,7 +316,6 @@ const Page = () => {
               </div>
             </header>
 
-            {/* Table Section — single table with Dataset column */}
             <div className="flex-1 min-w-0 overflow-auto">
               <FederatedDataTable
                 onSearch={() => setIsMapVisible(true)}
@@ -311,7 +329,7 @@ const Page = () => {
         ) : (
           /* Search view — form + optional "View results" when we have cached results */
           <div className="flex-1 flex flex-col min-h-0 overflow-auto bg-background animate-in fade-in-0 duration-200" key="search-view">
-            {resultKeys.length > 0 && (
+            {hasOverviewCache && (
               <div className="shrink-0 border-b border-border border-l-4 border-l-primary bg-primary/5 px-4 py-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
                 <span className="text-muted-foreground">
                   Last search
@@ -326,10 +344,12 @@ const Page = () => {
                   type="button"
                   size="sm"
                   className="gap-1.5 shadow-sm"
-                  onClick={() => setShowResultsView(true)}
+                  asChild
                 >
-                  <Table2 className="h-4 w-4 shrink-0" />
-                  View results
+                  <Link href="/federated_search/overview">
+                    <Table2 className="h-4 w-4 shrink-0" />
+                    View results
+                  </Link>
                 </Button>
               </div>
             )}
@@ -381,10 +401,10 @@ const Page = () => {
                         />
                         <Button
                           onClick={handleSearch}
-                          disabled={isLoading}
+                          disabled={isPreLoading}
                           className="h-11 px-6 rounded-lg font-medium shadow-sm gap-2"
                         >
-                          {isLoading ? (
+                          {isPreLoading ? (
                             <>
                               <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                               Searching…
@@ -430,5 +450,17 @@ const Page = () => {
     </div>
   );
 };
+
+const FederatedSearchFallback = () => (
+  <div className="h-screen flex items-center justify-center text-muted-foreground">
+    Loading…
+  </div>
+);
+
+const Page = () => (
+  <Suspense fallback={<FederatedSearchFallback />}>
+    <FederatedSearchContent />
+  </Suspense>
+);
 
 export default Page;

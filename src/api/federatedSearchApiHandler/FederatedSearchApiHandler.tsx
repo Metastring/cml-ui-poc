@@ -4,8 +4,49 @@ import {
   GetFederatedSearchByPayload,
 } from "./FederatedSearchBaseApiHandler";
 import { toast } from "sonner";
-import { Category, DataItem, DatasetDetail, FederatedSearchData, MapDataItem } from "@/types/api/federatedSearch.types";
+import {
+  Category,
+  DataItem,
+  DatasetDetail,
+  FederatedSearchData,
+  MapDataItem,
+  PreFederatedSearchData,
+  PreFederatedSearchPayload,
+} from "@/types/api/federatedSearch.types";
 
+
+export const useMutatePreFederatedSearch = () => {
+  const queryClient = useQueryClient();
+  const queryKey = ["preFederatedSearchResult"];
+
+  const queryResult = useQuery<PreFederatedSearchData>({
+    queryKey,
+    queryFn: () => {
+      const cached =
+        queryClient.getQueryData<PreFederatedSearchData>(queryKey);
+      return Promise.resolve(
+        cached ?? { search_text: "", datasets: [] }
+      );
+    },
+    enabled: true,
+    staleTime: Infinity,
+  });
+
+  const mutation = useMutation({
+    mutationFn: (payload: PreFederatedSearchPayload) =>
+      GetFederatedSearchByPayload("/pre-federated-search", payload),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKey, data);
+    },
+  });
+
+  return {
+    ...queryResult,
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isMutating: mutation.isPending,
+  };
+};
 
 export const useMutateFederatedSearch = () => {
   const queryClient = useQueryClient();

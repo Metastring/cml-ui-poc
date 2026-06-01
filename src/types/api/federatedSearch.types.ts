@@ -89,6 +89,27 @@ export type DataItem = {
   [key: string]: unknown;
 };
 
+export type PreFederatedSearchPayload = {
+  search_text: string;
+  category: string[];
+  dataset: string[];
+  fields: string[];
+};
+
+export type PreFederatedSearchDataset = {
+  dataset_name: string;
+  display_name: string;
+  available: boolean;
+  count: number;
+  matched_fields: string[];
+  is_occurance_available: boolean;
+};
+
+export type PreFederatedSearchData = {
+  search_text: string;
+  datasets: PreFederatedSearchDataset[];
+};
+
 export type FederatedSearchData = {
   /** Ordered list of field names returned by API; drives table column order */
   fields?: string[];
