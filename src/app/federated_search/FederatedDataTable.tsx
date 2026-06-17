@@ -58,7 +58,10 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   data = [],
   fieldColumns = [],
   onSearch,
+  embedded = false,
 }) => {
+  const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
+  const headPad = embedded ? "px-2 py-1.5 text-[11px]" : "px-6 py-4";
   const router = useRouter();
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
   const { addVisibleMarker, removeMarkerByName } = useFederatedSearchMapData();
@@ -138,13 +141,15 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
-        <th className="px-6 py-4 text-foreground">Explore</th>
+        <th className={`${headPad} text-foreground`}>Explore</th>
         {fieldColumns.map((field) => (
-          <th key={field} className="px-6 py-4 text-foreground">
+          <th key={field} className={`${headPad} text-foreground`}>
             {fieldLabel(field)}
           </th>
         ))}
-        <th className="px-6 py-4 text-foreground">Dataset</th>
+        {!embedded && (
+          <th className={`${headPad} text-foreground`}>Dataset</th>
+        )}
       </tr>
     </thead>
   );
@@ -158,7 +163,11 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
 
   return (
     <div className="w-full min-w-0 overflow-x-auto">
-      <div className="min-w-max w-full bg-card shadow-xl rounded-xl overflow-hidden">
+      <div
+        className={`min-w-max w-full bg-card overflow-hidden ${
+          embedded ? "rounded-md border border-border/60" : "shadow-xl rounded-xl"
+        }`}
+      >
         <table className="min-w-max w-full text-sm text-left text-foreground">
           <TableHeader />
           <tbody className="divide-y divide-border">
@@ -174,7 +183,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                       }`}
                     >
                       <td
-                        className="px-6 py-4"
+                        className={cellPad}
                         title="View records"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -218,19 +227,23 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                     return (
                       <td
                         key={field}
-                        className="px-6 py-4"
+                        className={cellPad}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <TableCellWithMore text={text} />
                       </td>
                     );
                   })}
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <TableCellWithMore
-                      text={row.dataset ? String(row.dataset).toUpperCase() : null}
-                      className=""
-                    />
-                  </td>
+                  {!embedded && (
+                    <td className={cellPad} onClick={(e) => e.stopPropagation()}>
+                      <TableCellWithMore
+                        text={
+                          row.dataset ? String(row.dataset).toUpperCase() : null
+                        }
+                        className=""
+                      />
+                    </td>
+                  )}
                     </tr>
                   </ContextMenuTrigger>
                   <ContextMenuContent>

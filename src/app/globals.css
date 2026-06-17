@@ -456,6 +456,59 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Federated search — biodiversity landing atmosphere */
+.federated-search-landing-bg {
+  background:
+    radial-gradient(
+      ellipse 90% 55% at 50% -15%,
+      color-mix(in oklch, var(--primary) 14%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 100% 85%,
+      color-mix(in oklch, var(--accent) 18%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 0% 75%,
+      color-mix(in oklch, var(--primary) 9%, transparent),
+      transparent 58%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--background) 88%, var(--accent)),
+      var(--background) 42%
+    );
+}
+
+.federated-search-specimen-card {
+  background: linear-gradient(
+    145deg,
+    color-mix(in oklch, var(--card) 96%, var(--primary)),
+    color-mix(in oklch, var(--card) 93%, var(--accent))
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 14%, var(--border)),
+    0 22px 48px -16px color-mix(in oklch, var(--primary) 22%, transparent),
+    inset 0 1px 0 color-mix(in oklch, white 40%, transparent);
+}
+
+.federated-search-field-panel {
+  background: color-mix(in oklch, var(--card) 82%, var(--accent));
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.federated-search-canopy-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--primary),
+    color-mix(in oklch, var(--accent) 80%, var(--primary)),
+    var(--primary),
+    transparent
+  );
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

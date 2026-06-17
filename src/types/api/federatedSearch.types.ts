@@ -98,16 +98,28 @@ export type PreFederatedSearchPayload = {
 
 export type PreFederatedSearchDataset = {
   dataset_name: string;
-  display_name: string;
+  display_name?: string;
   available: boolean;
   count: number;
   matched_fields: string[];
   is_occurance_available: boolean;
 };
 
+export type PreFederatedSearchDoneData = {
+  search_text: string;
+  total: number;
+  cached: boolean;
+};
+
 export type PreFederatedSearchData = {
   search_text: string;
   datasets: PreFederatedSearchDataset[];
+  total?: number;
+  cached?: boolean;
+  isComplete?: boolean;
+  isStreaming?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
 };
 
 export type FederatedSearchData = {

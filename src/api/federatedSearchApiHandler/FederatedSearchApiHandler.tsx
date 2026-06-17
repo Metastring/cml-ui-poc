@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   GetFederatedSearchBaseApiHandler,
   GetFederatedSearchByPayload,
+  streamPreFederatedSearch,
 } from "./FederatedSearchBaseApiHandler";
 import { toast } from "sonner";
 import {
@@ -21,22 +22,79 @@ export const useMutatePreFederatedSearch = () => {
 
   const queryResult = useQuery<PreFederatedSearchData>({
     queryKey,
-    queryFn: () => {
-      const cached =
-        queryClient.getQueryData<PreFederatedSearchData>(queryKey);
-      return Promise.resolve(
-        cached ?? { search_text: "", datasets: [] }
-      );
-    },
+    queryFn: () =>
+      queryClient.getQueryData<PreFederatedSearchData>(queryKey) ?? {
+        search_text: "",
+        datasets: [],
+        isComplete: false,
+        isStreaming: false,
+        hasError: false,
+      },
     enabled: true,
     staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: PreFederatedSearchPayload) =>
-      GetFederatedSearchByPayload("/pre-federated-search", payload),
-    onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+    mutationKey: ["preFederatedSearch"],
+    mutationFn: (payload: PreFederatedSearchPayload) => {
+      queryClient.setQueryData<PreFederatedSearchData>(queryKey, {
+        search_text: payload.search_text,
+        datasets: [],
+        isComplete: false,
+        isStreaming: true,
+        hasError: false,
+      });
+
+      return streamPreFederatedSearch(payload, {
+        onDataset: (dataset) => {
+          queryClient.setQueryData<PreFederatedSearchData>(
+            queryKey,
+            (current) => {
+              const base = current ?? {
+                search_text: payload.search_text,
+                datasets: [],
+                isComplete: false,
+                isStreaming: true,
+              };
+              const index = base.datasets.findIndex(
+                (item) => item.dataset_name === dataset.dataset_name
+              );
+              const datasets = [...base.datasets];
+              if (index < 0) datasets.push(dataset);
+              else datasets[index] = dataset;
+              return { ...base, datasets, isStreaming: true };
+            }
+          );
+        },
+        onDone: (done) => {
+          queryClient.setQueryData<PreFederatedSearchData>(
+            queryKey,
+            (current) => ({
+              ...(current ?? { datasets: [] }),
+              search_text: done.search_text,
+              total: done.total,
+              cached: done.cached,
+              isComplete: true,
+              isStreaming: false,
+            })
+          );
+        },
+      });
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Pre-federated search failed. Please try again.";
+      queryClient.setQueryData<PreFederatedSearchData>(queryKey, (current) => ({
+        ...(current ?? { search_text: "", datasets: [] }),
+        isComplete: true,
+        isStreaming: false,
+        hasError: true,
+        errorMessage: message,
+      }));
+      toast.error(message);
     },
   });
 
@@ -45,6 +103,8 @@ export const useMutatePreFederatedSearch = () => {
     mutate: mutation.mutate,
     mutateAsync: mutation.mutateAsync,
     isMutating: mutation.isPending,
+    isError: mutation.isError,
+    reset: mutation.reset,
   };
 };
 

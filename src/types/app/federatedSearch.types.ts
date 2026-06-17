@@ -45,4 +45,6 @@ export interface FederatedDataTableProps {
   /** Ordered field names from API; columns shown between Explore on Map and Dataset */
   fieldColumns?: string[];
   onSearch: () => void;
+  /** Tighter layout for nested views; hides dataset column */
+  embedded?: boolean;
 }
