@@ -69,7 +69,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
   const { addVisibleMarker } = useFederatedSearchMapData();
 
-  const { mutate: fetchMapData, data: mapData = [] } =
+  const {  data: mapData = [] } =
     useGetMapDataBasedOnFederatedSearchResult();
 
   // Initialize checkbox state when data changes
