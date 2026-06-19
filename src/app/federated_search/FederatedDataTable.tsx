@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ExternalLink, MoreVertical } from "lucide-react";
+import { Loader2, MoreVertical } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/context-menu";
 import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
-import { FederatedDataTableProps, fieldLabel } from "@/types/app/federatedSearch.types";
+import {
+  FederatedDataTableProps,
+  fieldLabel,
+} from "@/types/app/federatedSearch.types";
 import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
 const MAX_CELL_CHARS = 45;
 
@@ -57,14 +60,14 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isError,
   data = [],
   fieldColumns = [],
-  onSearch,
+  // onSearch,
   embedded = false,
 }) => {
   const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
   const headPad = embedded ? "px-2 py-1.5 text-[11px]" : "px-6 py-4";
   const router = useRouter();
   const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
-  const { addVisibleMarker, removeMarkerByName } = useFederatedSearchMapData();
+  const { addVisibleMarker } = useFederatedSearchMapData();
 
   const { mutate: fetchMapData, data: mapData = [] } =
     useGetMapDataBasedOnFederatedSearchResult();
@@ -104,39 +107,39 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   };
 
   // Handle row toggle — only set "on map" when API returns occurrence data
-  const handleToggleSelection = (row: DataItem, index: number) => {
-    const name = row.scientific_name || row.taxon_name;
-    if (!name) return;
+  // const handleToggleSelection = (row: DataItem, index: number) => {
+  //   const name = row.scientific_name || row.taxon_name;
+  //   if (!name) return;
 
-    const currentlyOnMap = checkedRows[index];
-    if (currentlyOnMap) {
-      setCheckedRows((prev) => {
-        const next = [...prev];
-        next[index] = false;
-        return next;
-      });
-      removeMarkerByName(name);
-      onSearch?.();
-      return;
-    }
+  //   const currentlyOnMap = checkedRows[index];
+  //   if (currentlyOnMap) {
+  //     setCheckedRows((prev) => {
+  //       const next = [...prev];
+  //       next[index] = false;
+  //       return next;
+  //     });
+  //     removeMarkerByName(name);
+  //     onSearch?.();
+  //     return;
+  //   }
 
-    // View: fetch first; only toggle icon when we get occurrence data
-    fetchMapData(name, {
-      onSuccess: (result) => {
-        if (result && result.length > 0) {
-          setCheckedRows((prev) => {
-            const next = [...prev];
-            data.forEach((r, idx) => {
-              const rn = r.scientific_name || r.taxon_name;
-              if (rn === name) next[idx] = true;
-            });
-            return next;
-          });
-          onSearch?.();
-        }
-      },
-    });
-  };
+  //   // View: fetch first; only toggle icon when we get occurrence data
+  //   fetchMapData(name, {
+  //     onSuccess: (result) => {
+  //       if (result && result.length > 0) {
+  //         setCheckedRows((prev) => {
+  //           const next = [...prev];
+  //           data.forEach((r, idx) => {
+  //             const rn = r.scientific_name || r.taxon_name;
+  //             if (rn === name) next[idx] = true;
+  //           });
+  //           return next;
+  //         });
+  //         onSearch?.();
+  //       }
+  //     },
+  //   });
+  // };
 
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
@@ -147,9 +150,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
             {fieldLabel(field)}
           </th>
         ))}
-        {!embedded && (
-          <th className={`${headPad} text-foreground`}>Dataset</th>
-        )}
+        {!embedded && <th className={`${headPad} text-foreground`}>Dataset</th>}
       </tr>
     </thead>
   );
@@ -165,7 +166,9 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     <div className="w-full min-w-0 overflow-x-auto">
       <div
         className={`min-w-max w-full bg-card overflow-hidden ${
-          embedded ? "rounded-md border border-border/60" : "shadow-xl rounded-xl"
+          embedded
+            ? "rounded-md border border-border/60"
+            : "shadow-xl rounded-xl"
         }`}
       >
         <table className="min-w-max w-full text-sm text-left text-foreground">
@@ -199,7 +202,9 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                                 clientX: e.clientX,
                                 clientY: e.clientY,
                               });
-                              (e.currentTarget as HTMLElement).dispatchEvent(ev);
+                              (e.currentTarget as HTMLElement).dispatchEvent(
+                                ev,
+                              );
                             }}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                             title="More options"
@@ -207,7 +212,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
-                          <button
+                          {/* <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -217,52 +222,61 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                           >
                             <ExternalLink className="h-4 w-4" />
                             View records
-                          </button>
+                          </button> */}
                         </div>
                       </td>
-                  {fieldColumns.map((field) => {
-                    const value = row[field];
-                    const text =
-                      value !== undefined && value !== null ? String(value) : null;
-                    return (
-                      <td
-                        key={field}
-                        className={cellPad}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <TableCellWithMore text={text} />
-                      </td>
-                    );
-                  })}
-                  {!embedded && (
-                    <td className={cellPad} onClick={(e) => e.stopPropagation()}>
-                      <TableCellWithMore
-                        text={
-                          row.dataset ? String(row.dataset).toUpperCase() : null
-                        }
-                        className=""
-                      />
-                    </td>
-                  )}
+                      {fieldColumns.map((field) => {
+                        const value = row[field];
+                        const text =
+                          value !== undefined && value !== null
+                            ? String(value)
+                            : null;
+                        return (
+                          <td
+                            key={field}
+                            className={cellPad}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <TableCellWithMore text={text} />
+                          </td>
+                        );
+                      })}
+                      {!embedded && (
+                        <td
+                          className={cellPad}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <TableCellWithMore
+                            text={
+                              row.dataset
+                                ? String(row.dataset).toUpperCase()
+                                : null
+                            }
+                            className=""
+                          />
+                        </td>
+                      )}
                     </tr>
                   </ContextMenuTrigger>
                   <ContextMenuContent>
+                    <ContextMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(
+                          "https://example.com",
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }}
+                      description="Open example.com"
+                    >
+                      View Details
+                    </ContextMenuItem>
                     <ContextMenuItem
                       onSelect={() => handleExploreDataset(row)}
                       description="Open the dataset page for this result in the catalog."
                     >
                       Explore dataset
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                      onSelect={() => handleToggleSelection(row, index)}
-                      disabled={row.is_occurance_available !== true}
-                      description={
-                        row.is_occurance_available === true
-                          ? "Add this result to the map to view occurrence locations."
-                          : "Sorry — occurrence data is not available for this dataset."
-                      }
-                    >
-                      Explore on map
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
