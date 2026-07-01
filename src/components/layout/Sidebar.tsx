@@ -11,6 +11,7 @@ import {
   FileSearch,
   Network,
   Settings,
+  Share2,
 } from 'lucide-react';
 import React, { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
@@ -62,6 +63,7 @@ const Sidebar: React.FC = () => {
     if (pathname === '/metadata_search') return 'Metadata Search';
     if (pathname === '/map_module') return 'Map Module';
     if (pathname === '/settings') return 'Settings';
+    if (pathname === '/federated_sources') return 'Federated Sources';
     return '';
   };
 
@@ -147,6 +149,15 @@ const Sidebar: React.FC = () => {
             label="Metadata Search"
             isOpen={isSidebarOpen}
             active={currentTab === 'Metadata Search'}
+          />
+        </Link>
+
+        <Link href="/federated_sources">
+          <SidebarItem
+            icon={<Share2 size={18} />}
+            label="Federated Sources"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Federated Sources'}
           />
         </Link>
 

@@ -19,6 +19,7 @@ import {
   Layers,
   ArrowRight,
   Sparkles,
+  Share2,
 } from "lucide-react";
 import { useGetPlatformStatistics } from "@/api/dashboard/DashboardApiHandler";
 
@@ -62,6 +63,12 @@ const actions = [
     description: "Search and discover datasets by metadata and attributes.",
     href: "/metadata_search",
     icon: FileSearch,
+  },
+  {
+    title: "Federated Sources",
+    description: "View all federated data sources connected to the platform.",
+    href: "/federated_sources",
+    icon: Share2,
   },
 ];
 
