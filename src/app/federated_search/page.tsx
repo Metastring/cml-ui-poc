@@ -211,13 +211,13 @@ const FederatedSearchContent = () => {
 
       Object.entries(data.results).forEach(([datasetKey, source]) => {
         const fieldResults = source?.field_results ?? {};
-        const isOccurrenceAvailable = source?.is_occurance_available ?? false;
+        const isOccurrenceAvailable = source?.is_occurrence_available ?? false;
         const rows = Object.values(fieldResults).flatMap(
           (field: { results?: DataItem[] }) =>
             (field?.results ?? []).map((row) => ({
               ...row,
               dataset: datasetKey,
-              is_occurance_available: isOccurrenceAvailable,
+              is_occurrence_available: isOccurrenceAvailable,
             }))
         );
         if (rows.length > 0) sourcesWithResultsCount += 1;

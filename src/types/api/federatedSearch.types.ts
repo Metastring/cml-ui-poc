@@ -84,7 +84,7 @@ export type DataItem = {
   /** Dataset/source name (e.g. GBIF, iDigBio) when showing combined results */
   dataset?: string;
   /** When false, occurrence data is not available for this dataset; "Explore on map" is disabled. */
-  is_occurance_available?: boolean;
+  is_occurrence_available?: boolean;
   /** Dynamic field keys returned by API (e.g. sanskrit_name, recipe, drug_name) */
   [key: string]: unknown;
 };
@@ -96,13 +96,25 @@ export type PreFederatedSearchPayload = {
   fields: string[];
 };
 
+export type MatchedFieldsMap = {
+  field: string;
+  styleName?: string;
+  styleTitle?: string;
+  styleId?: number;
+};
+
+export type MatchedFields = {
+  tabular: string[];
+  map: MatchedFieldsMap[];
+};
+
 export type PreFederatedSearchDataset = {
   dataset_name: string;
   display_name?: string;
   available: boolean;
   count: number;
-  matched_fields: string[];
-  is_occurance_available: boolean;
+  matched_fields: MatchedFields;
+  is_occurrence_available: boolean;
 };
 
 export type PreFederatedSearchDoneData = {
@@ -128,16 +140,14 @@ export type FederatedSearchData = {
   results?: Record<
     string,
     {
-      field_results?: {
-        vernacular_name_common_names?: {
+      field_results?: Record<
+        string,
+        {
           results?: DataItem[];
-        };
-        scientific_name?: {
-          results?: DataItem[];
-        };
-      };
+        }
+      >;
       /** When false, this dataset has no occurrence data for map; "Explore on map" should be disabled. */
-      is_occurance_available?: boolean;
+      is_occurrence_available?: boolean;
     }
   >;
 };

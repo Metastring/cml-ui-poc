@@ -45,7 +45,7 @@ function toDataset(
     available: chunk.available,
     count: chunk.count,
     matched_fields: chunk.matched_fields ?? [],
-    is_occurance_available: chunk.is_occurance_available ?? false,
+    is_occurrence_available: chunk.is_occurrence_available ?? false,
   };
 }
 

@@ -26,6 +26,13 @@ import {
 } from "@/types/api/federatedSearch.types";
 import { cn } from "@/lib/utils";
 
+function extractFieldNames(matchedFields: {
+  tabular: string[];
+  map: Array<{ field: string }>;
+}): string[] {
+  return matchedFields.tabular;
+}
+
 type DatasetOverviewRow = {
   datasetKey: string;
   datasetName: string;
@@ -57,13 +64,13 @@ function parseDatasetResults(
   if (!source) return { rows: [], fieldColumns: [] };
 
   const fieldResults = source.field_results ?? {};
-  const isOccurrenceAvailable = source.is_occurance_available ?? false;
+  const isOccurrenceAvailable = source.is_occurrence_available ?? false;
   const rows = Object.values(fieldResults).flatMap(
     (field: { results?: DataItem[] }) =>
       (field?.results ?? []).map((row) => ({
         ...row,
         dataset: datasetKey,
-        is_occurance_available: isOccurrenceAvailable,
+        is_occurrence_available: isOccurrenceAvailable,
       }))
   );
   const derivedFields = Object.keys(fieldResults);
@@ -95,6 +102,8 @@ type AccordionItemProps = {
   isLast: boolean;
   expansion?: RowExpansionState;
   onToggleExpand: (item: DatasetOverviewRow) => void;
+  onExploreMap?: (item: DatasetOverviewRow) => void;
+  isExploringMap?: boolean;
 };
 
 function AccordionItem({
@@ -103,6 +112,8 @@ function AccordionItem({
   isLast,
   expansion,
   onToggleExpand,
+  onExploreMap,
+  isExploringMap,
 }: AccordionItemProps) {
   const isExpanded = Boolean(expansion);
   const isLoading = expansion?.status === "loading";
@@ -196,6 +207,29 @@ function AccordionItem({
           {item.resultCount.toLocaleString()}
         </span>
 
+        {item.hasOccurrence && (
+          <button
+            type="button"
+            className={cn(
+              "shrink-0 inline-flex items-center gap-1 rounded-md border px-1.5",
+              "py-0.5 text-[10px] font-medium transition-colors",
+              "border-primary/25 bg-primary/10 text-primary",
+              "hover:bg-primary/15",
+              "focus-visible:outline-none focus-visible:ring-2",
+              "focus-visible:ring-primary/30 focus-visible:ring-inset"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onExploreMap?.(item);
+            }}
+            aria-label={`Explore ${item.datasetName} on map`}
+            title="Explore on map"
+          >
+            <MapPin className="h-3 w-3" aria-hidden />
+            <span className="hidden sm:inline">Explore on Map</span>
+          </button>
+        )}
+
         <span
           className={cn(
             "inline-flex shrink-0 items-center gap-1 rounded-md border px-2",
@@ -236,6 +270,23 @@ function AccordionItem({
         )}
       >
         <div className="overflow-hidden">
+          {isExploringMap && (
+            <div
+              className="flex items-center justify-center gap-2 py-6 px-3
+                border-t border-primary/20 bg-primary/5"
+            >
+              <MapPin className="h-5 w-5 text-primary" />
+              <div className="text-center">
+                <p className="text-sm font-medium text-primary">
+                  Map view for {item.datasetName}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Coming soon - will display occurrence data on map
+                </p>
+              </div>
+            </div>
+          )}
+
           {expansion?.status === "loading" && (
             <div className="px-3 py-1">
               <LoadingSkeleton />
@@ -283,10 +334,14 @@ function DatasetAccordion({
   items,
   expandedRows,
   onToggleExpand,
+  onExploreMap,
+  exploringMapDataset,
 }: {
   items: DatasetOverviewRow[];
   expandedRows: Record<string, RowExpansionState>;
   onToggleExpand: (item: DatasetOverviewRow) => void;
+  onExploreMap?: (item: DatasetOverviewRow) => void;
+  exploringMapDataset?: string | null;
 }) {
   if (items.length === 0) return null;
 
@@ -304,6 +359,8 @@ function DatasetAccordion({
           isLast={index === items.length - 1}
           expansion={expandedRows[item.datasetKey]}
           onToggleExpand={onToggleExpand}
+          onExploreMap={onExploreMap}
+          isExploringMap={exploringMapDataset === item.datasetKey}
         />
       ))}
     </div>
@@ -438,6 +495,9 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
   const [expandedRows, setExpandedRows] = useState<
     Record<string, RowExpansionState>
   >({});
+  const [exploringMapDataset, setExploringMapDataset] = useState<string | null>(
+    null
+  );
 
   const searchTerm = (preData?.search_text || query).trim();
   const selected = selectedIndicators.filter(Boolean);
@@ -472,17 +532,20 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
   const datasetRows = useMemo((): DatasetOverviewRow[] => {
     return receivedDatasets
       .filter((ds) => ds.available && ds.count > 0)
-      .map((ds) => ({
-        datasetKey: ds.dataset_name,
-        datasetName: ds.display_name || ds.dataset_name,
-        resultCount: ds.count,
-        matchedFields: ds.matched_fields,
-        matchedIndicatorLabels: ds.matched_fields.map(
-          (field) =>
-            indicatorLabelByValue.get(field) ?? field.replace(/_/g, " ")
-        ),
-        hasOccurrence: ds.is_occurance_available,
-      }));
+      .map((ds) => {
+        const fieldNames = extractFieldNames(ds.matched_fields);
+        return {
+          datasetKey: ds.dataset_name,
+          datasetName: ds.display_name || ds.dataset_name,
+          resultCount: ds.count,
+          matchedFields: fieldNames,
+          matchedIndicatorLabels: fieldNames.map(
+            (field: string) =>
+              indicatorLabelByValue.get(field) ?? field.replace(/_/g, " ")
+          ),
+          hasOccurrence: ds.is_occurrence_available,
+        };
+      });
   }, [receivedDatasets, indicatorLabelByValue]);
 
   const noMatchNames = useMemo(
@@ -553,8 +616,15 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
     }
   };
 
+  const handleExploreMap = (item: DatasetOverviewRow) => {
+    setExploringMapDataset(
+      exploringMapDataset === item.datasetKey ? null : item.datasetKey
+    );
+  };
+
   useEffect(() => {
     setExpandedRows({});
+    setExploringMapDataset(null);
   }, [searchTerm]);
 
   useEffect(() => {
@@ -568,6 +638,8 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
         items={datasetRows}
         expandedRows={expandedRows}
         onToggleExpand={handleToggleExpand}
+        onExploreMap={handleExploreMap}
+        exploringMapDataset={exploringMapDataset}
       />
 
       {isStreaming &&
