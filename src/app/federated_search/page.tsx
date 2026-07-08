@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import FederatedSearchBar from "@/app/federated_search/FederatedSearchBar";
 import FederatedSearchOverview, {
-  FederatedSearchOverviewStats,
   useOverviewStats,
 } from "@/app/federated_search/FederatedSearchOverview";
 import {
@@ -50,7 +49,6 @@ import { DataItem } from "@/types/api/federatedSearch.types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const SEARCH_TRANSITION_MS = 1100;
 const SLIDE_TRANSITION =
   "transition-all duration-[1100ms] ease-in-out";
 
@@ -148,9 +146,6 @@ const FederatedSearchContent = () => {
     isError: isPreSearchError,
     reset: resetPreSearch,
   } = useMutatePreFederatedSearch();
-  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
 
   const overviewStats = useOverviewStats();
   const hasActiveSearch = Boolean(
@@ -334,22 +329,12 @@ const FederatedSearchContent = () => {
   }, [indicators, indicatorList]);
 
   const returnToLanding = useCallback(() => {
-    if (transitionTimerRef.current) {
-      clearTimeout(transitionTimerRef.current);
-      transitionTimerRef.current = null;
-    }
     setLayoutMode("landing");
   }, []);
 
   const beginResultsTransition = useCallback(() => {
-    if (transitionTimerRef.current) {
-      clearTimeout(transitionTimerRef.current);
-    }
-    setLayoutMode("transitioning");
-    transitionTimerRef.current = setTimeout(() => {
-      setLayoutMode("results");
-      transitionTimerRef.current = null;
-    }, SEARCH_TRANSITION_MS);
+    // Transition is now instant since we show search and results side-by-side
+    setLayoutMode("results");
   }, []);
 
   const handleSearch = () => {
@@ -417,13 +402,6 @@ const FederatedSearchContent = () => {
     }
   }, [query]);
 
-  useEffect(() => {
-    return () => {
-      if (transitionTimerRef.current) {
-        clearTimeout(transitionTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!preData?.hasError) return;
@@ -489,112 +467,27 @@ const FederatedSearchContent = () => {
         <FederatedSearchBar mutate={mutate} />
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div
-          className={cn(
-            "overflow-hidden shadow-lg duration-[1100ms] ease-in-out",
-            SLIDE_TRANSITION,
-            isMapVisible ? "h-[50vh]" : "h-0"
-          )}
-        >
-          {isMapVisible && (
-            <div className="h-full w-full">
-              <BaseMap />
-              <AddMarker
-                markers={visibleMarkers}
-                flyTo={selectedCoordinates}
-              />
-            </div>
-          )}
-        </div>
-
-        {resultKeys.length > 0 && showResultsView ? (
+      <div className="flex-1 flex gap-0 overflow-hidden">
+        {/* Left side: Search section (60%) */}
+        <div className="w-[60%] flex flex-col overflow-hidden bg-background">
           <div
-            className="flex-1 flex flex-col min-h-0 overflow-hidden
-              animate-in fade-in-0 duration-200"
-            key="results-view"
+            className={cn(
+              "overflow-hidden shadow-lg duration-[1100ms] ease-in-out",
+              SLIDE_TRANSITION,
+              isMapVisible ? "h-[50vh]" : "h-0"
+            )}
           >
-            <header
-              className="shrink-0 border-b border-border border-l-4
-                border-l-primary bg-primary/5 flex flex-wrap items-center
-                justify-between gap-3 px-4 py-2.5"
-              role="region"
-              aria-label="Results summary"
-            >
-              <div className="flex items-center gap-3 flex-wrap">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 h-7 text-xs font-medium"
-                  onClick={() => {
-                    setShowResultsView(false);
-                    setLayoutMode("results");
-                  }}
-                >
-                  ← Back to datasets
-                </Button>
-                <span className="text-sm text-foreground flex items-center gap-2 flex-wrap" aria-live="polite">
-                  <span>Results for</span>
-                  <span
-                    className="inline-flex items-center rounded-md bg-primary/15
-                      px-2 py-0.5 font-semibold text-primary ring-1 ring-primary/20"
-                  >
-                    &quot;{query || "—"}&quot;
-                  </span>
-                  <span>
-                    <strong className="font-semibold text-foreground">
-                      {totalResultCount.toLocaleString()}
-                    </strong>{" "}
-                    {totalResultCount === 1 ? "record" : "records"}
-                  </span>
-                  {sourcesQueried > 0 && (
-                    <span className="text-muted-foreground font-normal">
-                      {sourcesQueried === 1
-                        ? "from 1 source"
-                        : `from ${sourcesWithResults} of ${sourcesQueried} sources`}
-                    </span>
-                  )}
-                </span>
+            {isMapVisible && (
+              <div className="h-full w-full">
+                <BaseMap />
+                <AddMarker
+                  markers={visibleMarkers}
+                  flyTo={selectedCoordinates}
+                />
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  className="h-7 text-xs font-medium gap-1.5 bg-primary
-                    text-primary-foreground shadow-md ring-2 ring-primary/30
-                    hover:bg-primary/90"
-                  asChild
-                >
-                  <Link href="/map_search">
-                    <MapPin className="h-4 w-4" />
-                    Explore Map Search
-                  </Link>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs font-medium gap-1.5"
-                  asChild
-                >
-                  <Link href="/contribute">Want to contribute?</Link>
-                </Button>
-              </div>
-            </header>
-
-            <div className="flex-1 min-w-0 overflow-auto">
-              <FederatedDataTable
-                onSearch={() => setIsMapVisible(true)}
-                isLoading={isLoading}
-                isError={isError}
-                data={flattenedData}
-                fieldColumns={fieldColumns}
-              />
-            </div>
+            )}
           </div>
-        ) : (
+
           <div
             className="flex-1 flex flex-col min-h-0 overflow-hidden
               bg-background"
@@ -1280,149 +1173,194 @@ const FederatedSearchContent = () => {
                     </div>
                   )}
 
-                {!isSearchLanding && (
-                  <div className="space-y-1.5">
-                    {showResultsPanel && query && (
-                      <div
-                        className="flex flex-wrap items-center gap-2 text-[11px]
-                          text-muted-foreground rounded-lg bg-primary/[0.04]
-                          border border-primary/10 px-3 py-2"
-                      >
-                        <Leaf className="h-3 w-3 text-primary/50 shrink-0" />
-                        <span className="font-medium text-primary/80">
-                          Active query
-                        </span>
-                        <span
-                          className="inline-flex items-center rounded-md
-                            bg-primary/10 px-2 py-0.5 font-medium text-primary
-                            ring-1 ring-primary/15"
-                        >
-                          &quot;{query}&quot;
-                        </span>
-                        {hasIndicators && (
-                          <span className="tabular-nums">
-                            · {indicators.length} indicator
-                            {indicators.length === 1 ? "" : "s"}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {showResultsPanel &&
-                      showOverview &&
-                      hasActiveSearch &&
-                      !preData?.hasError && (
-                        <FederatedSearchOverviewStats
-                          stats={{ ...overviewStats, expandedCount: 0 }}
-                        />
-                      )}
-                  </div>
-                )}
               </div>
             </section>
+          </div>
+        </div>
 
-            {(isSearchTransitioning || showResultsPanel) && (
-              <div
-                className={cn(
-                  "flex-1 min-h-0 overflow-auto p-2",
-                  showResultsPanel &&
+        {/* Right side: Results section (40%) */}
+        <div className="w-[40%] flex flex-col overflow-hidden border-l border-border bg-card">
+          {showResultsPanel ? (
+            <div
+              className="flex-1 flex flex-col min-h-0 overflow-hidden
+                animate-in fade-in-0 duration-200"
+              key="results-view"
+            >
+              {resultKeys.length > 0 && showResultsView ? (
+                <>
+                  <header
+                    className="shrink-0 border-b border-border border-l-4
+                      border-l-primary bg-primary/5 flex flex-wrap items-center
+                      justify-between gap-3 px-4 py-2.5"
+                    role="region"
+                    aria-label="Results summary"
+                  >
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 h-7 text-xs font-medium"
+                        onClick={() => {
+                          setShowResultsView(false);
+                        }}
+                      >
+                        ← Close results
+                      </Button>
+                      <span className="text-sm text-foreground flex items-center gap-2 flex-wrap" aria-live="polite">
+                        <span>Results for</span>
+                        <span
+                          className="inline-flex items-center rounded-md bg-primary/15
+                            px-2 py-0.5 font-semibold text-primary ring-1 ring-primary/20"
+                        >
+                          &quot;{query || "—"}&quot;
+                        </span>
+                        <span>
+                          <strong className="font-semibold text-foreground">
+                            {totalResultCount.toLocaleString()}
+                          </strong>{" "}
+                          {totalResultCount === 1 ? "record" : "records"}
+                        </span>
+                        {sourcesQueried > 0 && (
+                          <span className="text-muted-foreground font-normal">
+                            {sourcesQueried === 1
+                              ? "from 1 source"
+                              : `from ${sourcesWithResults} of ${sourcesQueried} sources`}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        className="h-7 text-xs font-medium gap-1.5 bg-primary
+                          text-primary-foreground shadow-md ring-2 ring-primary/30
+                          hover:bg-primary/90"
+                        asChild
+                      >
+                        <Link href="/map_search">
+                          <MapPin className="h-4 w-4" />
+                          Explore Map Search
+                        </Link>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs font-medium gap-1.5"
+                        asChild
+                      >
+                        <Link href="/contribute">Want to contribute?</Link>
+                      </Button>
+                    </div>
+                  </header>
+
+                  <div className="flex-1 min-w-0 overflow-auto">
+                    <FederatedDataTable
+                      onSearch={() => setIsMapVisible(true)}
+                      isLoading={isLoading}
+                      isError={isError}
+                      data={flattenedData}
+                      fieldColumns={fieldColumns}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div
+                  className={cn(
+                    "flex-1 min-h-0 overflow-auto p-2",
                     "animate-in fade-in-0 slide-in-from-bottom-6 " +
                       "duration-[1100ms] ease-in-out"
-                )}
-                aria-busy={
-                  isSearchTransitioning ||
-                  isPreLoading ||
-                  overviewStats.isStreaming
-                }
-              >
-                {isSearchTransitioning && (
-                  <div
-                    className="flex h-full min-h-[200px] flex-col items-center
-                      justify-center gap-3 text-muted-foreground"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <Loader2
-                      className="h-8 w-8 animate-spin text-primary"
-                    />
-                    <p className="text-sm">Preparing results view…</p>
-                  </div>
-                )}
-
-                {showResultsPanel && preData?.hasError && (
-                  <div
-                    className="flex h-full min-h-[200px] flex-col items-center
-                      justify-center gap-3 px-6 text-center"
-                    role="alert"
-                  >
-                    <AlertCircle
-                      className="h-10 w-10 text-destructive"
-                    />
-                    <p className="text-sm text-destructive max-w-md">
-                      {preData.errorMessage ??
-                        "Search failed. Please try again."}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={handleNewSearch}
-                    >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Try again
-                    </Button>
-                  </div>
-                )}
-
-                {showResultsPanel &&
-                  !preData?.hasError &&
-                  isPreLoading &&
-                  !preData?.datasets?.length && (
+                  )}
+                  aria-busy={
+                    isPreLoading ||
+                    overviewStats.isStreaming
+                  }
+                >
+                  {preData?.hasError && (
                     <div
                       className="flex h-full min-h-[200px] flex-col items-center
-                        justify-center gap-3 text-muted-foreground"
-                      role="status"
-                      aria-live="polite"
+                        justify-center gap-3 px-6 text-center"
+                      role="alert"
                     >
-                      <Loader2
-                        className="h-8 w-8 animate-spin text-primary"
+                      <AlertCircle
+                        className="h-10 w-10 text-destructive"
                       />
-                      <p className="text-sm">
-                        Querying {datasets.length}{" "}
-                        {datasets.length === 1 ? "dataset" : "datasets"}…
+                      <p className="text-sm text-destructive max-w-md">
+                        {preData.errorMessage ??
+                          "Search failed. Please try again."}
                       </p>
-                      <p className="text-xs text-muted-foreground/80">
-                        Results will appear as each source responds.
-                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={handleNewSearch}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Try again
+                      </Button>
                     </div>
                   )}
 
-                {showResultsPanel &&
-                  !preData?.hasError &&
-                  showOverview &&
-                  hasActiveSearch &&
-                  (preData?.datasets?.length || !isPreLoading) && (
-                    <FederatedSearchOverview
-                      onSearchComplete={handleSearchComplete}
-                    />
-                  )}
+                  {!preData?.hasError &&
+                    isPreLoading &&
+                    !preData?.datasets?.length && (
+                      <div
+                        className="flex h-full min-h-[200px] flex-col items-center
+                          justify-center gap-3 text-muted-foreground"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <Loader2
+                          className="h-8 w-8 animate-spin text-primary"
+                        />
+                        <p className="text-sm">
+                          Querying {datasets.length}{" "}
+                          {datasets.length === 1 ? "dataset" : "datasets"}…
+                        </p>
+                        <p className="text-xs text-muted-foreground/80">
+                          Results will appear as each source responds.
+                        </p>
+                      </div>
+                    )}
 
-                {showResultsPanel &&
-                  !preData?.hasError &&
-                  !showOverview &&
-                  !isPreLoading && (
-                    <p
-                      className="text-center text-xs text-muted-foreground
-                        py-8"
-                    >
-                      Select datasets in the sidebar, pick indicators,
-                      and search.
-                    </p>
-                  )}
-              </div>
-            )}
-          </div>
-        )}
+                  {!preData?.hasError &&
+                    showOverview &&
+                    hasActiveSearch &&
+                    (preData?.datasets?.length || !isPreLoading) && (
+                      <FederatedSearchOverview
+                        onSearchComplete={handleSearchComplete}
+                      />
+                    )}
+
+                  {!preData?.hasError &&
+                    !showOverview &&
+                    !isPreLoading && (
+                      <p
+                        className="text-center text-xs text-muted-foreground
+                          py-8"
+                      >
+                        Select datasets in the sidebar, pick indicators,
+                        and search.
+                      </p>
+                    )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="flex-1 flex flex-col items-center justify-center
+                text-muted-foreground p-6 text-center"
+            >
+              <p className="text-sm">
+                No results yet. Use the search panel on the left to explore datasets.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
