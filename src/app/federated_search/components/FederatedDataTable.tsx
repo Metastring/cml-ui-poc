@@ -16,7 +16,7 @@ import {
   fieldLabel,
 } from "@/types/app/federatedSearch.types";
 import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
-const MAX_CELL_CHARS = 45;
+import { MAX_CELL_CHARS } from "@/app/federated_search/utils/constants";
 
 function TableCellWithMore({
   text,
@@ -53,31 +53,21 @@ function TableCellWithMore({
   );
 }
 
-// Minimal state tables (no proper header until data is loaded)
-
 const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isLoading,
   isError,
   data = [],
   fieldColumns = [],
-  // onSearch,
   embedded = false,
 }) => {
   const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
   const headPad = embedded ? "px-2 py-1.5 text-[11px]" : "px-6 py-4";
   const router = useRouter();
-  const [checkedRows, setCheckedRows] = useState<boolean[]>([]);
   const { addVisibleMarker } = useFederatedSearchMapData();
 
   const {  data: mapData = [] } =
     useGetMapDataBasedOnFederatedSearchResult();
 
-  // Initialize checkbox state when data changes
-  useEffect(() => {
-    setCheckedRows(new Array(data.length).fill(false));
-  }, [data.length]);
-
-  // Add markers when mapData arrives
   useEffect(() => {
     if (!mapData.length) return;
 
@@ -106,41 +96,6 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     router.push(path);
   };
 
-  // Handle row toggle — only set "on map" when API returns occurrence data
-  // const handleToggleSelection = (row: DataItem, index: number) => {
-  //   const name = row.scientific_name || row.taxon_name;
-  //   if (!name) return;
-
-  //   const currentlyOnMap = checkedRows[index];
-  //   if (currentlyOnMap) {
-  //     setCheckedRows((prev) => {
-  //       const next = [...prev];
-  //       next[index] = false;
-  //       return next;
-  //     });
-  //     removeMarkerByName(name);
-  //     onSearch?.();
-  //     return;
-  //   }
-
-  //   // View: fetch first; only toggle icon when we get occurrence data
-  //   fetchMapData(name, {
-  //     onSuccess: (result) => {
-  //       if (result && result.length > 0) {
-  //         setCheckedRows((prev) => {
-  //           const next = [...prev];
-  //           data.forEach((r, idx) => {
-  //             const rn = r.scientific_name || r.taxon_name;
-  //             if (rn === name) next[idx] = true;
-  //           });
-  //           return next;
-  //         });
-  //         onSearch?.();
-  //       }
-  //     },
-  //   });
-  // };
-
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
@@ -155,12 +110,9 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     </thead>
   );
 
-  // Before data is fetched: show minimal table with no proper header
   if (isLoading) return <LoadingTable />;
   if (isError) return <ErrorTable />;
   if (data.length === 0) return <EmptyTable />;
-
-  // Only after data is loaded: show full table with dynamic header from API
 
   return (
     <div className="w-full min-w-0 overflow-x-auto">
@@ -179,11 +131,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                 <ContextMenu key={index}>
                   <ContextMenuTrigger asChild>
                     <tr
-                      className={`transition-colors ${
-                        checkedRows[index]
-                          ? "bg-primary/10 hover:bg-primary/20"
-                          : "hover:bg-muted/50"
-                      }`}
+                      className="transition-colors hover:bg-muted/50"
                     >
                       <td
                         className={cellPad}
@@ -212,17 +160,6 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
-                          {/* <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push("/federated_search/records");
-                            }}
-                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            View records
-                          </button> */}
                         </div>
                       </td>
                       {fieldColumns.map((field) => {
@@ -260,19 +197,6 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                   </ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(
-                          "https://example.com",
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
-                      }}
-                      description="Open example.com"
-                    >
-                      View Details
-                    </ContextMenuItem>
-                    <ContextMenuItem
                       onSelect={() => handleExploreDataset(row)}
                       description="Open the dataset page for this result in the catalog."
                     >
@@ -291,7 +215,6 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
 
 export default FederatedDataTable;
 
-// Minimal table with no header — shown until data is fetched
 const LoadingTable: React.FC = () => (
   <div className="flex h-full justify-center rounded-2xl">
     <table className="min-w-full text-sm text-left text-foreground border border-border rounded-2xl overflow-hidden bg-card">

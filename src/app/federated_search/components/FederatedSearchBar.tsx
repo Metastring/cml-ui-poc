@@ -7,8 +7,7 @@ import { FederatedSearchBarProps } from "@/types/app/federatedSearch.types";
 
 export type SelectedShape = { parent: string; child: { name: string }[] }[];
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- mutate passed by parent for refetch API
-const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate }) => {
+const FederatedSearchBar: React.FC<FederatedSearchBarProps> = () => {
   const { data, isLoading, error } = useGetFilterData();
   const {
     categories,
@@ -19,7 +18,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
     setIndicators,
   } = useFederatedSearchStore();
 
-  // Derive selected tree shape from store so it stays in sync when categories/datasets are set from indicators
   const selectedNodes: SelectedShape = useMemo(() => {
     if (!data || !categories.length) return [];
     return categories
@@ -35,7 +33,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
       .filter((x): x is SelectedShape[number] => x != null);
   }, [data, categories, datasets]);
 
-  // Build TreeDropdown nodes
   const nodes = useMemo(() => {
     if (!data) return [];
 
@@ -43,7 +40,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
     type InlineChildNode = {
       id: string;
       name: string;
-      description: string; // always string
+      description: string;
       metadata: InlineMetadata[];
       fields: InlineChildNode[];
     };
@@ -53,10 +50,9 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
       name: category.category_name,
       children:
         category.datasets?.map((ds, jdx) => {
-          // Convert object metadata to array of { key, value }
           const originalMetadata = ds.metadata
             ? Object.entries(ds.metadata)
-                .filter(([k]) => k) // remove undefined keys
+                .filter(([k]) => k)
                 .map(([key, value]) => ({
                   key,
                   value: value != null ? String(value) : "N/A",
@@ -68,7 +64,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
             name: ds.dataset_title,
             description: ds.description
               ? String(ds.description)
-              : "No description", // fallback
+              : "No description",
             metadata: originalMetadata.length
               ? originalMetadata
               : [{ key: "Info", value: "No metadata" }],
@@ -78,8 +74,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
     }));
   }, [data]);
 
-  // Map each indicator value to datasets that provide it (for syncing indicator state
-  // when datasets are toggled from the tree)
   const fieldToDatasets = useMemo(() => {
     const map = new Map<string, string[]>();
     if (!data) return map;
@@ -105,40 +99,38 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = ({ mutate: _mutate
 
   return (
     <div className="flex flex-1 flex-col min-h-0 mx-auto items-center rounded-2xl max-w-3xl w-full drop-shadow-lg bg-muted/30">
-      {/* Filters */}
       <div className="flex flex-1 flex-col min-h-0 w-full">
         <FederatedSearchTreeDropdown
-        nodes={nodes}
-        buttonLabel="Datasets"
-        isLoading={isLoading}
-        isError={!!error}
-        selected={selectedNodes}
-        onChange={(selected) => {
-          if (!selected.length) {
-            setCategories([]);
-            setDatasets([]);
-            setIndicators([]);
-            return;
-          }
+          nodes={nodes}
+          buttonLabel="Datasets"
+          isLoading={isLoading}
+          isError={!!error}
+          selected={selectedNodes}
+          onChange={(selected) => {
+            if (!selected.length) {
+              setCategories([]);
+              setDatasets([]);
+              setIndicators([]);
+              return;
+            }
 
-          const selectedCategories = Array.from(
-            new Set(selected.map((item) => item.parent))
-          );
-          const selectedDatasets = selected.flatMap((item) =>
-            item.child.map((c) => c.name)
-          );
+            const selectedCategories = Array.from(
+              new Set(selected.map((item) => item.parent))
+            );
+            const selectedDatasets = selected.flatMap((item) =>
+              item.child.map((c) => c.name)
+            );
 
-          setCategories(selectedCategories);
-          setDatasets(selectedDatasets);
+            setCategories(selectedCategories);
+            setDatasets(selectedDatasets);
 
-          // Drop any indicators that no longer have at least one selected dataset
-          const dsSet = new Set(selectedDatasets);
-          const nextIndicators = indicators.filter((indicator) => {
-            const linkedDatasets = fieldToDatasets.get(indicator) ?? [];
-            return linkedDatasets.some((dsTitle) => dsSet.has(dsTitle));
-          });
-          setIndicators(nextIndicators);
-        }}
+            const dsSet = new Set(selectedDatasets);
+            const nextIndicators = indicators.filter((indicator) => {
+              const linkedDatasets = fieldToDatasets.get(indicator) ?? [];
+              return linkedDatasets.some((dsTitle) => dsSet.has(dsTitle));
+            });
+            setIndicators(nextIndicators);
+          }}
         />
       </div>
     </div>

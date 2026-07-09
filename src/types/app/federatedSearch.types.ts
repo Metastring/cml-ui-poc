@@ -16,7 +16,7 @@ export type FederatedSearchVariables = {
 };
 
 export type FederatedSearchBarProps = {
-  mutate: UseMutateFunction<
+  mutate?: UseMutateFunction<
     unknown,
     unknown,
     FederatedSearchVariables,
@@ -44,7 +44,7 @@ export interface FederatedDataTableProps {
   data: DataItem[];
   /** Ordered field names from API; columns shown between Explore on Map and Dataset */
   fieldColumns?: string[];
-  onSearch: () => void;
+  onSearch?: () => void;
   /** Tighter layout for nested views; hides dataset column */
   embedded?: boolean;
 }
