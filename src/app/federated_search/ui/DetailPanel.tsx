@@ -4,6 +4,7 @@ import React from "react";
 import { Database, Loader2 } from "lucide-react";
 import { DatasetOverviewRow } from "@/app/federated_search/components/FederatedSearchOverview";
 import FederatedDataTable from "@/app/federated_search/components/FederatedDataTable";
+import { FederatedMapPanel } from "@/app/federated_search/ui/FederatedMapPanel";
 import { DataItem } from "@/types/api/federatedSearch.types";
 
 interface DetailPanelProps {
@@ -55,11 +56,10 @@ export function DetailPanel({
             <p className="text-xs text-muted-foreground/70 mt-1">Fetching dataset information</p>
           </div>
         ) : isMapMode ? (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-6 text-center">
-            <div className="text-3xl mb-3">🗺️</div>
-            <p className="text-sm font-medium">Map Panel</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Map component will be integrated here</p>
-          </div>
+          <FederatedMapPanel
+            datasetName={selectedDataset.datasetName}
+            resultCount={displayData.length}
+          />
         ) : (
           <FederatedDataTable
             data={displayData}

@@ -83,7 +83,6 @@ export function useSearchLogic() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchDraft, setSearchDraft] = useState(query);
   const [isToggleActive, setIsToggleActive] = useState(false);
-  const [isMapVisible, setIsMapVisible] = useState(false);
 
   const resultKeys = Object.keys(data?.results || {});
   const [showResultsView, setShowResultsView] = useState(
@@ -222,7 +221,6 @@ export function useSearchLogic() {
       setShowResultsView(true);
     }
     if (!resultKeys.length) setShowResultsView(false);
-    if (searchParams?.get("map") === "1") setIsMapVisible(true);
   }, [searchParams, resultKeys.length]);
 
   useEffect(() => {
@@ -250,8 +248,6 @@ export function useSearchLogic() {
 
   return {
     searchInputRef,
-    isMapVisible,
-    setIsMapVisible,
     isToggleActive,
     setIsToggleActive,
     layoutMode,

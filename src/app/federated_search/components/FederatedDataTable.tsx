@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, MoreVertical } from "lucide-react";
 import {
@@ -9,13 +9,11 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useGetMapDataBasedOnFederatedSearchResult } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import useFederatedSearchMapData from "@/store/federated_search_store/useFederatedSearchMapData";
 import {
   FederatedDataTableProps,
   fieldLabel,
 } from "@/types/app/federatedSearch.types";
-import { DataItem, MapDataItem } from "@/types/api/federatedSearch.types";
+import { DataItem } from "@/types/api/federatedSearch.types";
 import { MAX_CELL_CHARS } from "@/app/federated_search/utils/constants";
 
 function TableCellWithMore({
@@ -63,27 +61,6 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
   const headPad = embedded ? "px-2 py-1.5 text-[11px]" : "px-6 py-4";
   const router = useRouter();
-  const { addVisibleMarker } = useFederatedSearchMapData();
-
-  const {  data: mapData = [] } =
-    useGetMapDataBasedOnFederatedSearchResult();
-
-  useEffect(() => {
-    if (!mapData.length) return;
-
-    mapData.forEach((item: MapDataItem) => {
-      if (item.latitude && item.longitude) {
-        addVisibleMarker({
-          lat: item.latitude,
-          lng: item.longitude,
-          scientificName: item.scientificName,
-          dataset: item.dataset,
-          eventDate: item.eventDate,
-          basisOfRecord: item.basisOfRecord,
-        });
-      }
-    });
-  }, [mapData, addVisibleMarker]);
 
   const handleExploreDataset = (row: DataItem) => {
     const datasetName = row.dataset ? String(row.dataset).trim() : null;
