@@ -2,12 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
-import { AlertCircle, Loader2, MapPin, RotateCcw, Eye, Plus } from "lucide-react";
+import { AlertCircle, Loader2, MapPin, RotateCcw, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FederatedSearchOverview, { DatasetOverviewRow } from "@/app/federated_search/components/FederatedSearchOverview";
 import FederatedDataTable from "@/app/federated_search/components/FederatedDataTable";
 import { DataItem, PreFederatedSearchData } from "@/types/api/federatedSearch.types";
 import type { OverviewStats } from "@/app/federated_search/hooks/useOverviewStats";
+import { OverviewHeaderStats } from "@/app/federated_search/stats/OverviewHeaderStats";
 import { cn } from "@/lib/utils";
 
 interface ResultsPanelProps {
@@ -30,6 +31,7 @@ interface ResultsPanelProps {
   fieldColumns: string[];
   isToggleActive: boolean;
   mapModeDatasetKey?: string | null;
+  selectedDatasets: string[];
   onSearchComplete: (hasResults: boolean) => void;
   onDatasetSelect: (dataset: DatasetOverviewRow | null) => void;
   onCloseResults: () => void;
@@ -210,12 +212,12 @@ export function ResultsPanel({
               {/* Overview Header */}
               <div className="shrink-0 border-b border-border bg-card/50 px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground">Search Overview</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {totalResultCount > 0
-                      ? `${sourcesWithResults} of ${sourcesQueried} sources returned results`
-                      : "No matching results found"}
-                  </p>
+                  <OverviewHeaderStats
+                    query={query}
+                    selectedDatasetsCount={overviewStats.selectedDatasetsCount}
+                    datasetsWithResultsCount={overviewStats.datasetsWithResultsCount}
+                    selectedIndicators={overviewStats.selectedIndicators}
+                  />
                 </div>
                 <Button
                   type="button"
@@ -223,12 +225,12 @@ export function ResultsPanel({
                   size="sm"
                   onClick={isToggleActive ? onOpenSearch : onCloseSearch}
                   className="shrink-0 gap-1.5 px-2"
-                  title={isToggleActive ? "Start new search" : "View details"}
+                  title={isToggleActive ? "Back to search" : "View details"}
                 >
                   {isToggleActive ? (
                     <>
-                      <Plus className="h-4 w-4" />
-                      <span className="text-xs font-medium">New Search</span>
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="text-xs font-medium">Back to Search</span>
                     </>
                   ) : (
                     <>

@@ -58,10 +58,7 @@ export function DetailPanel({
             <p className="text-xs text-muted-foreground/70 mt-1">Fetching dataset information</p>
           </div>
         ) : isMapMode ? (
-          <FederatedMapPanel
-            datasetName={selectedDataset.datasetName}
-            resultCount={displayData.length}
-          />
+          <FederatedMapPanel />
         ) : (
           <FederatedDataTable
             data={displayData}

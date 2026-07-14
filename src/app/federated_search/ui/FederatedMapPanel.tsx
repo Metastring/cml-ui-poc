@@ -1,18 +1,9 @@
 "use client";
 
 import React from "react";
-import { Map as MapIcon } from "lucide-react";
 import MapListIndex from "@metastringfoundation/map-list";
 
-interface FederatedMapPanelProps {
-  datasetName?: string;
-  resultCount?: number;
-}
-
-export function FederatedMapPanel({
-  datasetName = "Dataset",
-  resultCount = 0,
-}: FederatedMapPanelProps) {
+export function FederatedMapPanel() {
   return (
     <div className="h-full w-full relative">
       <MapListIndex

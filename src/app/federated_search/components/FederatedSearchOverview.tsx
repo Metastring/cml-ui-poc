@@ -253,9 +253,13 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
   const [selectedDataset, setSelectedDataset] = useState<DatasetOverviewRow | null>(null);
 
   const searchTerm = (preData?.search_text || query).trim();
-  const receivedDatasets = preData?.datasets ?? [];
   const isStreaming = Boolean(preData?.isStreaming);
   const isSearchFinished = Boolean(preData?.isComplete);
+
+  const receivedDatasets = useMemo(
+    () => preData?.datasets ?? [],
+    [preData?.datasets]
+  );
 
   const indicatorLabelByValue = useMemo(() => {
     const map = new Map<string, string>();

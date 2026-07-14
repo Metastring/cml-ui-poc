@@ -187,6 +187,7 @@ const FederatedSearchContent = () => {
             fieldColumns={fieldColumns}
             isToggleActive={isToggleActive}
             mapModeDatasetKey={mapModeDatasetKey}
+            selectedDatasets={datasets}
             onSearchComplete={handleSearchComplete}
             onDatasetSelect={handleDatasetSelect}
             onCloseResults={() => setShowResultsView(false)}

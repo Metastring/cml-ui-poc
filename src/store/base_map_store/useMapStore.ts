@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import type maplibregl from 'maplibre-gl';
 
 interface MapStore {
   mapRef: maplibregl.Map | null;

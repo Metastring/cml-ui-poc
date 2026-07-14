@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   useMutatePreFederatedSearch,
+  useGetFilterData,
 } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
 
@@ -15,16 +16,24 @@ export type OverviewStats = {
   isStreaming: boolean;
   isSearchFinished: boolean;
   hasOverviewData: boolean;
+  selectedDatasetsCount: number;
+  datasetsWithResultsCount: number;
+  selectedIndicators: string[];
 };
 
 export function useOverviewStats(): OverviewStats {
-  const { query, datasets } = useFederatedSearchStore();
+  const { query, datasets, indicators } = useFederatedSearchStore();
   const { data: preData } = useMutatePreFederatedSearch();
+  const { data: filterData } = useGetFilterData();
 
   const searchTerm = (preData?.search_text || query).trim();
-  const receivedDatasets = preData?.datasets ?? [];
   const isStreaming = Boolean(preData?.isStreaming);
   const isSearchFinished = Boolean(preData?.isComplete);
+
+  const receivedDatasets = useMemo(
+    () => preData?.datasets ?? [],
+    [preData?.datasets]
+  );
 
   const datasetRows = useMemo(
     () => receivedDatasets.filter((ds) => ds.available && ds.count > 0),
@@ -45,6 +54,43 @@ export function useOverviewStats(): OverviewStats {
         ? 100
         : 0;
 
+  const datasetsWithResults = useMemo(
+    () => receivedDatasets.filter((ds) => ds.count > 0).length,
+    [receivedDatasets]
+  );
+
+  const indicatorLabelByValue = useMemo(() => {
+    const map = new Map<string, string>();
+    filterData?.forEach((category) => {
+      category.datasets?.forEach((ds) => {
+        (
+          (ds as {
+            fields?: {
+              ontology_mapping: string;
+              ontology_mapping_to_display?: string;
+            }[];
+          }).fields ?? []
+        ).forEach((field) => {
+          if (field.ontology_mapping) {
+            map.set(
+              field.ontology_mapping,
+              field.ontology_mapping_to_display ?? field.ontology_mapping
+            );
+          }
+        });
+      });
+    });
+    return map;
+  }, [filterData]);
+
+  const selectedIndicatorsWithLabels = useMemo(
+    () =>
+      indicators.map(
+        (indicator) => indicatorLabelByValue.get(indicator) ?? indicator
+      ),
+    [indicators, indicatorLabelByValue]
+  );
+
   return {
     searchTerm,
     totalResultCount,
@@ -56,5 +102,8 @@ export function useOverviewStats(): OverviewStats {
     isStreaming,
     isSearchFinished,
     hasOverviewData: datasetRows.length > 0,
+    selectedDatasetsCount: totalExpected,
+    datasetsWithResultsCount: datasetsWithResults,
+    selectedIndicators: selectedIndicatorsWithLabels,
   };
 }
