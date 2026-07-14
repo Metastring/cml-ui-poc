@@ -40,12 +40,14 @@ export function DetailPanel({
   return (
     <div className="flex flex-col h-full bg-card overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 border-b border-border px-4 py-3 bg-card/80 backdrop-blur">
-        <h3 className="text-sm font-semibold text-foreground">{selectedDataset.datasetName}</h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          {isMapMode ? "Map View" : `${displayData.length.toLocaleString()} ${displayData.length === 1 ? "record" : "records"}`}
-        </p>
-      </div>
+      {!isMapMode && (
+        <div className="shrink-0 border-b border-border px-4 py-3 bg-card/80 backdrop-blur">
+          <h3 className="text-sm font-semibold text-foreground">{selectedDataset.datasetName}</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            {`${displayData.length.toLocaleString()} ${displayData.length === 1 ? "record" : "records"}`}
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-auto">

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Map as MapIcon } from "lucide-react";
+import MapListIndex from "@metastringfoundation/map-list";
 
 interface FederatedMapPanelProps {
   datasetName?: string;
@@ -13,13 +14,26 @@ export function FederatedMapPanel({
   resultCount = 0,
 }: FederatedMapPanelProps) {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-6 text-center bg-card/50">
-      <MapIcon className="h-12 w-12 mb-3 opacity-40" />
-      <p className="text-sm font-medium">Map Visualization</p>
-      <p className="text-xs text-muted-foreground/70 mt-1">
-        Map component for {resultCount} records from {datasetName}
-      
-      </p>
+    <div className="h-full w-full relative">
+      <MapListIndex
+        loadToC={true}
+        showToC={true}
+        managePublishing={true}
+        nakshaApiEndpoint={process.env.NEXT_PUBLIC_NAKSHA_ENDPOINT}
+        // nakshaEndpointToken={process.env.NEXT_PUBLIC_NAKSHA_TOKEN}
+        geoserver={{
+          endpoint: process.env.NEXT_PUBLIC_GEOSERVER_ENDPOINT!,
+          store: process.env.NEXT_PUBLIC_GEOSERVER_STORE!,
+          workspace: process.env.NEXT_PUBLIC_GEOSERVER_WORKSPACE!,
+        }}
+        onLayerDownload={console.log}
+        canLayerShare={true}
+        showLayerControls={false}
+        selectedLayers={[
+          // { name: "gbif", style: "gbif_eventdate_style" },
+          {name: "cpmp", style: "cpmp_species_style"}
+        ]}
+      />
     </div>
   );
 }
