@@ -4,7 +4,7 @@ import React from "react";
 import { Database, Loader2 } from "lucide-react";
 import { DatasetOverviewRow } from "@/app/federated_search/components/FederatedSearchOverview";
 import FederatedDataTable from "@/app/federated_search/components/FederatedDataTable";
-import { FederatedMapPanel } from "@/app/federated_search/ui/FederatedMapPanel";
+import { FederatedMapPanel } from "@/app/federated_search/map/FederatedMapPanel";
 import { DataItem } from "@/types/api/federatedSearch.types";
 
 interface DetailPanelProps {
@@ -38,7 +38,7 @@ export function DetailPanel({
   const isMapMode = mapModeDatasetKey === selectedDataset.datasetKey;
 
   return (
-    <div className="flex flex-col h-full bg-card overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-card overflow-hidden">
       {/* Header */}
       {!isMapMode && (
         <div className="shrink-0 border-b border-border px-4 py-3 bg-card/80 backdrop-blur">
@@ -50,7 +50,7 @@ export function DetailPanel({
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-hidden min-h-0">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
@@ -61,6 +61,18 @@ export function DetailPanel({
           <FederatedMapPanel
             datasetGeoserverName={selectedDataset?.dataset_geoserver_name}
             mapFields={selectedDataset?.mapFields}
+            tableTitle={selectedDataset?.datasetName}
+            isTableEmpty={displayData.length === 0}
+            recordCount={displayData.length}
+            tableChildren={
+              <FederatedDataTable
+                data={displayData}
+                fieldColumns={fieldColumns}
+                isLoading={false}
+                isError={false}
+                embedded={true}
+              />
+            }
           />
         ) : (
           <FederatedDataTable

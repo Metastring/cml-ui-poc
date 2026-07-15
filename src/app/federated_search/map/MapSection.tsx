@@ -4,15 +4,17 @@ import React from "react";
 import MapListIndex from "@metastringfoundation/map-list";
 import { MatchedFieldsMap } from "@/types/api/federatedSearch.types";
 
-interface FederatedMapPanelProps {
+interface MapSectionProps {
   datasetGeoserverName?: string;
   mapFields?: MatchedFieldsMap[];
+  isVisible: boolean;
 }
 
-export function FederatedMapPanel({
+export function MapSection({
   datasetGeoserverName,
   mapFields,
-}: FederatedMapPanelProps = {}) {
+  isVisible,
+}: MapSectionProps) {
   const selectedLayers = React.useMemo(() => {
     if (!mapFields || mapFields.length === 0) {
       return [];
@@ -23,14 +25,15 @@ export function FederatedMapPanel({
     }));
   }, [mapFields, datasetGeoserverName]);
 
+  if (!isVisible) return null;
+
   return (
-    <div className="h-full w-full relative">
+    <div className="flex-1 min-h-0 w-full border-b border-gray-200 dark:border-gray-700 [&>div:not(.absolute)]:h-full [&_.h-screen]:!h-full">
       <MapListIndex
         loadToC={true}
         showToC={true}
         managePublishing={true}
         nakshaApiEndpoint={process.env.NEXT_PUBLIC_NAKSHA_ENDPOINT}
-        // nakshaEndpointToken={process.env.NEXT_PUBLIC_NAKSHA_TOKEN}
         geoserver={{
           endpoint: process.env.NEXT_PUBLIC_GEOSERVER_ENDPOINT!,
           store: process.env.NEXT_PUBLIC_GEOSERVER_STORE!,
@@ -41,7 +44,6 @@ export function FederatedMapPanel({
         showLayerControls={false}
         selectedLayers={selectedLayers}
       />
-      
     </div>
   );
 }
