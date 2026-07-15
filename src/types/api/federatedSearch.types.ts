@@ -115,6 +115,7 @@ export type PreFederatedSearchDataset = {
   count: number;
   matched_fields: MatchedFields;
   is_occurrence_available: boolean;
+  dataset_geoserver_name?: string;
 };
 
 export type PreFederatedSearchDoneData = {

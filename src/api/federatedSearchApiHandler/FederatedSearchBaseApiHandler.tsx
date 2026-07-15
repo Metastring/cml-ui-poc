@@ -46,6 +46,7 @@ function toDataset(
     count: chunk.count,
     matched_fields: chunk.matched_fields ?? [],
     is_occurrence_available: chunk.is_occurrence_available ?? false,
+    dataset_geoserver_name: chunk.dataset_geoserver_name,
   };
 }
 

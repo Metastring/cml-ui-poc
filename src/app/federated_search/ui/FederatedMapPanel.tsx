@@ -2,8 +2,27 @@
 
 import React from "react";
 import MapListIndex from "@metastringfoundation/map-list";
+import { MatchedFieldsMap } from "@/types/api/federatedSearch.types";
 
-export function FederatedMapPanel() {
+interface FederatedMapPanelProps {
+  datasetGeoserverName?: string;
+  mapFields?: MatchedFieldsMap[];
+}
+
+export function FederatedMapPanel({
+  datasetGeoserverName,
+  mapFields,
+}: FederatedMapPanelProps = {}) {
+  const selectedLayers = React.useMemo(() => {
+    if (!mapFields || mapFields.length === 0) {
+      return [];
+    }
+    return mapFields.map((field) => ({
+      name: datasetGeoserverName!,
+      style: field.styleName!,
+    }));
+  }, [mapFields, datasetGeoserverName]);
+
   return (
     <div className="h-full w-full relative">
       <MapListIndex
@@ -20,11 +39,9 @@ export function FederatedMapPanel() {
         onLayerDownload={console.log}
         canLayerShare={true}
         showLayerControls={false}
-        selectedLayers={[
-          // { name: "gbif", style: "gbif_eventdate_style" },
-          {name: "cpmp", style: "cpmp_species_style"}
-        ]}
+        selectedLayers={selectedLayers}
       />
+      
     </div>
   );
 }

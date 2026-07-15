@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
   Loader2,
   MapPin,
   Check,
   Map as MapIcon,
+  ChevronDown,
 } from "lucide-react";
 import {
   useGetFilterData,
@@ -29,6 +30,8 @@ export type DatasetOverviewRow = {
   matchedFields: string[];
   matchedIndicatorLabels: string[];
   hasOccurrence: boolean;
+  dataset_geoserver_name?: string;
+  mapFields?: Array<{ field: string; styleName?: string; styleTitle?: string; styleId?: number }>;
 };
 
 type DatasetCardProps = {
@@ -50,10 +53,33 @@ function DatasetCard({
   onExploreMap,
   isMapMode,
 }: DatasetCardProps) {
+  const [isMapDropdownOpen, setIsMapDropdownOpen] = useState(false);
+  const [selectedMapField, setSelectedMapField] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const handleClick = () => {
     onSelect(item);
     onCloseSearch?.();
   };
+
+  const handleMapFieldSelect = (field: string) => {
+    setSelectedMapField(field);
+    onExploreMap?.(item.datasetKey);
+    setIsMapDropdownOpen(false);
+  };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsMapDropdownOpen(false);
+      }
+    };
+
+    if (isMapDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMapDropdownOpen]);
 
   return (
     <div
@@ -143,22 +169,51 @@ function DatasetCard({
               {item.resultCount.toLocaleString()} results
             </span>
             {item.hasOccurrence && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onExploreMap?.(item.datasetKey);
-                }}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold transition-colors border",
-                  isMapMode
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "border-primary/25 bg-primary/5 text-primary hover:bg-primary/15 hover:border-primary/40"
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMapDropdownOpen(!isMapDropdownOpen);
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold transition-colors border",
+                    isMapMode
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "border-primary/25 bg-primary/5 text-primary hover:bg-primary/15 hover:border-primary/40"
+                  )}
+                >
+                  <MapIcon className="h-3 w-3" />
+                  Explore on Map
+                  <ChevronDown className={cn("h-3 w-3 transition-transform", isMapDropdownOpen && "rotate-180")} />
+                </button>
+
+                {isMapDropdownOpen && item.mapFields && item.mapFields.length > 0 && (
+                  <div className="absolute right-0 mt-1 w-48 rounded-md border border-primary/20 bg-card shadow-lg z-10">
+                    {item.mapFields.map((field) => {
+                      const isSelected = selectedMapField === field.field;
+                      return (
+                        <button
+                          key={field.field}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMapFieldSelect(field.field);
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 text-xs font-medium transition-colors border-b border-primary/10 last:border-b-0",
+                            isSelected
+                              ? "bg-primary/15 border-primary/30 text-primary"
+                              : "text-foreground hover:bg-primary/10 hover:text-primary"
+                          )}
+                        >
+                          {field.styleTitle || field.field}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <MapIcon className="h-3 w-3" />
-                Explore on Map
-              </button>
+              </div>
             )}
           </div>
         </div>
@@ -300,6 +355,8 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
               indicatorLabelByValue.get(field) ?? field.replace(/_/g, " ")
           ),
           hasOccurrence: ds.is_occurrence_available,
+          dataset_geoserver_name: ds.dataset_geoserver_name,
+          mapFields: ds.matched_fields?.map || [],
         };
       });
   }, [receivedDatasets, indicatorLabelByValue]);
