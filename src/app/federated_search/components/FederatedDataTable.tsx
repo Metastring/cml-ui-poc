@@ -73,6 +73,14 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
     router.push(path);
   };
 
+  const handleViewDetail = (row: DataItem) => {
+    const apiUrl = row.api_url ? String(row.api_url).trim() : null;
+    const id = row.id != null ? String(row.id).trim() : null;
+    if (!apiUrl || !id) return;
+    const url = `${apiUrl}${id}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
@@ -178,6 +186,12 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                       description="Open the dataset page for this result in the catalog."
                     >
                       Explore dataset
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onSelect={() => handleViewDetail(row)}
+                      description="Open this record's detail page in a new tab."
+                    >
+                      View detail
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>

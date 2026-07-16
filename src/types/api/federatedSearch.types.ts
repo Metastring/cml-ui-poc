@@ -149,6 +149,8 @@ export type FederatedSearchData = {
       >;
       /** When false, this dataset has no occurrence data for map; "Explore on map" should be disabled. */
       is_occurrence_available?: boolean;
+      /** Base URL for a single record's detail page; row detail link is `api_url + id`. */
+      api_url?: string;
     }
   >;
 };

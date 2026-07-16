@@ -30,12 +30,14 @@ export function useResultsData(
       Object.entries(data.results).forEach(([datasetKey, source]) => {
         const fieldResults = source?.field_results ?? {};
         const isOccurrenceAvailable = source?.is_occurrence_available ?? false;
+        const apiUrl = source?.api_url;
         const rows = Object.entries(fieldResults).flatMap(
           ([, field]) =>
             (field?.results ?? []).map((row) => ({
               ...row,
               dataset: datasetKey,
               is_occurrence_available: isOccurrenceAvailable,
+              api_url: apiUrl,
             }))
         );
         if (rows.length > 0) sourcesWithResultsCount += 1;
