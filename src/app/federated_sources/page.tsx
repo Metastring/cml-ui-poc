@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,9 @@ interface FederatedSource {
 }
 
 export default function FederatedSourcesPage() {
+  // Federated Sources is currently disabled; direct URL access bounces to Dashboard.
+  redirect("/");
+
   const { data, isLoading, isError } = useGetFederatedSourceData();
   const [expanded, setExpanded] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
