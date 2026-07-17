@@ -22,7 +22,6 @@ const FederatedSearchContent = () => {
     setIsToggleActive,
     layoutMode,
     showOverview,
-    setShowOverview,
     showResultsView,
     setShowResultsView,
     searchDraft,
@@ -88,16 +87,6 @@ const FederatedSearchContent = () => {
       }
     },
     [categories, query, preData, mutate, setSelectedDataset]
-  );
-
-  const handleSearchComplete = useCallback(
-    (hasResults: boolean) => {
-      if (preData?.hasError) return;
-      if (!hasResults) {
-        setShowOverview(false);
-      }
-    },
-    [preData?.hasError, setShowOverview]
   );
 
   return (
@@ -188,7 +177,6 @@ const FederatedSearchContent = () => {
             isToggleActive={isToggleActive}
             mapModeDatasetKey={mapModeDatasetKey}
             selectedDatasets={datasets}
-            onSearchComplete={handleSearchComplete}
             onDatasetSelect={handleDatasetSelect}
             onCloseResults={() => setShowResultsView(false)}
             onNewSearch={handleNewSearch}

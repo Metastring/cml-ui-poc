@@ -7,6 +7,7 @@ import {
   Check,
   Map as MapIcon,
   ChevronDown,
+  SearchX,
 } from "lucide-react";
 import {
   useGetFilterData,
@@ -282,14 +283,12 @@ function PendingCard({ name }: { name: string }) {
 }
 
 type FederatedSearchOverviewProps = {
-  onSearchComplete?: (hasResults: boolean) => void;
   onDatasetSelect?: (dataset: DatasetOverviewRow | null, mapKey?: string | null) => void;
   onCloseSearch?: () => void;
   mapModeDatasetKey?: string | null;
 };
 
 const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
-  onSearchComplete,
   onDatasetSelect,
   onCloseSearch,
   mapModeDatasetKey,
@@ -381,11 +380,6 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
     setSelectedDataset(null);
   }, [searchTerm]);
 
-  useEffect(() => {
-    if (!isSearchFinished) return;
-    onSearchComplete?.(hasOverviewData);
-  }, [hasOverviewData, isSearchFinished, onSearchComplete]);
-
   return (
     <div className="w-full space-y-1.5">
       <DatasetGrid
@@ -411,7 +405,25 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
         </div>
       )}
 
-      {noMatchNames.length > 0 && (
+      {!hasOverviewData && isSearchFinished && (
+        <div
+          className="flex flex-col items-center justify-center gap-2 rounded-lg
+            border border-dashed border-border px-6 py-10 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <SearchX className="h-8 w-8 text-muted-foreground/60" />
+          <p className="text-sm font-medium text-foreground">
+            No matches for &quot;{searchTerm}&quot;
+          </p>
+          <p className="max-w-sm text-xs text-muted-foreground">
+            None of the selected datasets returned results. Try a different
+            keyword, or add more indicators and search again.
+          </p>
+        </div>
+      )}
+
+      {hasOverviewData && noMatchNames.length > 0 && (
         <div className="rounded-lg border border-border/60 bg-muted/15 px-3 py-2">
           <p
             className="text-[10px] font-medium text-muted-foreground truncate"
