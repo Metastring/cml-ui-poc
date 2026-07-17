@@ -32,9 +32,8 @@ export function SearchLandingSection({
       className={cn(
         "relative overflow-hidden min-h-0 federated-search-landing-bg",
         SLIDE_TRANSITION,
-        isSearchLanding
-          ? "flex flex-1 items-center justify-center px-4 py-4 sm:px-6 sm:py-6"
-          : "shrink-0 border-b border-border/80 px-4 py-4 sm:py-6 shadow-sm"
+        "flex flex-1 items-center justify-center px-4 py-4 sm:px-6 sm:py-6",
+        isSearchLanding ? "" : "border-b border-border/80 shadow-sm"
       )}
     >
       <BiodiversitySearchBackdrop />
@@ -59,7 +58,7 @@ export function SearchLandingSection({
             "text-muted-foreground leading-relaxed text-sm sm:text-[0.925rem]",
             isSearchLanding ? "max-w-xl mx-auto" : ""
           )}>
-            Discover species occurrences, taxonomy, and ecological records across connected biodiversity databases — one search, many sources.
+            Discover records across connected datasets from multiple sources — one search, many sources.
           </p>
         </div>
 

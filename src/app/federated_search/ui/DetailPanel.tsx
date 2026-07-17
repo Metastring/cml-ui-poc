@@ -54,7 +54,7 @@ export function DetailPanel({
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden min-h-0">
+      <div className="flex-1 overflow-auto min-h-0">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
