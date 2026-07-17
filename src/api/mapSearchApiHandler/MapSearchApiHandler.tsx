@@ -6,6 +6,8 @@ import {
   PolygonDataItem,
   MapSearchResult,
   MultiPolygonDisplayResults,
+  FederatedMapSearchPayload,
+  FederatedMapSearchResponse,
 } from "@/types/api/mapSearch.types";
 
 /** Normalize API response keys (e.g. scientificname, eventdate) to PolygonDataItem shape */
@@ -167,5 +169,44 @@ export const useGetMapSearchData = () => {
     mutate: mutation.mutate,
     mutateAsync: mutation.mutateAsync,
     clearDataMapSearchData,
+  };
+};
+
+const FEDERATED_MAP_SEARCH_URL = `${process.env.NEXT_PUBLIC_MAP_BASE_URL}/v2/spatial_search`;
+
+export const useMutateFederatedMapSearch = () => {
+  const mutation = useMutation<
+    FederatedMapSearchResponse,
+    Error,
+    FederatedMapSearchPayload
+  >({
+    mutationFn: async (payload) => {
+      const res = await fetch(FEDERATED_MAP_SEARCH_URL, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
+
+      return res.json();
+    },
+    onError: (error) => {
+      toast.error(`Federated map search failed: ${error.message}`);
+    },
+  });
+
+  return {
+    data: mutation.data,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
   };
 };

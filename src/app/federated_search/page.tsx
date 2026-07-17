@@ -80,7 +80,7 @@ const FederatedSearchContent = () => {
         const tabularFields = matchedDataset?.matched_fields?.tabular || [];
 
         mutate({
-          category: categories,
+          category: dataset.category ? [dataset.category] : categories,
           dataset: [dataset.datasetKey],
           search_text: query,
           fields: tabularFields,
@@ -208,6 +208,8 @@ const FederatedSearchContent = () => {
               isToggleActive={isToggleActive}
               mapModeDatasetKey={mapModeDatasetKey}
               isLoading={isLoading}
+              searchText={query}
+              categories={categories}
             />
           </div>
         )}

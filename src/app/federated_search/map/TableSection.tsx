@@ -3,6 +3,10 @@
 import React from "react";
 import { TableHeader } from "./TableHeader";
 import { TableContent } from "./TableContent";
+import FederatedDataTable from "@/app/federated_search/components/FederatedDataTable";
+import { useMutateFederatedMapSearch } from "@/api/mapSearchApiHandler/MapSearchApiHandler";
+import { FederatedMapSearchPayload } from "@/types/api/mapSearch.types";
+import { DataItem } from "@/types/api/federatedSearch.types";
 
 export type MapTableViewMode = "split" | "table" | "map";
 
@@ -11,9 +15,7 @@ interface TableSectionProps {
   onExpand: () => void;
   onCollapse: () => void;
   title?: string;
-  children?: React.ReactNode;
-  isEmpty?: boolean;
-  recordCount?: number;
+  searchPayload?: FederatedMapSearchPayload;
 }
 
 export function TableSection({
@@ -21,10 +23,27 @@ export function TableSection({
   onExpand,
   onCollapse,
   title,
-  children,
-  isEmpty = true,
-  recordCount,
+  searchPayload,
 }: TableSectionProps) {
+  const {
+    data: mapSearchData,
+    isLoading,
+    isError,
+    mutate,
+  } = useMutateFederatedMapSearch();
+
+  // Serialized so a re-created payload object does not refire the request
+  const payloadKey = searchPayload ? JSON.stringify(searchPayload) : null;
+
+  React.useEffect(() => {
+    if (!payloadKey) return;
+    mutate(JSON.parse(payloadKey) as FederatedMapSearchPayload);
+  }, [payloadKey, mutate]);
+
+  const rows = mapSearchData?.results ?? [];
+  const displayFields = mapSearchData?.displayFields ?? {};
+  const isEmpty = !isLoading && !isError && rows.length === 0;
+
   const showContent = mode !== "map";
   const sizing =
     mode === "table"
@@ -43,9 +62,21 @@ export function TableSection({
         onCollapse={onCollapse}
         canExpand={mode !== "table"}
         canCollapse={mode !== "map"}
-        recordCount={recordCount}
+        recordCount={rows.length}
       />
-      {showContent && <TableContent isEmpty={isEmpty}>{children}</TableContent>}
+      {showContent && (
+        <TableContent isEmpty={isEmpty}>
+          <FederatedDataTable
+            data={rows as DataItem[]}
+            fieldColumns={Object.keys(displayFields)}
+            columnLabels={displayFields}
+            showExploreColumn={false}
+            isLoading={isLoading}
+            isError={isError}
+            embedded={true}
+          />
+        </TableContent>
+      )}
     </div>
   );
 }

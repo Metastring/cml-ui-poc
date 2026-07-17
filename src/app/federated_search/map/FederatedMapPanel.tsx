@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MatchedFieldsMap } from "@/types/api/federatedSearch.types";
+import { FederatedMapSearchPayload } from "@/types/api/mapSearch.types";
 import { MapSection } from "./MapSection";
 import { TableSection, MapTableViewMode } from "./TableSection";
 
@@ -9,9 +10,7 @@ interface FederatedMapPanelProps {
   datasetGeoserverName?: string;
   mapFields?: MatchedFieldsMap[];
   tableTitle?: string;
-  tableChildren?: React.ReactNode;
-  isTableEmpty?: boolean;
-  recordCount?: number;
+  searchPayload?: FederatedMapSearchPayload;
 }
 
 const MODE_ORDER: MapTableViewMode[] = ["map", "split", "table"];
@@ -20,9 +19,7 @@ export function FederatedMapPanel({
   datasetGeoserverName,
   mapFields,
   tableTitle = "Results",
-  tableChildren,
-  isTableEmpty = true,
-  recordCount,
+  searchPayload,
 }: FederatedMapPanelProps = {}) {
   const [mode, setMode] = React.useState<MapTableViewMode>("split");
 
@@ -49,11 +46,8 @@ export function FederatedMapPanel({
         onExpand={expandTable}
         onCollapse={collapseTable}
         title={tableTitle}
-        isEmpty={isTableEmpty}
-        recordCount={recordCount}
-      >
-        {tableChildren}
-      </TableSection>
+        searchPayload={searchPayload}
+      />
     </div>
   );
 }

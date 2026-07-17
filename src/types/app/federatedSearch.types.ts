@@ -44,6 +44,10 @@ export interface FederatedDataTableProps {
   data: DataItem[];
   /** Ordered field names from API; columns shown between Explore on Map and Dataset */
   fieldColumns?: string[];
+  /** Field name -> header label; falls back to fieldLabel() when absent */
+  columnLabels?: Record<string, string>;
+  /** Hides the Explore column and its row menu */
+  showExploreColumn?: boolean;
   onSearch?: () => void;
   /** Tighter layout for nested views; hides dataset column */
   embedded?: boolean;

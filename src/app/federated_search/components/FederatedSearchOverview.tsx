@@ -32,6 +32,7 @@ export type DatasetOverviewRow = {
   hasOccurrence: boolean;
   dataset_geoserver_name?: string;
   mapFields?: Array<{ field: string; styleName?: string; styleTitle?: string; styleId?: number }>;
+  category?: string;
 };
 
 type DatasetCardProps = {
@@ -357,6 +358,7 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
           hasOccurrence: ds.is_occurrence_available,
           dataset_geoserver_name: ds.dataset_geoserver_name,
           mapFields: ds.matched_fields?.map || [],
+          category: ds.category,
         };
       });
   }, [receivedDatasets, indicatorLabelByValue]);

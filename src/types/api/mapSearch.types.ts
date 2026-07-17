@@ -16,6 +16,21 @@ export interface MapSearchParams {
   offset?: number;
 }
 
+/** Payload for the federated map search spatial_search call */
+export interface FederatedMapSearchPayload {
+  search_text: string;
+  category: string[];
+  dataset: string[];
+  fields: string[];
+}
+
+/** Response of the federated map search spatial_search call */
+export type FederatedMapSearchResponse = {
+  /** Column key -> header label, e.g. { scientificname: "Scientific Name" } */
+  displayFields: Record<string, string>;
+  results: Record<string, string | number | null | undefined>[];
+};
+
 /** API response per dataset: display_fields + data rows */
 export interface DatasetDisplayResult {
   display_fields: string[];

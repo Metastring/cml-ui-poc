@@ -56,6 +56,8 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   isError,
   data = [],
   fieldColumns = [],
+  columnLabels,
+  showExploreColumn = true,
   embedded = false,
 }) => {
   const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
@@ -84,10 +86,12 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   const TableHeader: React.FC = () => (
     <thead className="bg-muted font-semibold tracking-wider border-b border-border">
       <tr>
-        <th className={`${headPad} text-foreground`}>Explore</th>
+        {showExploreColumn && (
+          <th className={`${headPad} text-foreground`}>Explore</th>
+        )}
         {fieldColumns.map((field) => (
           <th key={field} className={`${headPad} text-foreground`}>
-            {fieldLabel(field)}
+            {columnLabels?.[field] ?? fieldLabel(field)}
           </th>
         ))}
         {!embedded && <th className={`${headPad} text-foreground`}>Dataset</th>}
@@ -112,41 +116,39 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
           <TableHeader />
           <tbody className="divide-y divide-border">
             {data.map((row, index) => {
-              return (
-                <ContextMenu key={index}>
-                  <ContextMenuTrigger asChild>
-                    <tr
-                      className="transition-colors hover:bg-muted/50"
-                    >
-                      <td
-                        className={cellPad}
-                        title="View records"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              const ev = new MouseEvent("contextmenu", {
-                                bubbles: true,
-                                cancelable: true,
-                                clientX: e.clientX,
-                                clientY: e.clientY,
-                              });
-                              (e.currentTarget as HTMLElement).dispatchEvent(
-                                ev,
-                              );
-                            }}
-                            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                            title="More options"
-                            aria-label="Open menu"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
+              const rowElement = (
+                <tr className="transition-colors hover:bg-muted/50">
+                      {showExploreColumn && (
+                        <td
+                          className={cellPad}
+                          title="View records"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const ev = new MouseEvent("contextmenu", {
+                                  bubbles: true,
+                                  cancelable: true,
+                                  clientX: e.clientX,
+                                  clientY: e.clientY,
+                                });
+                                (e.currentTarget as HTMLElement).dispatchEvent(
+                                  ev,
+                                );
+                              }}
+                              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              title="More options"
+                              aria-label="Open menu"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                       {fieldColumns.map((field) => {
                         const value = row[field];
                         const text =
@@ -179,7 +181,15 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
                         </td>
                       )}
                     </tr>
-                  </ContextMenuTrigger>
+              );
+
+              if (!showExploreColumn) {
+                return <React.Fragment key={index}>{rowElement}</React.Fragment>;
+              }
+
+              return (
+                <ContextMenu key={index}>
+                  <ContextMenuTrigger asChild>{rowElement}</ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem
                       onSelect={() => handleExploreDataset(row)}

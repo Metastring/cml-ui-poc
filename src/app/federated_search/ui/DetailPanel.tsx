@@ -14,6 +14,8 @@ interface DetailPanelProps {
   isToggleActive: boolean;
   mapModeDatasetKey?: string | null;
   isLoading?: boolean;
+  searchText?: string;
+  categories?: string[];
 }
 
 export function DetailPanel({
@@ -23,6 +25,8 @@ export function DetailPanel({
   isToggleActive,
   mapModeDatasetKey,
   isLoading = false,
+  searchText = "",
+  categories = [],
 }: DetailPanelProps) {
   if (!isToggleActive || !selectedDataset) {
     return (
@@ -61,18 +65,15 @@ export function DetailPanel({
           <FederatedMapPanel
             datasetGeoserverName={selectedDataset?.dataset_geoserver_name}
             mapFields={selectedDataset?.mapFields}
+            searchPayload={{
+              search_text: searchText,
+              category: selectedDataset.category
+                ? [selectedDataset.category]
+                : categories,
+              dataset: [selectedDataset.datasetKey],
+              fields: (selectedDataset.mapFields ?? []).map((f) => f.field),
+            }}
             tableTitle={selectedDataset?.datasetName}
-            isTableEmpty={displayData.length === 0}
-            recordCount={displayData.length}
-            tableChildren={
-              <FederatedDataTable
-                data={displayData}
-                fieldColumns={fieldColumns}
-                isLoading={false}
-                isError={false}
-                embedded={true}
-              />
-            }
           />
         ) : (
           <FederatedDataTable

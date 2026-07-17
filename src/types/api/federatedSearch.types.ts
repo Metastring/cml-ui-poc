@@ -116,6 +116,8 @@ export type PreFederatedSearchDataset = {
   matched_fields: MatchedFields;
   is_occurrence_available: boolean;
   dataset_geoserver_name?: string;
+  /** Category this dataset belongs to, e.g. "Biodiversity" */
+  category?: string;
 };
 
 export type PreFederatedSearchDoneData = {
