@@ -33,12 +33,11 @@ interface ResultsPanelProps {
   mapModeDatasetKey?: string | null;
   selectedDatasets: string[];
   onSearchComplete: (hasResults: boolean) => void;
-  onDatasetSelect: (dataset: DatasetOverviewRow | null) => void;
+  onDatasetSelect: (dataset: DatasetOverviewRow | null, mapKey?: string | null) => void;
   onCloseResults: () => void;
   onNewSearch: () => void;
   onCloseSearch: () => void;
   onOpenSearch?: () => void;
-  onExploreMap?: (datasetKey: string) => void;
 }
 
 export function ResultsPanel({
@@ -67,7 +66,6 @@ export function ResultsPanel({
   onNewSearch,
   onCloseSearch,
   onOpenSearch,
-  onExploreMap,
 }: ResultsPanelProps) {
   if (!showResultsPanel) {
     return (
@@ -242,7 +240,7 @@ export function ResultsPanel({
               </div>
               {/* Overview Content */}
               <div className="flex-1 min-w-0 overflow-auto">
-                <FederatedSearchOverview onSearchComplete={onSearchComplete} onDatasetSelect={onDatasetSelect} onCloseSearch={onCloseSearch} onExploreMap={onExploreMap} mapModeDatasetKey={mapModeDatasetKey} />
+                <FederatedSearchOverview onSearchComplete={onSearchComplete} onDatasetSelect={onDatasetSelect} onCloseSearch={onCloseSearch} mapModeDatasetKey={mapModeDatasetKey} />
               </div>
             </div>
           )}

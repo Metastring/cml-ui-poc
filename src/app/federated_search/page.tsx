@@ -70,9 +70,9 @@ const FederatedSearchContent = () => {
     !isFormBusy;
 
   const handleDatasetSelect = useCallback(
-    (dataset: DatasetOverviewRow | null) => {
+    (dataset: DatasetOverviewRow | null, mapKey?: string | null) => {
       setSelectedDataset(dataset);
-      setMapModeDatasetKey(null);
+      setMapModeDatasetKey(mapKey ?? null);
       if (dataset) {
         const matchedDataset = preData?.datasets?.find(
           (ds) => ds.dataset_name === dataset.datasetKey
@@ -194,7 +194,6 @@ const FederatedSearchContent = () => {
             onNewSearch={handleNewSearch}
             onCloseSearch={() => setIsToggleActive(true)}
             onOpenSearch={() => setIsToggleActive(false)}
-            onExploreMap={(datasetKey) => setMapModeDatasetKey(datasetKey)}
           />
         </div>
 

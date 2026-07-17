@@ -39,9 +39,8 @@ type DatasetCardProps = {
   item: DatasetOverviewRow;
   index: number;
   isSelected: boolean;
-  onSelect: (item: DatasetOverviewRow) => void;
+  onSelect: (item: DatasetOverviewRow, mapKey?: string | null) => void;
   onCloseSearch?: () => void;
-  onExploreMap?: (datasetKey: string) => void;
   isMapMode?: boolean;
 };
 
@@ -51,7 +50,6 @@ function DatasetCard({
   isSelected,
   onSelect,
   onCloseSearch,
-  onExploreMap,
   isMapMode,
 }: DatasetCardProps) {
   const [isMapDropdownOpen, setIsMapDropdownOpen] = useState(false);
@@ -65,8 +63,9 @@ function DatasetCard({
 
   const handleMapFieldSelect = (field: string) => {
     setSelectedMapField(field);
-    onExploreMap?.(item.datasetKey);
     setIsMapDropdownOpen(false);
+    onSelect(item, item.datasetKey);
+    onCloseSearch?.();
   };
 
   React.useEffect(() => {
@@ -234,14 +233,12 @@ function DatasetGrid({
   selectedDataset,
   onSelectDataset,
   onCloseSearch,
-  onExploreMap,
   mapModeDatasetKey,
 }: {
   items: DatasetOverviewRow[];
   selectedDataset: DatasetOverviewRow | null;
-  onSelectDataset: (item: DatasetOverviewRow) => void;
+  onSelectDataset: (item: DatasetOverviewRow, mapKey?: string | null) => void;
   onCloseSearch?: () => void;
-  onExploreMap?: (datasetKey: string) => void;
   mapModeDatasetKey?: string | null;
 }) {
   if (items.length === 0) return null;
@@ -256,7 +253,6 @@ function DatasetGrid({
           isSelected={selectedDataset?.datasetKey === item.datasetKey}
           onSelect={onSelectDataset}
           onCloseSearch={onCloseSearch}
-          onExploreMap={onExploreMap}
           isMapMode={mapModeDatasetKey === item.datasetKey}
         />
       ))}
@@ -287,9 +283,8 @@ function PendingCard({ name }: { name: string }) {
 
 type FederatedSearchOverviewProps = {
   onSearchComplete?: (hasResults: boolean) => void;
-  onDatasetSelect?: (dataset: DatasetOverviewRow | null) => void;
+  onDatasetSelect?: (dataset: DatasetOverviewRow | null, mapKey?: string | null) => void;
   onCloseSearch?: () => void;
-  onExploreMap?: (datasetKey: string) => void;
   mapModeDatasetKey?: string | null;
 };
 
@@ -297,7 +292,6 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
   onSearchComplete,
   onDatasetSelect,
   onCloseSearch,
-  onExploreMap,
   mapModeDatasetKey,
 }) => {
   const {
@@ -378,9 +372,9 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
 
   const hasOverviewData = datasetRows.length > 0;
 
-  const handleSelectDataset = (item: DatasetOverviewRow) => {
+  const handleSelectDataset = (item: DatasetOverviewRow, mapKey?: string | null) => {
     setSelectedDataset(item);
-    onDatasetSelect?.(item);
+    onDatasetSelect?.(item, mapKey);
   };
 
   useEffect(() => {
@@ -399,7 +393,6 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
         selectedDataset={selectedDataset}
         onSelectDataset={handleSelectDataset}
         onCloseSearch={onCloseSearch}
-        onExploreMap={onExploreMap}
         mapModeDatasetKey={mapModeDatasetKey}
       />
 
