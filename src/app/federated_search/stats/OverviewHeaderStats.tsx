@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Leaf } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface OverviewHeaderStatsProps {
   query: string;
@@ -28,22 +33,31 @@ export const OverviewHeaderStats: React.FC<OverviewHeaderStatsProps> = ({
       {selectedIndicators.length > 0 && (
         <div className="flex items-center gap-2">
           <span>Selected Indicators:</span>
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <HoverCard openDelay={100} closeDelay={150}>
+            <HoverCardTrigger asChild>
               <span className="inline-flex items-center font-semibold text-foreground cursor-help hover:text-primary transition-colors">
                 {selectedIndicators.length} {selectedIndicators.length === 1 ? "indicator" : "indicators"}
               </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-sm max-h-64 overflow-y-auto">
-              <div className="space-y-1">
+            </HoverCardTrigger>
+            <HoverCardContent side="top" align="start" className="w-64 p-2">
+              <p className="px-1 pb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                Selected indicators
+              </p>
+              <div className="max-h-56 space-y-0.5 overflow-y-auto">
                 {selectedIndicators.map((indicator) => (
-                  <div key={indicator} className="text-xs py-0.5">
-                    • {indicator}
+                  <div
+                    key={indicator}
+                    className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-muted/60"
+                  >
+                    <Leaf className="h-2.5 w-2.5 shrink-0 text-primary/60" />
+                    <span className="min-w-0 flex-1 truncate text-[11px]" title={indicator}>
+                      {indicator}
+                    </span>
                   </div>
                 ))}
               </div>
-            </TooltipContent>
-          </Tooltip>
+            </HoverCardContent>
+          </HoverCard>
         </div>
       )}
 

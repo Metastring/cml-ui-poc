@@ -1,11 +1,16 @@
 "use client";
 
 import React from "react";
-import { Leaf, ListFilter, Loader2, Search, TextSearch } from "lucide-react";
+import { Leaf, ListFilter, Loader2, Search, TextSearch, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MultiSelectCombobox } from "@/components/ui/MultiSelectCombobox";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Option } from "@/types/app/federatedSearch.types";
 import { cn } from "@/lib/utils";
 import { SLIDE_TRANSITION } from "@/app/federated_search/utils/constants";
@@ -49,6 +54,9 @@ export function SearchFormPanel({
   onNewSearch,
   searchInputRef,
 }: SearchFormPanelProps) {
+  const onRemoveIndicator = (value: string) =>
+    onIndicatorChange(indicators.filter((item) => item !== value));
+
   return (
     <div
       className={cn(
@@ -81,16 +89,29 @@ export function SearchFormPanel({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold">Indicators</p>
                   {indicators.length > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="h-5 px-1.5 text-[10px] bg-emerald-500/12 text-emerald-700 hover:bg-emerald-500/12 ring-1 ring-emerald-500/20 dark:text-emerald-400"
-                    >
-                      {indicators.length} selected
-                    </Badge>
+                    <>
+                      <Badge
+                        variant="secondary"
+                        className="h-5 px-1.5 text-[10px] bg-emerald-500/12 text-emerald-700 hover:bg-emerald-500/12 ring-1 ring-emerald-500/20 dark:text-emerald-400"
+                      >
+                        {indicators.length} selected
+                      </Badge>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Clear all indicators"
+                        aria-label="Clear all indicators"
+                        onClick={() => onIndicatorChange([])}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
                   )}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Choose taxonomic and ecological fields to search across your datasets.
+                  Pick one or more indicators to search across datasets.
                 </p>
               </div>
             </div>
@@ -101,22 +122,68 @@ export function SearchFormPanel({
               onChange={onIndicatorChange}
               className="w-full h-11 bg-background/90 shadow-sm ring-1 ring-primary/10"
             />
-            {selectedIndicatorLabels.length > 0 && (
+            {indicators.length > 0 && (
               <div className="flex flex-wrap gap-1.5 border-t border-primary/8 pt-3">
-                {selectedIndicatorLabels.slice(0, 4).map((label) => (
+                {indicators.slice(0, 4).map((value, index) => (
                   <span
-                    key={label}
-                    className="inline-flex max-w-[10rem] items-center gap-1 truncate rounded-full bg-primary/8 px-2.5 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/15"
-                    title={label}
+                    key={value}
+                    className="inline-flex max-w-[10rem] items-center gap-1 rounded-full bg-primary/8 px-2.5 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/15"
+                    title={selectedIndicatorLabels[index]}
                   >
                     <Leaf className="h-2.5 w-2.5 shrink-0 opacity-60" />
-                    {label}
+                    <span className="truncate">{selectedIndicatorLabels[index]}</span>
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                      title={`Remove ${selectedIndicatorLabels[index]}`}
+                      aria-label={`Remove ${selectedIndicatorLabels[index]}`}
+                      onClick={() => onRemoveIndicator(value)}
+                    >
+                      <Trash2 className="h-2.5 w-2.5" />
+                    </button>
                   </span>
                 ))}
-                {selectedIndicatorLabels.length > 4 && (
-                  <span className="inline-flex rounded-full bg-muted/80 px-2.5 py-1 text-[10px] text-muted-foreground ring-1 ring-border/60">
-                    +{selectedIndicatorLabels.length - 4} more
-                  </span>
+                {indicators.length > 4 && (
+                  <HoverCard openDelay={100} closeDelay={150}>
+                    <HoverCardTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex cursor-pointer rounded-full bg-muted/80 px-2.5 py-1 text-[10px] text-muted-foreground ring-1 ring-border/60 hover:bg-muted"
+                      >
+                        +{indicators.length - 4} more
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent align="start" className="w-64 p-2">
+                      <p className="px-1 pb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                        Selected indicators
+                      </p>
+                      <div className="max-h-56 space-y-0.5 overflow-y-auto">
+                        {indicators.map((value, index) => (
+                          <div
+                            key={value}
+                            className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-muted/60"
+                          >
+                            <Leaf className="h-2.5 w-2.5 shrink-0 text-primary/60" />
+                            <span
+                              className="min-w-0 flex-1 truncate text-[11px]"
+                              title={selectedIndicatorLabels[index]}
+                            >
+                              {selectedIndicatorLabels[index]}
+                            </span>
+                            <button
+                              type="button"
+                              className="shrink-0 cursor-pointer rounded p-0.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                              title={`Remove ${selectedIndicatorLabels[index]}`}
+                              aria-label={`Remove ${selectedIndicatorLabels[index]}`}
+                              onClick={() => onRemoveIndicator(value)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                 )}
               </div>
             )}
@@ -131,7 +198,7 @@ export function SearchFormPanel({
               <div className="space-y-1">
                 <p className="text-sm font-semibold">Search term</p>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Scientific name, vernacular name, or any biodiversity keyword.
+                  Enter a keyword to search.
                 </p>
               </div>
             </div>
