@@ -1,36 +1,43 @@
 const BASE_URL = process.env.NEXT_PUBLIC_FEDERATED_BASE_URL;
 
-// ContributeBaseApiHandler.ts
-export const PostContributeBaseApiHandler = async (endpoint: string, params: object) => {
+/** FastAPI returns `{ detail: ... }` on failure — surface it instead of a generic message. */
+const toErrorMessage = async (res: Response, fallback: string) => {
+  try {
+    const body = await res.json();
+    const detail = body?.detail;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg);
+  } catch {
+    /* response had no JSON body */
+  }
+  return `${fallback} (${res.status})`;
+};
+
+const sendJson = async (method: "POST" | "PATCH", endpoint: string, params?: object) => {
   const res = await fetch(BASE_URL + endpoint, {
-    method: "POST",
+    method,
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(params), // send all payload as body
+    body: JSON.stringify(params ?? {}),
   });
 
-  if (!res.ok) throw new Error("Failed to submit data");
+  if (!res.ok) throw new Error(await toErrorMessage(res, "Request failed"));
 
   return res.json();
 };
 
-/** POST to /dataset-registry with file + dataset_description (multipart/form-data) */
-export const PostDatasetRegistryWithFile = async (
-  file: File,
-  datasetDescription: string
-): Promise<{ dataset_id: string }> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("dataset_description", datasetDescription);
+// ContributeBaseApiHandler.ts
+export const PostContributeBaseApiHandler = (endpoint: string, params?: object) =>
+  sendJson("POST", endpoint, params);
 
-  const res = await fetch(BASE_URL + "/dataset-registry", {
-    method: "POST",
-    body: formData,
-    // Do not set Content-Type; browser sets multipart/form-data with boundary
-  });
+export const PatchContributeBaseApiHandler = (endpoint: string, params: object) =>
+  sendJson("PATCH", endpoint, params);
 
-  if (!res.ok) throw new Error("Failed to submit file");
+export const GetContributeBaseApiHandler = async (endpoint: string) => {
+  const res = await fetch(BASE_URL + endpoint);
+
+  if (!res.ok) throw new Error(await toErrorMessage(res, "Request failed"));
 
   return res.json();
 };
