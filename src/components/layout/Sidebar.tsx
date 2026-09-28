@@ -10,6 +10,7 @@ import {
   FileText,
   FileSearch,
   Network,
+  Server,
   Settings,
   // Share2,
 } from 'lucide-react';
@@ -61,6 +62,7 @@ const Sidebar: React.FC = () => {
     if (pathname === '/datasets') return 'Datasets';
     if (pathname === '/ontology') return 'Ontology';
     if (pathname === '/metadata_search') return 'Metadata Search';
+    if (pathname === '/node_registry') return 'Node Registry';
     if (pathname === '/map_module') return 'Map Module';
     if (pathname === '/settings') return 'Settings';
     return '';
@@ -148,6 +150,15 @@ const Sidebar: React.FC = () => {
             label="Metadata Search"
             isOpen={isSidebarOpen}
             active={currentTab === 'Metadata Search'}
+          />
+        </Link>
+
+        <Link href="/node_registry">
+          <SidebarItem
+            icon={<Server size={18} />}
+            label="Node Registry"
+            isOpen={isSidebarOpen}
+            active={currentTab === 'Node Registry'}
           />
         </Link>
 
