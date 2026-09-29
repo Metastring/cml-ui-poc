@@ -1,18 +1,10 @@
 /* =========================================================
-   INITIAL DATASET REGISTRATION (STEP 1)
+   SHARED LOOKUPS
    ========================================================= */
 
 export interface Category {
-  category_id: number;
+  category_id: number | string;
   category_name: string;
-}
-
-export interface Scope {
-  temporal_start_date: Date;
-  temporal_end_date: Date;
-  geographic_scope: string;
-  taxonomic_scope: string;
-  taxonomic_authority: string;
 }
 
 export interface Publisher {
@@ -25,115 +17,201 @@ export interface Contact {
   role: string;
   email: string;
   organization: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
 }
 
 export interface Source {
   source_name: string;
-  base_url: string;
-  description: string;
+  base_url?: string;
+  description?: string;
 }
 
-export interface Statistic {
-  stat_name: string;
-  stat_value: string;
-  measurement_date: Date;
-}
+/* =========================================================
+   STEP 1 — DATASET & NODE
+   POST /dataset-registration/draft
+   PATCH /dataset-registration/{dataset_id}
+   ========================================================= */
 
-export interface InitialDatasetForm {
+export interface DatasetNodeForm {
+  node_name: string;
+  node_maintained_by: string;
   title: string;
-  description: string;
-  citation: string;
-  doi: string;
-  language: string;
-  data_language: string;
-  license: string;
-  publication_date: Date;
-  metadata_modified_date: Date;
-  registration_date: Date;
-  is_active: boolean;
-  keywords: string;
-  dataset_type: string;
   category_id: string;
-
-  scopes: Scope[];
-  publishers: Publisher[];
-  contacts: Contact[];
-  sources: Source[];
-  statistics: Statistic[];
-}
-
-/* =========================================================
-   INITIAL DATASET SUBMIT PAYLOAD (STEP 1 → API)
-   ========================================================= */
-
-export interface InitialDatasetSubmitPayload {
-  category: {
-    category_id: string;
-    category_name: string;
-  };
-
-  title: string;
-  description: string;
-  citation: string;
-  doi: string;
-  language: string;
-  data_language: string;
+  publisher: string;
+  contact_email: string;
   license: string;
-  dataset_type: string;
-
-  is_active: boolean;
   keywords: string;
-
-  publishers: {
-    publisher_name: string;
-    record_count: string | number;
-  }[];
-
-  contacts: Contact[];
-  sources: Source[];
-  statistics: {
-    stat_name: string;
-    stat_value: string;
-  }[];
+  description: string;
 }
 
-export interface InitialDatasetRegistrationProps {
-  onNext: (payload: InitialDatasetSubmitPayload) => void;
-  isSubmitting?: boolean;
+export interface CreateDraftPayload {
+  category: { category_id: string; category_name: string } | null;
+  title: string;
+  description?: string;
+  citation?: string;
+  doi?: string;
+  language?: string;
+  data_language?: string;
+  license?: string;
+  is_active?: boolean;
+  keywords?: string;
+  dataset_type?: string;
+  node_name?: string;
+  node_maintained_by?: string;
+  publishers?: Publisher[];
+  contacts?: Contact[];
+  sources?: Source[];
+  statistics?: { stat_name: string; stat_value: string }[];
 }
 
+export interface UpdateDraftPayload {
+  title?: string;
+  description?: string;
+  citation?: string;
+  doi?: string;
+  language?: string;
+  data_language?: string;
+  license?: string;
+  keywords?: string;
+  dataset_type?: string;
+  category_id?: string;
+  node_name?: string;
+  node_maintained_by?: string;
+}
+
+export interface DraftResponse {
+  dataset_id: string;
+  raw: Record<string, unknown>;
+}
 
 /* =========================================================
-   FINAL DATASET REGISTRATION (STEP 2)
+   STEP 2 — DATA REFERENCE
+   POST /dataset-registration/{dataset_id}/reference/file (+ /verify)
+   POST /dataset-registration/{dataset_id}/reference/url
    ========================================================= */
 
-/**
- * Payload sent to /dataset-mapping-update
- * (matches your FinalDatasetRegistration component exactly)
- */
-export interface FinalDatasetForm {
-  dataset_id: string;
+export type ReferenceType = "file" | "url" | "database" | "map-service";
+
+export interface DataReferenceForm {
+  reference_type: ReferenceType;
+  /* file */
+  reference_uri: string;
+  file_format: string;
+  access_credentials_ref: string;
+  /* url */
+  source_url: string;
+  method: string;
+  response_format: string;
+  auth_header: string;
+  /* database */
+  connection_string: string;
+  table_name: string;
+  engine: string;
+  /* map service */
+  map_service_url: string;
+  layer_type: string;
+  layer_name: string;
+}
+
+export interface FileReferencePayload {
+  reference_uri: string;
+  file_format?: string | null;
+  access_credentials_ref?: string | null;
+}
+
+export interface UrlReferencePayload {
+  source_url: string;
+  method?: string;
+  auth_header?: string | null;
+  response_format?: string;
+}
+
+export interface DatabaseReferencePayload {
+  connection_string: string;
+  table_name: string;
+  engine?: string;
+}
+
+export interface MapServiceReferencePayload {
+  map_service_url: string;
+  layer_type?: string;
+  layer_name: string;
+}
+
+export interface ReachabilityResult {
+  reachable: boolean;
+  columns_detected?: number;
+  message?: string;
+}
+
+/* =========================================================
+   STEP 3 — ONTOLOGY MAPPING
+   POST /dataset-ontology-mapping/{dataset_id}/suggest
+   POST /dataset-ontology-mapping/{dataset_id}/mappings
+   ========================================================= */
+
+export interface OntologyFieldOption {
+  value: string;
+  label: string;
+}
+
+export interface SuggestedField {
+  field_name: string;
+  sample_value: string;
+  suggested_term?: string;
+  confidence?: number;
+}
+
+export interface MappingField {
+  id: string;
+  field_name: string;
+  sample_value: string;
+  /** Ontology field URI — sent as `ontology_field`. */
+  ontology_term: string;
+  /** Term came from /suggest rather than from the user. */
+  auto: boolean;
+  /** Row was added by the user rather than detected in the source header. */
+  added_manually: boolean;
+}
+
+export interface SaveMappingsPayload {
+  ontology_graph_key: string;
   mappings: {
     field_name: string;
-    ontology_mapping: string;
+    ontology_field: string;
   }[];
 }
 
-export interface FinalDatasetRegistrationProps {
-  datasetId: string | number;
-  onSubmit: (data: FinalDatasetForm) => void;
-  isSubmitting?: boolean;
-  onBackToInitial?: () => void;
+/* =========================================================
+   STEP 4 — REVIEW & PUBLISH
+   GET  /dataset-registration/{dataset_id}/review-summary
+   POST /dataset-registration/{dataset_id}/publish
+   ========================================================= */
+
+export interface PublishResult {
+  status?: string;
+  node_id?: string;
+  dataset_id?: string;
+  raw: Record<string, unknown>;
+}
+
+export interface PublishSummary {
+  title: string;
+  node_name: string;
+  reference_type: string;
+  data_location: string;
+  category: string;
+  fields_mapped: number;
+  fields_total: number;
+  manually_added: number;
+  status: string;
 }
 
 /* =========================================================
-   DATASET REGISTRATION RESPONSE
+   WIZARD
    ========================================================= */
 
-export interface InitialDatasetResponse {
-  dataset_id: string;
-}
+export type RegistrationStep = 1 | 2 | 3 | 4;
