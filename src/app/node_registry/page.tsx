@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,13 +25,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  useGetNodeDatasets,
   useGetNodeManifest,
   useGetRegisteredNodes,
   useRevokeNode,
 } from "@/api/nodeRegistryApiHandler/NodeRegistryApiHandler";
-import { NodeStatus, RegisteredNode } from "@/types/api/nodeRegistry.types";
+import {
+  NodeDatasetField,
+  NodeStatus,
+  RegisteredNode,
+} from "@/types/api/nodeRegistry.types";
 
-const STATUS_STYLES: Record<NodeStatus, string> = {
+/** What the drawer needs to open: the id to fetch and a name to show meanwhile. */
+type ViewedNode = { node_id: string; name: string };
+
+const STATUS_STYLES: Record<NodeStatus | "self", string> = {
+  self: "bg-primary/10 text-primary border-primary/20",
   active:
     "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
   stale: "bg-amber-500/12 text-amber-700 dark:text-amber-400 border-amber-500/20",
@@ -36,7 +55,7 @@ const STATUS_STYLES: Record<NodeStatus, string> = {
   revoked: "bg-red-500/12 text-red-700 dark:text-red-400 border-red-500/20",
 };
 
-const StatusBadge = ({ status }: { status: NodeStatus }) => (
+const StatusBadge = ({ status }: { status: NodeStatus | "self" }) => (
   <span
     className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
       STATUS_STYLES[status] ?? STATUS_STYLES.detached
@@ -74,12 +93,239 @@ const StatTile = ({
   </Card>
 );
 
+/** Shared chip style — keyword and indicator chips read the same. */
+const CHIP_CLASS =
+  "max-w-full break-words rounded-full border border-border px-2.5 py-1 text-xs text-foreground";
+
+/**
+ * Indicators of one dataset: the ontology term each mapped column resolves to.
+ * Only `ontology_mapping_to_display` is shown — the column name, data type and
+ * raw mapping key/URI are deliberately left out.
+ */
+const IndicatorList = ({ indicators }: { indicators: string[] }) => (
+  <ul className="mt-3 flex flex-wrap gap-1.5">
+    {indicators.map((indicator) => (
+      <li
+        key={indicator}
+        className={CHIP_CLASS}
+      >
+        {indicator}
+      </li>
+    ))}
+  </ul>
+);
+
+/** Display names of the ontology terms this dataset's columns map to. */
+const indicatorsOf = (fields: NodeDatasetField[]) =>
+  Array.from(
+    new Set(
+      fields
+        .map((field) => field.ontology_mapping_to_display)
+        .filter((term): term is string => Boolean(term))
+    )
+  );
+
+/** `keywords` arrives as one comma-separated string, so split it before showing. */
+const keywordsOf = (keywords: string | null) =>
+  Array.from(
+    new Set(
+      (keywords ?? "")
+        .split(",")
+        .map((keyword) => keyword.trim())
+        .filter(Boolean)
+    )
+  );
+
+/**
+ * Body of the node detail drawer: GET /nodes/{node_id}/datasets.
+ * Mounted with a `key` of the node id so it refetches per node.
+ * A node that is down still answers 200 — `datasets_source` says whether the
+ * list is live, a saved copy, or missing entirely.
+ */
+const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
+  const { data, isLoading, isError } = useGetNodeDatasets(node.node_id);
+
+  const datasets = data?.datasets ?? [];
+
+  return (
+    <>
+      {/* Exactly two rows — truncation keeps a long name or URL from adding a third. */}
+      <SheetHeader className="gap-0.5 border-b border-border/60 px-6 py-3">
+        <div className="flex items-center gap-3 pr-8">
+          <SheetTitle className="min-w-0 truncate text-xl">
+            {data?.node.name ?? node.name}
+          </SheetTitle>
+          {data && (
+            <span className="shrink-0">
+              <StatusBadge status={data.node.status} />
+            </span>
+          )}
+          {data && (
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+              {data.dataset_count} dataset
+              {data.dataset_count === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+
+        <SheetDescription
+          className="truncate font-mono text-xs"
+          title={data?.node.base_url}
+        >
+          {data?.node.base_url ?? "Loading node details…"}
+        </SheetDescription>
+      </SheetHeader>
+
+      <div className="flex-1 overflow-y-auto px-6 py-5">
+        {isLoading && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Contacting the node — this can take a few seconds.
+            </p>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-12 w-full animate-pulse rounded bg-muted"
+              />
+            ))}
+          </div>
+        )}
+
+        {isError && !isLoading && (
+          <div className="py-10 text-center">
+            <p className="text-sm font-medium text-destructive">
+              Could not load this node&apos;s datasets.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The node is not in the registry, or central is unreachable.
+            </p>
+          </div>
+        )}
+
+        {data && (
+          <>
+            {data.datasets_source === "cache" && (
+              <p className="mb-4 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                Node unreachable — showing saved copy from{" "}
+                {relativeTime(data.harvested_at)}.
+              </p>
+            )}
+
+            {data.datasets_source === "unavailable" && (
+              <p className="mb-4 rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+                Node unreachable; no saved dataset list.
+              </p>
+            )}
+
+            {datasets.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                No datasets to show.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {datasets.map((dataset) => {
+                  const indicators = indicatorsOf(dataset.fields);
+                  const keywords = keywordsOf(dataset.keywords);
+                  return (
+                    <Card
+                      key={dataset.dataset_id}
+                      className="gap-0 border-border/60 py-0 shadow-sm"
+                    >
+                      <CardContent className="px-5 py-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <p className="break-words font-medium text-foreground">
+                              {dataset.title}
+                            </p>
+                            {dataset.category && (
+                              <Badge variant="secondary">
+                                {dataset.category}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {dataset.category ? (
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="sm"
+                              className="h-7 shrink-0 rounded-full border-primary/40 px-3 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+                            >
+                              <Link
+                                href={`/datasets/${encodeURIComponent(
+                                  dataset.category
+                                )}/${encodeURIComponent(dataset.title)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                View details
+                                <ExternalLink className="size-3.5" />
+                              </Link>
+                            </Button>
+                          ) : (
+                            <span className="shrink-0 text-xs text-muted-foreground">
+                              No category — detail page unavailable
+                            </span>
+                          )}
+                        </div>
+
+                        {dataset.description && (
+                          <p className="mt-2 break-words text-sm text-muted-foreground">
+                            {dataset.description}
+                          </p>
+                        )}
+
+                        {keywords.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Keywords
+                            </p>
+                            <ul className="mt-2 flex flex-wrap gap-1.5">
+                              {keywords.map((keyword) => (
+                                <li
+                                  key={keyword}
+                                  className={CHIP_CLASS}
+                                >
+                                  {keyword}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="mt-4 border-t border-border/60 pt-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Indicators ({indicators.length})
+                          </p>
+                          {indicators.length === 0 ? (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              No indicators
+                            </p>
+                          ) : (
+                            <IndicatorList indicators={indicators} />
+                          )}
+                        </div>
+
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
 export default function NodeRegistryPage() {
   const { data: manifest } = useGetNodeManifest();
   const { data, isLoading, isError, refetch } = useGetRegisteredNodes();
   const revokeNode = useRevokeNode();
 
   const [nodeToRevoke, setNodeToRevoke] = useState<RegisteredNode | null>(null);
+  const [nodeToView, setNodeToView] = useState<ViewedNode | null>(null);
 
   const nodes: RegisteredNode[] = useMemo(() => data?.nodes ?? [], [data]);
 
@@ -261,9 +507,10 @@ export default function NodeRegistryPage() {
                                   size="sm"
                                   className="h-7 rounded-full border-primary/40 px-3 text-xs text-primary hover:bg-primary/5 hover:text-primary"
                                   onClick={() =>
-                                    toast.info(
-                                      "Node detail view is coming soon."
-                                    )
+                                    setNodeToView({
+                                      node_id: node.node_id,
+                                      name: node.name,
+                                    })
                                   }
                                 >
                                   View
@@ -291,6 +538,20 @@ export default function NodeRegistryPage() {
           </Card>
         </div>
       </div>
+
+      {/* Node detail drawer */}
+      <Sheet
+        open={Boolean(nodeToView)}
+        onOpenChange={(open) => {
+          if (!open) setNodeToView(null);
+        }}
+      >
+        <SheetContent className="w-full gap-0 p-0 sm:w-3/5 sm:max-w-none">
+          {nodeToView && (
+            <NodeDatasetsPanel key={nodeToView.node_id} node={nodeToView} />
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Revoke confirmation */}
       <Dialog

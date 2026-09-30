@@ -35,3 +35,47 @@ export interface RevokeNodeResponse {
   node_id: string;
   status: NodeStatus;
 }
+
+/**
+ * live: fetched from the node just now.
+ * cache: the node was unreachable, so this is the last saved copy.
+ * unavailable: the node was unreachable and there is no saved copy.
+ */
+export type DatasetsSource = "live" | "cache" | "unavailable";
+
+export interface NodeDatasetField {
+  field_name: string;
+  ontology_mapping: string | null;
+  ontology_mapping_to_display: string | null;
+  data_type: string | null;
+}
+
+export interface NodeDataset {
+  dataset_id: number;
+  title: string;
+  category: string | null;
+  description: string | null;
+  keywords: string | null;
+  /** Approximate figure from Postgres statistics. */
+  row_count: number | null;
+  date_min: string | null;
+  date_max: string | null;
+  fields: NodeDatasetField[];
+}
+
+/** GET /nodes/{node_id}/datasets — `node_id` is a registry id or the literal `self`. */
+export interface NodeDatasetsResponse {
+  node: {
+    node_id: string;
+    name: string;
+    base_url: string;
+    /** `self` when queried with node_id=self. */
+    status: NodeStatus | "self";
+    is_self: boolean;
+  };
+  datasets_source: DatasetsSource;
+  /** null for `self` and for `unavailable`. */
+  harvested_at: string | null;
+  dataset_count: number;
+  datasets: NodeDataset[];
+}

@@ -4,6 +4,7 @@ import {
   PostNodeRegistryBaseApiHandler,
 } from "./NodeRegistryBaseApiHandler";
 import {
+  NodeDatasetsResponse,
   NodeManifest,
   RegisteredNodesResponse,
   RevokeNodeResponse,
@@ -29,6 +30,22 @@ export const useGetRegisteredNodes = () => {
       refetchInterval: 60 * 1000,
     });
   return { data, error, isLoading, isFetching, refetch, isError };
+};
+
+/**
+ * Datasets of one node, for the registry's detail drawer.
+ * Pass null to stay idle until a node is picked.
+ * A node that is down is not an error — it answers 200 with datasets_source
+ * `cache` or `unavailable` — so this never polls and never retries.
+ */
+export const useGetNodeDatasets = (nodeId: string | null) => {
+  const { data, error, isLoading, isError } = useQuery<NodeDatasetsResponse>({
+    queryKey: ["node-registry", "datasets", nodeId],
+    queryFn: () => GetNodeRegistryBaseApiHandler(`/nodes/${nodeId}/datasets`),
+    enabled: Boolean(nodeId),
+    retry: false,
+  });
+  return { data, error, isLoading, isError };
 };
 
 /** Central-admin force revoke. Takes no auth — the confirm dialog is the guard. */
