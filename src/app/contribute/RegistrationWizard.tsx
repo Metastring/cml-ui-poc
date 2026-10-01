@@ -8,6 +8,7 @@ import {
   DEFAULT_ONTOLOGY_GRAPH_KEY,
   useCreateDraft,
   useGetCategories,
+  useGetOntologies,
   useGetOntologyFields,
   usePublishDataset,
   useSaveDatabaseReference,
@@ -79,6 +80,17 @@ const EMPTY_REFERENCE_FORM: DataReferenceForm = {
 };
 
 /* ---------- reference helpers ---------- */
+
+/**
+ * The mappings endpoint types its `dataset_id` path param as an integer, so a
+ * non-numeric draft id has to be caught here rather than coming back as a 422.
+ */
+const datasetIdAsInteger = (datasetId: string) => {
+  const parsed = Number.parseInt(datasetId, 10);
+  return Number.isSafeInteger(parsed) && String(parsed) === datasetId.trim()
+    ? parsed
+    : null;
+};
 
 const referenceLocation = (reference: DataReferenceForm) => {
   switch (reference.reference_type) {
@@ -187,6 +199,19 @@ const RegistrationWizard = () => {
   const router = useRouter();
   const manualFieldCount = useRef(0);
 
+  /** A blank, user-owned mapping row — step 3 opens with one of these. */
+  const makeManualField = (): MappingField => {
+    manualFieldCount.current += 1;
+    return {
+      id: `manual-${manualFieldCount.current}`,
+      field_name: "",
+      sample_value: "",
+      ontology_term: "",
+      auto: false,
+      added_manually: true,
+    };
+  };
+
   const [step, setStep] = useState<RegistrationStep>(1);
   const [datasetId, setDatasetId] = useState("");
   const [nodeForm, setNodeForm] = useState<DatasetNodeForm>(EMPTY_NODE_FORM);
@@ -199,15 +224,17 @@ const RegistrationWizard = () => {
     null
   );
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [ontologyGraphKey, setOntologyGraphKey] = useState(
+    DEFAULT_ONTOLOGY_GRAPH_KEY
+  );
   const [fields, setFields] = useState<MappingField[]>([]);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [summary, setSummary] = useState<PublishSummary | null>(null);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const { data: categoriesData } = useGetCategories();
-  const { data: ontologyOptions } = useGetOntologyFields(
-    DEFAULT_ONTOLOGY_GRAPH_KEY
-  );
+  const { data: ontologies } = useGetOntologies();
+  const { data: ontologyOptions } = useGetOntologyFields(ontologyGraphKey);
 
   const createDraft = useCreateDraft();
   const updateDraft = useUpdateDraft();
@@ -426,24 +453,27 @@ const RegistrationWizard = () => {
     try {
       const suggestions = await suggestMappings.mutateAsync({
         datasetId: id,
-        graphKey: DEFAULT_ONTOLOGY_GRAPH_KEY,
+        graphKey: ontologyGraphKey,
       });
-      setFields(
-        suggestions.map((suggestion, index) => ({
+      setFields([
+        ...suggestions.map((suggestion, index) => ({
           id: `detected-${index}-${suggestion.field_name}`,
           field_name: suggestion.field_name,
           sample_value: suggestion.sample_value,
           ontology_term: suggestion.suggested_term ?? "",
           auto: Boolean(suggestion.suggested_term),
           added_manually: false,
-        }))
-      );
+        })),
+        /* An open row so a field the preview missed can be mapped right away. */
+        makeManualField(),
+      ]);
     } catch (error) {
       setPreviewError(
         error instanceof Error
           ? error.message
           : "We couldn't fetch a schema preview from the source."
       );
+      setFields([makeManualField()]);
     }
   };
 
@@ -470,24 +500,36 @@ const RegistrationWizard = () => {
       prev.map((field) => (field.id === id ? { ...field, ...patch } : field))
     );
 
-  const handleAddField = () => {
-    manualFieldCount.current += 1;
-    setFields((prev) => [
-      ...prev,
-      {
-        id: `manual-${manualFieldCount.current}`,
-        field_name: "",
-        sample_value: "",
+  const handleChangeOntology = (graphKey: string) => {
+    if (graphKey === ontologyGraphKey) return;
+    setOntologyGraphKey(graphKey);
+    /* A term and its URI only mean something inside the graph they came from. */
+    setFields((prev) =>
+      prev.map((field) => ({
+        ...field,
         ontology_term: "",
+        ontology_uri: undefined,
         auto: false,
-        added_manually: true,
-      },
-    ]);
+      }))
+    );
   };
 
+  const handleAddField = () =>
+    setFields((prev) => [...prev, makeManualField()]);
+
+  const handleRemoveField = (id: string) =>
+    setFields((prev) => prev.filter((field) => field.id !== id));
+
   const handlePublish = async () => {
-    const mapped = fields.filter(
-      (field) => field.field_name.trim() && field.ontology_term
+    const numericId = datasetIdAsInteger(datasetId);
+    if (numericId === null) {
+      toast.error("Complete step 1 first");
+      return;
+    }
+
+    const filledFields = fields.filter((field) => field.field_name.trim());
+    const mapped = filledFields.filter(
+      (field) => field.ontology_term || field.ontology_uri
     );
     if (mapped.length === 0) {
       toast.error("Map at least one field to an ontology term");
@@ -496,13 +538,40 @@ const RegistrationWizard = () => {
 
     try {
       await saveMappings.mutateAsync({
-        datasetId,
+        datasetId: numericId,
         params: {
-          ontology_graph_key: DEFAULT_ONTOLOGY_GRAPH_KEY,
-          mappings: mapped.map((field) => ({
-            field_name: field.field_name.trim(),
-            ontology_field: field.ontology_term,
-          })),
+          ontology_graph_key: ontologyGraphKey,
+          mappings: mapped.map((field) => {
+            const option = ontologyOptions.find(
+              (candidate) => candidate.value === field.ontology_term
+            );
+            const ontologyUri = field.ontology_uri || option?.uri;
+            /* What the fields endpoint knows about the term, carried through
+               under its own key names; the row's own metadata wins. */
+            const metadata = {
+              ...(option?.property_type
+                ? { property_type: option.property_type }
+                : {}),
+              ...(option?.class_name ? { class_name: option.class_name } : {}),
+              ...(option?.range ? { range: option.range } : {}),
+              ...field.metadata,
+            };
+
+            return {
+              field_name: field.field_name.trim(),
+              ...(field.ontology_term
+                ? { ontology_field: field.ontology_term }
+                : {}),
+              ...(ontologyUri ? { ontology_uri: ontologyUri } : {}),
+              ...(field.sample_value
+                ? { sample_value: field.sample_value }
+                : {}),
+              ...(field.value_range ? { value_range: field.value_range } : {}),
+              ...(Object.keys(metadata).length ? { metadata } : {}),
+              ...(field.label ? { label: field.label } : {}),
+              ...(field.data_type ? { data_type: field.data_type } : {}),
+            };
+          }),
         },
       });
 
@@ -515,8 +584,9 @@ const RegistrationWizard = () => {
         data_location: referenceLocation(reference),
         category: selectedCategory?.category_name ?? "",
         fields_mapped: mapped.length,
-        fields_total: fields.length,
-        manually_added: fields.filter((field) => field.added_manually).length,
+        fields_total: filledFields.length,
+        manually_added: filledFields.filter((field) => field.added_manually)
+          .length,
         status: res.status ?? "Pending reachability check",
       });
       setStep(4);
@@ -602,13 +672,17 @@ const RegistrationWizard = () => {
           <OntologyMappingStep
             location={referenceLocation(reference)}
             fields={fields}
+            ontologies={ontologies}
+            ontologyGraphKey={ontologyGraphKey}
             ontologyOptions={ontologyOptions}
             isLoadingPreview={suggestMappings.isPending}
             previewError={previewError}
             isSubmitting={saveMappings.isPending || publishDataset.isPending}
             isSavingDraft={isSavingDraft}
+            onChangeOntology={handleChangeOntology}
             onChangeField={handleChangeField}
             onAddField={handleAddField}
+            onRemoveField={handleRemoveField}
             onBack={() => setStep(2)}
             onSaveDraft={handleSaveDraft}
             onContinue={handlePublish}
@@ -622,6 +696,7 @@ const RegistrationWizard = () => {
           />
         )}
       </section>
+
     </main>
   );
 };

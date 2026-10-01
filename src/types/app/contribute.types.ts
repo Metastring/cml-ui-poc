@@ -153,9 +153,23 @@ export interface ReachabilityResult {
    POST /dataset-ontology-mapping/{dataset_id}/mappings
    ========================================================= */
 
+/** One row of GET /dataset-ontology-mapping/ontologies — the mapping step's picker. */
+export interface OntologyOption {
+  graph_key: string;
+  title: string;
+}
+
 export interface OntologyFieldOption {
   value: string;
   label: string;
+  /** Ontology URI reported by the fields endpoint — pre-fills `ontology_uri`. */
+  uri?: string;
+  /** "datatype" (what a column maps to) or "object" (a relation between classes). */
+  property_type?: string;
+  /** Class the property is declared on. */
+  class_name?: string;
+  /** The term's own type, e.g. "xsd:double". */
+  range?: string;
 }
 
 export interface SuggestedField {
@@ -171,6 +185,16 @@ export interface MappingField {
   sample_value: string;
   /** Ontology field URI — sent as `ontology_field`. */
   ontology_term: string;
+  /** Ontology URI of the selected term — sent as `ontology_uri`. */
+  ontology_uri?: string;
+  /** Observed range of the sampled values — sent as `value_range`. */
+  value_range?: string;
+  /** Extra mapping details — sent as `metadata`. */
+  metadata?: Record<string, unknown>;
+  /** Label for a field the user couldn't find in the ontology. */
+  label?: string;
+  /** Data type for a field the user couldn't find in the ontology. */
+  data_type?: string;
   /** Term came from /suggest rather than from the user. */
   auto: boolean;
   /** Row was added by the user rather than detected in the source header. */
@@ -181,7 +205,15 @@ export interface SaveMappingsPayload {
   ontology_graph_key: string;
   mappings: {
     field_name: string;
-    ontology_field: string;
+    /** Omitted for a field the user couldn't find in the ontology. */
+    ontology_field?: string;
+    ontology_uri?: string;
+    sample_value?: string;
+    value_range?: string;
+    metadata?: Record<string, unknown>;
+    /** Only sent with `ontology_uri` and no `ontology_field`. */
+    label?: string;
+    data_type?: string;
   }[];
 }
 

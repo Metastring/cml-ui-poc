@@ -11,6 +11,7 @@ import {
   FileReferencePayload,
   MapServiceReferencePayload,
   OntologyFieldOption,
+  OntologyOption,
   PublishResult,
   ReachabilityResult,
   SaveMappingsPayload,
@@ -20,10 +21,9 @@ import {
 } from "@/types/app/contribute.types";
 
 /**
- * The ontology the mapping step maps against.
- * `/suggest` and `/mappings` both require a graph key; the wizard doesn't expose
- * a picker, so change this constant to switch ontologies.
- * Keys come from GET /dataset-ontology-mapping/ontologies.
+ * The ontology the mapping step starts on. The step's picker (fed by
+ * `useGetOntologies`) can switch it; this is only what's selected before the
+ * catalogue loads, and the fallback if that read fails.
  */
 export const DEFAULT_ONTOLOGY_GRAPH_KEY = "envo";
 
@@ -133,11 +133,29 @@ const readSuggestions = (raw: unknown): SuggestedField[] =>
     })
   );
 
+const readOntologyCatalogue = (raw: unknown): OntologyOption[] =>
+  pickList(raw, ["items", "ontologies", "results"])
+    .map((item) => {
+      const graphKey = pickText(item, ["graph_key", "key", "value"]) ?? "";
+      return {
+        graph_key: graphKey,
+        title: pickText(item, ["title", "label", "name"]) ?? graphKey,
+      };
+    })
+    .filter((option) => option.graph_key);
+
 const readOntologyFields = (raw: unknown): OntologyFieldOption[] =>
   pickList(raw, ["items", "fields", "results"])
     .map((item) => {
       const value = pickText(item, ["value", "field", "uri", "name"]) ?? "";
-      return { value, label: pickText(item, ["label", "title", "name"]) ?? value };
+      return {
+        value,
+        label: pickText(item, ["label", "title", "name"]) ?? value,
+        uri: pickText(item, ["uri", "ontology_uri", "iri"]),
+        property_type: pickText(item, ["property_type", "type"]),
+        class_name: pickText(item, ["class_name", "domain", "domain_class_name"]),
+        range: pickText(item, ["range", "range_value", "data_type"]),
+      };
     })
     .filter((option) => option.value);
 
@@ -168,6 +186,25 @@ export const useGetCategories = () => {
     staleTime: 1000 * 6000,
   });
   return { data, error, isLoading, isFetching, refetch, isError };
+};
+
+/** GET /dataset-ontology-mapping/ontologies — every graph key the step can map against */
+export const useGetOntologies = () => {
+  const { data, error, isLoading, isFetching, refetch, isError } = useQuery({
+    queryKey: ["ontology-catalogue"],
+    queryFn: () =>
+      GetContributeBaseApiHandler("/dataset-ontology-mapping/ontologies"),
+    staleTime: 1000 * 6000,
+  });
+
+  return {
+    data: readOntologyCatalogue(data),
+    error,
+    isLoading,
+    isFetching,
+    refetch,
+    isError,
+  };
 };
 
 /** GET /dataset-ontology-mapping/ontologies/{graph_key}/fields */

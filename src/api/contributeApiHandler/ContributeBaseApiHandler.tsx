@@ -6,7 +6,14 @@ const toErrorMessage = async (res: Response, fallback: string) => {
     const body = await res.json();
     const detail = body?.detail;
     if (typeof detail === "string") return detail;
-    if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg);
+    if (Array.isArray(detail) && detail[0]?.msg) {
+      /* A 422's `loc` is ["body", "mappings", 0, "field_name"] — its tail names
+         the field that failed, which the message on its own doesn't. */
+      const loc = Array.isArray(detail[0].loc)
+        ? detail[0].loc.slice(1).join(".")
+        : "";
+      return loc ? `${loc}: ${detail[0].msg}` : String(detail[0].msg);
+    }
   } catch {
     /* response had no JSON body */
   }
