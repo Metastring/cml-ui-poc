@@ -8,8 +8,19 @@ export const GetNodeRegistryBaseApiHandler = async (endpoint: string) => {
   return res.json();
 };
 
-export const PostNodeRegistryBaseApiHandler = async (endpoint: string) => {
-  const res = await fetch(`${BASE_URL}${endpoint}`, { method: "POST" });
+export const PostNodeRegistryBaseApiHandler = async (
+  endpoint: string,
+  body?: unknown
+) => {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    method: "POST",
+    ...(body === undefined
+      ? {}
+      : {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+  });
 
   if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
 

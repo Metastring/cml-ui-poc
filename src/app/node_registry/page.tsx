@@ -32,13 +32,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  useDetachSelf,
   useGetNodeDatasets,
   useGetNodeManifest,
   useGetRegisteredNodes,
   useRevokeNode,
+  useSendHeartbeat,
 } from "@/api/nodeRegistryApiHandler/NodeRegistryApiHandler";
 import {
   NodeDatasetField,
+  NodeManifest,
   NodeStatus,
   RegisteredNode,
 } from "@/types/api/nodeRegistry.types";
@@ -319,13 +322,124 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
   );
 };
 
+/** One labelled value in the "This Node" card. */
+const NodeField = ({ label, value }: { label: string; value: string }) => (
+  <div className="min-w-0">
+    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {label}
+    </p>
+    <p className="mt-1 break-words text-sm text-foreground">{value}</p>
+  </div>
+);
+
+/**
+ * This node's own side of the federation: who it is, which central it is
+ * registered with, and the actions only a node can take on itself.
+ * `selfNode` is this node's row in the registry listing — null when it has not
+ * registered, in which case there is nothing to heartbeat or detach.
+ */
+const ThisNodeCard = ({
+  manifest,
+  selfNode,
+  onHeartbeat,
+  isHeartbeating,
+  onDetach,
+}: {
+  manifest: NodeManifest;
+  selfNode: RegisteredNode | null;
+  onHeartbeat: () => void;
+  isHeartbeating: boolean;
+  onDetach: (revokeKey: boolean) => void;
+}) => {
+  const isRegistered = Boolean(selfNode || manifest.central_server_url);
+
+  return (
+    <Card className="mt-6 border-border/60 shadow-sm">
+      <CardContent className="px-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-lg font-semibold text-foreground">This Node</h2>
+          {selfNode && <StatusBadge status={selfNode.status} />}
+        </div>
+
+        <p
+          className={`mt-1 text-sm ${
+            isRegistered
+              ? "text-emerald-700 dark:text-emerald-400"
+              : "text-muted-foreground"
+          }`}
+        >
+          {isRegistered
+            ? "Registered with central — the backend heartbeats on its own schedule; the button below forces one now."
+            : "Not registered with central yet — this node joins the federation by calling POST /nodes/register."}
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <NodeField label="Node Name" value={manifest.node_name} />
+          <NodeField label="Base URL" value={manifest.base_url} />
+          <NodeField
+            label="Central Server"
+            value={manifest.central_server_url ?? "—"}
+          />
+          <NodeField
+            label="Last Heartbeat"
+            value={relativeTime(selfNode?.last_heartbeat_at ?? null)}
+          />
+        </div>
+
+        {isRegistered && (
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full px-4 text-xs"
+              onClick={onHeartbeat}
+              disabled={!selfNode || isHeartbeating}
+              title={
+                selfNode
+                  ? undefined
+                  : "This node has no registry entry to heartbeat against."
+              }
+            >
+              {isHeartbeating ? "Sending…" : "Send heartbeat now"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full px-4 text-xs"
+              onClick={() => onDetach(false)}
+            >
+              Detach from central
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full border-destructive/40 bg-destructive/5 px-4 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onDetach(true)}
+            >
+              Revoke &amp; forget key
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function NodeRegistryPage() {
   const { data: manifest } = useGetNodeManifest();
   const { data, isLoading, isError, refetch } = useGetRegisteredNodes();
   const revokeNode = useRevokeNode();
+  const sendHeartbeat = useSendHeartbeat();
+  const detachSelf = useDetachSelf();
 
   const [nodeToRevoke, setNodeToRevoke] = useState<RegisteredNode | null>(null);
   const [nodeToView, setNodeToView] = useState<ViewedNode | null>(null);
+  /** Which detach the confirm dialog is for: plain, or one that drops the key. */
+  const [detachMode, setDetachMode] = useState<"detach" | "revoke-key" | null>(
+    null
+  );
 
   const nodes: RegisteredNode[] = useMemo(() => data?.nodes ?? [], [data]);
 
@@ -339,6 +453,59 @@ export default function NodeRegistryPage() {
       inactive: count("detached") + count("revoked"),
     };
   }, [nodes]);
+
+  /**
+   * This node's own row in the registry. Central stores the manifest id under
+   * `metadata.manifest_node_id`, so match on that first and fall back to the
+   * base URL for rows registered before that field existed.
+   */
+  const selfNode = useMemo(() => {
+    if (!manifest) return null;
+    return (
+      nodes.find(
+        (node) => node.metadata?.manifest_node_id === manifest.node_id
+      ) ??
+      nodes.find((node) => node.base_url === manifest.base_url) ??
+      null
+    );
+  }, [nodes, manifest]);
+
+  const handleHeartbeat = () => {
+    if (!selfNode) return;
+
+    sendHeartbeat.mutate(
+      {
+        nodeId: selfNode.node_id,
+        body: {
+          dataset_count: manifest?.dataset_count ?? null,
+          version: manifest?.version ?? null,
+        },
+      },
+      {
+        onSuccess: () => toast.success("Heartbeat sent"),
+        onError: () => toast.error("Could not send heartbeat. Please try again."),
+      }
+    );
+  };
+
+  const handleDetach = () => {
+    if (!detachMode) return;
+    const revokeKey = detachMode === "revoke-key";
+
+    detachSelf.mutate(revokeKey, {
+      onSuccess: () => {
+        toast.success(
+          revokeKey
+            ? "Detached from central and API key forgotten"
+            : "Detached from central"
+        );
+        setDetachMode(null);
+      },
+      onError: () => {
+        toast.error("Could not detach this node. Please try again.");
+      },
+    });
+  };
 
   const handleRevoke = () => {
     if (!nodeToRevoke) return;
@@ -364,11 +531,6 @@ export default function NodeRegistryPage() {
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Federation — Registered Nodes
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Central&apos;s view of every node that has registered. Central never
-              registers itself — client nodes call POST /nodes/register against
-              this server.
-            </p>
           </div>
 
           {manifest && (
@@ -378,6 +540,19 @@ export default function NodeRegistryPage() {
             </div>
           )}
         </div>
+
+        {/* This node — the client-node side of the federation */}
+        {manifest && (
+          <ThisNodeCard
+            manifest={manifest}
+            selfNode={selfNode}
+            onHeartbeat={handleHeartbeat}
+            isHeartbeating={sendHeartbeat.isPending}
+            onDetach={(revokeKey) =>
+              setDetachMode(revokeKey ? "revoke-key" : "detach")
+            }
+          />
+        )}
 
         {/* Stat tiles */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -552,6 +727,50 @@ export default function NodeRegistryPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Detach confirmation */}
+      <Dialog
+        open={Boolean(detachMode)}
+        onOpenChange={(open) => {
+          if (!open && !detachSelf.isPending) setDetachMode(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {detachMode === "revoke-key"
+                ? "Revoke this node's key and detach?"
+                : "Detach this node from central?"}
+            </DialogTitle>
+            <DialogDescription>
+              {detachMode === "revoke-key"
+                ? "This node leaves the federation and its API key is forgotten. Rejoining means registering with central again."
+                : "This node stops heartbeating and drops out of peer searches. Its API key is kept, so it can come back by heartbeating again."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDetachMode(null)}
+              disabled={detachSelf.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={detachMode === "revoke-key" ? "destructive" : "default"}
+              onClick={handleDetach}
+              disabled={detachSelf.isPending}
+            >
+              {detachSelf.isPending
+                ? "Detaching…"
+                : detachMode === "revoke-key"
+                ? "Revoke & detach"
+                : "Detach node"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Revoke confirmation */}
       <Dialog

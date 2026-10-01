@@ -79,3 +79,22 @@ export interface NodeDatasetsResponse {
   dataset_count: number;
   datasets: NodeDataset[];
 }
+
+/** POST /nodes/{node_id}/heartbeat — what this node reports when it checks in. */
+export interface HeartbeatInput {
+  dataset_count: number | null;
+  version: string | null;
+}
+
+export interface HeartbeatResponse {
+  node_id: string;
+  status: NodeStatus;
+  last_heartbeat_at: string | null;
+}
+
+/** POST /nodes/self/detach — `revoke_key` also drops this node's API key. */
+export interface DetachResponse {
+  node_id: string;
+  status: NodeStatus;
+  key_revoked?: boolean;
+}

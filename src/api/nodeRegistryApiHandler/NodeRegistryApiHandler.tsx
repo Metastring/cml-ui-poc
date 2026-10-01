@@ -4,6 +4,9 @@ import {
   PostNodeRegistryBaseApiHandler,
 } from "./NodeRegistryBaseApiHandler";
 import {
+  DetachResponse,
+  HeartbeatInput,
+  HeartbeatResponse,
   NodeDatasetsResponse,
   NodeManifest,
   RegisteredNodesResponse,
@@ -57,6 +60,45 @@ export const useRevokeNode = () => {
       PostNodeRegistryBaseApiHandler(`/nodes/${nodeId}/revoke`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["node-registry", "nodes"] });
+    },
+  });
+};
+
+/**
+ * This node checks in with central. The backend heartbeats on its own
+ * schedule — this is the manual nudge behind "Send heartbeat now".
+ */
+export const useSendHeartbeat = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    HeartbeatResponse,
+    Error,
+    { nodeId: string; body: HeartbeatInput }
+  >({
+    mutationFn: ({ nodeId, body }) =>
+      PostNodeRegistryBaseApiHandler(`/nodes/${nodeId}/heartbeat`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["node-registry", "nodes"] });
+    },
+  });
+};
+
+/**
+ * This node takes itself out of the federation.
+ * `revoke_key` true also drops its API key, so rejoining means registering again.
+ */
+export const useDetachSelf = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<DetachResponse, Error, boolean>({
+    mutationFn: (revokeKey) =>
+      PostNodeRegistryBaseApiHandler(`/nodes/self/detach`, {
+        revoke_key: revokeKey,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["node-registry", "nodes"] });
+      queryClient.invalidateQueries({ queryKey: ["node-registry", "manifest"] });
     },
   });
 };

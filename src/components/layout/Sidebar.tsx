@@ -10,9 +10,8 @@ import {
   FileText,
   FileSearch,
   Network,
-  Server,
+  Share2,
   Settings,
-  // Share2,
 } from 'lucide-react';
 import React, { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
@@ -155,7 +154,7 @@ const Sidebar: React.FC = () => {
 
         <Link href="/node_registry">
           <SidebarItem
-            icon={<Server size={18} />}
+            icon={<Share2 size={18} />}
             label="Node Registry"
             isOpen={isSidebarOpen}
             active={currentTab === 'Node Registry'}
