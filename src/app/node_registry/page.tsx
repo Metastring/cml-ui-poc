@@ -200,7 +200,7 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
               Could not load this node&apos;s datasets.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              The node is not in the registry, or central is unreachable.
+              The node is not in the registry, or the registry is unreachable.
             </p>
           </div>
         )}
@@ -369,15 +369,15 @@ const ThisNodeCard = ({
           }`}
         >
           {isRegistered
-            ? "Registered with central — the backend heartbeats on its own schedule; the button below forces one now."
-            : "Not registered with central yet — this node joins the federation by calling POST /nodes/register."}
+            ? "Registered — the backend heartbeats on its own schedule; the button below forces one now."
+            : "Not registered yet — this node joins the federation by calling POST /nodes/register."}
         </p>
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <NodeField label="Node Name" value={manifest.node_name} />
           <NodeField label="Base URL" value={manifest.base_url} />
           <NodeField
-            label="Central Server"
+            label="Registry Server"
             value={manifest.central_server_url ?? "—"}
           />
           <NodeField
@@ -409,7 +409,7 @@ const ThisNodeCard = ({
               className="h-8 rounded-full px-4 text-xs"
               onClick={() => onDetach(false)}
             >
-              Detach from central
+              Detach from registry
             </Button>
 
             <Button
@@ -496,8 +496,8 @@ export default function NodeRegistryPage() {
       onSuccess: () => {
         toast.success(
           revokeKey
-            ? "Detached from central and API key forgotten"
-            : "Detached from central"
+            ? "Detached from the registry and API key forgotten"
+            : "Detached from the registry"
         );
         setDetachMode(null);
       },
@@ -589,7 +589,7 @@ export default function NodeRegistryPage() {
                     Failed to load registered nodes.
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Check that central is reachable, then try again.
+                    Check that the registry server is reachable, then try again.
                   </p>
                   <Button
                     variant="outline"
@@ -740,11 +740,11 @@ export default function NodeRegistryPage() {
             <DialogTitle>
               {detachMode === "revoke-key"
                 ? "Revoke this node's key and detach?"
-                : "Detach this node from central?"}
+                : "Detach this node from the registry?"}
             </DialogTitle>
             <DialogDescription>
               {detachMode === "revoke-key"
-                ? "This node leaves the federation and its API key is forgotten. Rejoining means registering with central again."
+                ? "This node leaves the federation and its API key is forgotten. Rejoining means registering again."
                 : "This node stops heartbeating and drops out of peer searches. Its API key is kept, so it can come back by heartbeating again."}
             </DialogDescription>
           </DialogHeader>
