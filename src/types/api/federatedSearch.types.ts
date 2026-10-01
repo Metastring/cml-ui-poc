@@ -41,6 +41,10 @@ export interface Field {
   ontology_mapping: string | null;
   ontology_mapping_to_display: string | null;
   data_type: string | null;
+  sample_value?: string | null;
+  value_range?: string | null;
+  ontology_uri?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface Statistic {

@@ -11,11 +11,22 @@ import {
 
 export type Metadata = { key: string; value: string };
 
+export type FieldDetail = {
+  field_name?: string | null;
+  ontology_mapping_to_display?: string | null;
+  data_type?: string | null;
+  sample_value?: string | null;
+  value_range?: string | null;
+  ontology_uri?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
 export type ChildNode = {
   id: string;
   name: string;
   description?: string;
   metadata?: Metadata[];
+  fields?: FieldDetail[];
 };
 
 export type Node = {
@@ -250,7 +261,8 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                               </div>
                             </label>
 
-                            {child.metadata && child.metadata.length > 0 && (
+                            {((child.metadata && child.metadata.length > 0) ||
+                              (child.fields && child.fields.length > 0)) && (
                               <HoverCard openDelay={100} closeDelay={100}>
                                 <HoverCardTrigger asChild>
                                   <button
@@ -261,8 +273,8 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                                     <Info size={16} className="text-muted-foreground" />
                                   </button>
                                 </HoverCardTrigger>
-                                <HoverCardContent className="w-fit p-3 rounded-xl shadow-lg border bg-card">
-                                  {child.metadata.map((m) => (
+                                <HoverCardContent className="w-fit max-w-md max-h-80 overflow-y-auto p-3 rounded-xl shadow-lg border bg-card">
+                                  {child.metadata?.map((m) => (
                                     <div
                                       key={m.key}
                                       className="text-xs text-muted-foreground whitespace-pre-line"
@@ -270,6 +282,74 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                                       <strong>{m.key}</strong>: {m.value}
                                     </div>
                                   ))}
+
+                                  {child.fields && child.fields.length > 0 && (
+                                    <div className="mt-2 pt-2 border-t border-border space-y-2">
+                                      <div className="text-xs font-semibold">
+                                        Columns ({child.fields.length})
+                                      </div>
+                                      {child.fields.map((f, fIdx) => {
+                                        const fieldMeta = (f.metadata ?? {}) as Record<
+                                          string,
+                                          unknown
+                                        >;
+                                        const definition = fieldMeta.definition;
+                                        const unit = fieldMeta.unit;
+                                        return (
+                                          <div
+                                            key={`${f.field_name ?? "field"}-${fIdx}`}
+                                            className="text-xs text-muted-foreground space-y-0.5"
+                                          >
+                                            <div className="font-medium text-foreground break-words">
+                                              {f.ontology_mapping_to_display || f.field_name}
+                                              {f.data_type && (
+                                                <span className="ml-1 font-normal text-muted-foreground">
+                                                  ({f.data_type})
+                                                </span>
+                                              )}
+                                            </div>
+                                            {f.ontology_mapping_to_display && f.field_name && (
+                                              <div className="break-words">
+                                                <strong>Column</strong>: {f.field_name}
+                                              </div>
+                                            )}
+                                            {typeof definition === "string" && definition && (
+                                              <div className="break-words">{definition}</div>
+                                            )}
+                                            {f.sample_value && (
+                                              <div className="break-words">
+                                                <strong>Sample</strong>: {f.sample_value}
+                                              </div>
+                                            )}
+                                            {f.value_range && (
+                                              <div className="break-words">
+                                                <strong>Range</strong>: {f.value_range}
+                                              </div>
+                                            )}
+                                            {typeof unit === "string" && unit && (
+                                              <div className="break-words">
+                                                <strong>Unit</strong>: {unit}
+                                              </div>
+                                            )}
+                                            {f.ontology_uri && (
+                                              <div className="break-all">
+                                                <strong>Uri</strong>:{" "}
+                                                <a
+                                                  href={f.ontology_uri}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="underline hover:text-foreground"
+                                                  onClick={(e) => e.stopPropagation()}
+                                                >
+                                                  {f.ontology_uri}
+                                                </a>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
                                 </HoverCardContent>
                               </HoverCard>
                             )}

@@ -2,7 +2,9 @@
 import React, { useMemo } from "react";
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
 import { useGetFilterData } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
-import FederatedSearchTreeDropdown from "./FederatedSearchTreeDropdown";
+import FederatedSearchTreeDropdown, {
+  FieldDetail,
+} from "./FederatedSearchTreeDropdown";
 import { FederatedSearchBarProps } from "@/types/app/federatedSearch.types";
 
 export type SelectedShape = { parent: string; child: { name: string }[] }[];
@@ -36,15 +38,6 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = () => {
   const nodes = useMemo(() => {
     if (!data) return [];
 
-    type InlineMetadata = { key: string; value: string };
-    type InlineChildNode = {
-      id: string;
-      name: string;
-      description: string;
-      metadata: InlineMetadata[];
-      fields: InlineChildNode[];
-    };
-
     return data.map((category, idx) => ({
       id: `cat-${idx}`,
       name: category.category_name,
@@ -68,7 +61,7 @@ const FederatedSearchBar: React.FC<FederatedSearchBarProps> = () => {
             metadata: originalMetadata.length
               ? originalMetadata
               : [{ key: "Info", value: "No metadata" }],
-            fields: (ds.fields ?? []) as InlineChildNode[],
+            fields: (ds.fields ?? []) as FieldDetail[],
           };
         }) ?? [],
     }));
