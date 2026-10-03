@@ -25,10 +25,31 @@ export interface NodeManifest {
   sparql_endpoint: string | null;
   geoserver_url: string | null;
   central_server_url: string | null;
+  /**
+   * Whether this node currently holds a registry entry. The authoritative
+   * signal — `central_server_url` is static config and stays set either way.
+   */
+  registered: boolean;
+  /** This node's registry id while registered, null once detached or revoked. */
+  member_id: string | null;
   version: string;
   dataset_count: number;
   ontology_count: number;
   generated_at: string;
+}
+
+/**
+ * POST /node/self/register — the self route derives this node's manifest URL
+ * itself and keeps the issued key server-side, so no api_key comes back.
+ */
+export interface RegisterSelfInput {
+  name?: string | null;
+  maintained_by?: string | null;
+}
+
+export interface RegisterSelfResponse {
+  node_id: string;
+  status: NodeStatus;
 }
 
 export interface RevokeNodeResponse {

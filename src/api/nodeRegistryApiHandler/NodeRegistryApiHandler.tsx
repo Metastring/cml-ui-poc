@@ -5,11 +5,12 @@ import {
 } from "./NodeRegistryBaseApiHandler";
 import {
   DetachResponse,
-  HeartbeatInput,
   HeartbeatResponse,
   NodeDatasetsResponse,
   NodeManifest,
   RegisteredNodesResponse,
+  RegisterSelfInput,
+  RegisterSelfResponse,
   RevokeNodeResponse,
 } from "@/types/api/nodeRegistry.types";
 
@@ -65,19 +66,34 @@ export const useRevokeNode = () => {
 };
 
 /**
+ * This node joins — or rejoins, after a revoke — the federation.
+ * The self route derives this node's manifest URL itself and keeps the issued
+ * key server-side, so there is no api_key for the UI to hold on to.
+ */
+export const useRegisterSelf = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<RegisterSelfResponse, Error, RegisterSelfInput>({
+    mutationFn: (input) =>
+      PostNodeRegistryBaseApiHandler(`/node/self/register`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["node-registry", "nodes"] });
+      queryClient.invalidateQueries({ queryKey: ["node-registry", "manifest"] });
+    },
+  });
+};
+
+/**
  * This node checks in with central. The backend heartbeats on its own
  * schedule — this is the manual nudge behind "Send heartbeat now".
+ * The self route needs no API key and fills in the payload server-side,
+ * unlike the key-protected `/nodes/{node_id}/heartbeat` central route.
  */
 export const useSendHeartbeat = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    HeartbeatResponse,
-    Error,
-    { nodeId: string; body: HeartbeatInput }
-  >({
-    mutationFn: ({ nodeId, body }) =>
-      PostNodeRegistryBaseApiHandler(`/nodes/${nodeId}/heartbeat`, body),
+  return useMutation<HeartbeatResponse, Error, void>({
+    mutationFn: () => PostNodeRegistryBaseApiHandler(`/node/self/heartbeat`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["node-registry", "nodes"] });
     },
@@ -93,7 +109,7 @@ export const useDetachSelf = () => {
 
   return useMutation<DetachResponse, Error, boolean>({
     mutationFn: (revokeKey) =>
-      PostNodeRegistryBaseApiHandler(`/nodes/self/detach`, {
+      PostNodeRegistryBaseApiHandler(`/node/self/detach`, {
         revoke_key: revokeKey,
       }),
     onSuccess: () => {

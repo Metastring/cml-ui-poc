@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -36,6 +38,7 @@ import {
   useGetNodeDatasets,
   useGetNodeManifest,
   useGetRegisteredNodes,
+  useRegisterSelf,
   useRevokeNode,
   useSendHeartbeat,
 } from "@/api/nodeRegistryApiHandler/NodeRegistryApiHandler";
@@ -65,6 +68,13 @@ const StatusBadge = ({ status }: { status: NodeStatus | "self" }) => (
     }`}
   >
     {status}
+  </span>
+);
+
+/** Stands in for the status badge when this node holds no registry entry. */
+const UnregisteredBadge = () => (
+  <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+    not registered
   </span>
 );
 
@@ -335,8 +345,9 @@ const NodeField = ({ label, value }: { label: string; value: string }) => (
 /**
  * This node's own side of the federation: who it is, which central it is
  * registered with, and the actions only a node can take on itself.
- * `selfNode` is this node's row in the registry listing — null when it has not
- * registered, in which case there is nothing to heartbeat or detach.
+ * Registration comes from `manifest.registered`, not from the listing — a
+ * detached or revoked node keeps its row there, so being listed is not the
+ * same as being a member.
  */
 const ThisNodeCard = ({
   manifest,
@@ -344,84 +355,102 @@ const ThisNodeCard = ({
   onHeartbeat,
   isHeartbeating,
   onDetach,
+  onRegister,
 }: {
   manifest: NodeManifest;
   selfNode: RegisteredNode | null;
   onHeartbeat: () => void;
   isHeartbeating: boolean;
   onDetach: (revokeKey: boolean) => void;
+  onRegister: () => void;
 }) => {
-  const isRegistered = Boolean(selfNode || manifest.central_server_url);
+  const isRegistered = manifest.registered;
+  const selfStatus = selfNode?.status ?? null;
 
   return (
     <Card className="mt-6 border-border/60 shadow-sm">
       <CardContent className="px-5">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold text-foreground">This Node</h2>
-          {selfNode && <StatusBadge status={selfNode.status} />}
+          {isRegistered && selfStatus ? (
+            <StatusBadge status={selfStatus} />
+          ) : (
+            <UnregisteredBadge />
+          )}
         </div>
 
         <p
-          className={`mt-1 text-sm ${
+          className={`mt-1 max-w-3xl text-sm ${
             isRegistered
               ? "text-emerald-700 dark:text-emerald-400"
               : "text-muted-foreground"
           }`}
         >
-          {isRegistered
+          {selfStatus === "revoked" && !isRegistered
+            ? "This node's key has been revoked. It no longer works, so heartbeat and detach are unavailable — registering again is the only way back in."
+            : isRegistered
             ? "Registered — the backend heartbeats on its own schedule; the button below forces one now."
-            : "Not registered yet — this node joins the federation by calling POST /nodes/register."}
+            : "Not registered yet. Registering hands the registry this node's manifest and rejoins the federation."}
         </p>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <NodeField label="Node Name" value={manifest.node_name} />
           <NodeField label="Base URL" value={manifest.base_url} />
-          <NodeField
-            label="Registry Server"
-            value={manifest.central_server_url ?? "—"}
-          />
           <NodeField
             label="Last Heartbeat"
             value={relativeTime(selfNode?.last_heartbeat_at ?? null)}
           />
         </div>
 
-        {isRegistered && (
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-full px-4 text-xs"
-              onClick={onHeartbeat}
-              disabled={!selfNode || isHeartbeating}
-              title={
-                selfNode
-                  ? undefined
-                  : "This node has no registry entry to heartbeat against."
-              }
-            >
-              {isHeartbeating ? "Sending…" : "Send heartbeat now"}
-            </Button>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {isRegistered ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full px-4 text-xs"
+                onClick={onHeartbeat}
+                disabled={!selfNode || isHeartbeating}
+                title={
+                  selfNode
+                    ? undefined
+                    : "This node has no registry entry to heartbeat against."
+                }
+              >
+                {isHeartbeating ? "Sending…" : "Send heartbeat now"}
+              </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-full px-4 text-xs"
-              onClick={() => onDetach(false)}
-            >
-              Detach from registry
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full px-4 text-xs"
+                onClick={() => onDetach(false)}
+              >
+                Detach from registry
+              </Button>
 
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full border-destructive/40 bg-destructive/5 px-4 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => onDetach(true)}
+              >
+                Revoke &amp; forget key
+              </Button>
+            </>
+          ) : (
             <Button
               variant="outline"
               size="sm"
-              className="h-8 rounded-full border-destructive/40 bg-destructive/5 px-4 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDetach(true)}
+              className="h-8 rounded-full border-primary/40 px-4 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+              onClick={onRegister}
             >
-              Revoke &amp; forget key
+              {selfStatus === "revoked"
+                ? "Register again"
+                : "Register with the registry"}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -433,6 +462,7 @@ export default function NodeRegistryPage() {
   const revokeNode = useRevokeNode();
   const sendHeartbeat = useSendHeartbeat();
   const detachSelf = useDetachSelf();
+  const registerSelf = useRegisterSelf();
 
   const [nodeToRevoke, setNodeToRevoke] = useState<RegisteredNode | null>(null);
   const [nodeToView, setNodeToView] = useState<ViewedNode | null>(null);
@@ -440,6 +470,9 @@ export default function NodeRegistryPage() {
   const [detachMode, setDetachMode] = useState<"detach" | "revoke-key" | null>(
     null
   );
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [registerName, setRegisterName] = useState("");
+  const [registerMaintainer, setRegisterMaintainer] = useState("");
 
   const nodes: RegisteredNode[] = useMemo(() => data?.nodes ?? [], [data]);
 
@@ -473,17 +506,31 @@ export default function NodeRegistryPage() {
   const handleHeartbeat = () => {
     if (!selfNode) return;
 
-    sendHeartbeat.mutate(
+    sendHeartbeat.mutate(undefined, {
+      onSuccess: () => toast.success("Heartbeat sent"),
+      onError: () => toast.error("Could not send heartbeat. Please try again."),
+    });
+  };
+
+  const openRegisterDialog = () => {
+    setRegisterName(manifest?.node_name ?? "");
+    setRegisterMaintainer("");
+    setIsRegisterOpen(true);
+  };
+
+  const handleRegister = () => {
+    registerSelf.mutate(
       {
-        nodeId: selfNode.node_id,
-        body: {
-          dataset_count: manifest?.dataset_count ?? null,
-          version: manifest?.version ?? null,
-        },
+        name: registerName.trim(),
+        maintained_by: registerMaintainer.trim() || null,
       },
       {
-        onSuccess: () => toast.success("Heartbeat sent"),
-        onError: () => toast.error("Could not send heartbeat. Please try again."),
+        onSuccess: () => {
+          toast.success("Registered with the registry");
+          setIsRegisterOpen(false);
+        },
+        onError: () =>
+          toast.error("Could not register this node. Please try again."),
       }
     );
   };
@@ -551,6 +598,7 @@ export default function NodeRegistryPage() {
             onDetach={(revokeKey) =>
               setDetachMode(revokeKey ? "revoke-key" : "detach")
             }
+            onRegister={openRegisterDialog}
           />
         )}
 
@@ -727,6 +775,89 @@ export default function NodeRegistryPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Register / re-register this node */}
+      <Dialog
+        open={isRegisterOpen}
+        onOpenChange={(open) => {
+          if (!open && !registerSelf.isPending) setIsRegisterOpen(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Register this node with the registry</DialogTitle>
+            <DialogDescription>
+              The registry fetches the manifest URL itself before trusting
+              anything this node claims, so that URL has to be reachable from
+              the registry.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="node-name" className="text-sm">
+                Node name
+              </Label>
+              <Input
+                id="node-name"
+                value={registerName}
+                onChange={(event) => setRegisterName(event.target.value)}
+                placeholder="client-node-01"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="manifest-url" className="text-sm">
+                Manifest URL
+              </Label>
+              <Input
+                id="manifest-url"
+                value={
+                  manifest?.base_url ? `${manifest.base_url}/node/manifest` : ""
+                }
+                readOnly
+                placeholder="http://node.example.org:8100/node/manifest"
+                className="font-mono text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maintained-by" className="text-sm">
+                Maintained by (optional)
+              </Label>
+              <Input
+                id="maintained-by"
+                value={registerMaintainer}
+                onChange={(event) => setRegisterMaintainer(event.target.value)}
+                placeholder="ops@example.org"
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Registering with{" "}
+              <span className="font-mono">
+                {manifest?.central_server_url ?? "—"}
+              </span>
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRegisterOpen(false)}
+              disabled={registerSelf.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRegister}
+              disabled={registerSelf.isPending || !registerName.trim()}
+            >
+              {registerSelf.isPending ? "Registering…" : "Register node"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Detach confirmation */}
       <Dialog
