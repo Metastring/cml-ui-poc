@@ -178,3 +178,45 @@ export interface FederatedSearchDataItem {
   scientific_name?: string;
   common_name?: string;
 }
+export interface DbTableColumn {
+  name: string;
+  type: string;
+}
+
+export interface DbTableInfo {
+  dataset_id: number;
+  dataset_title: string;
+  category: string | null;
+  description: string | null;
+  license: string | null;
+  version: string | null;
+  source_system: string | null;
+  publication_date: string | null;
+  node_name: string | null;
+  maintained_by: string | null;
+  database: string;
+  schema: string;
+  table: string;
+  row_count: number;
+  columns: DbTableColumn[];
+}
+
+export interface DbTablesResponse {
+  database: string;
+  available: boolean;
+  count: number;
+  datasets: DbTableInfo[];
+}
+
+export interface DbTableRowsResponse {
+  database: string;
+  dataset_id: number;
+  dataset_title: string;
+  category: string | null;
+  table: string;
+  columns: DbTableColumn[];
+  total_rows: number;
+  limit: number;
+  offset: number;
+  rows: Record<string, string | number | boolean | null>[];
+}

@@ -13,6 +13,8 @@ import {
   MapDataItem,
   PreFederatedSearchData,
   PreFederatedSearchPayload,
+  DbTablesResponse,
+  DbTableRowsResponse,
 } from "@/types/api/federatedSearch.types";
 
 
@@ -203,6 +205,39 @@ export const useGetDatasetDetails = (
       return res.json();
     },
     enabled: Boolean(categoryName && datasetTitle),
+  });
+};
+
+export const useGetDatasetTables = (datasetName: string) => {
+  return useQuery<DbTablesResponse>({
+    queryKey: ["db-tables", datasetName],
+    queryFn: () => {
+      const params = new URLSearchParams({ dataset_name: datasetName });
+      return GetFederatedSearchBaseApiHandler(`/db/tables?${params.toString()}`);
+    },
+    enabled: Boolean(datasetName),
+  });
+};
+
+export const useGetDatasetTableRows = (
+  table: string,
+  limit: number,
+  offset: number,
+  enabled = true
+) => {
+  return useQuery<DbTableRowsResponse>({
+    queryKey: ["db-table-rows", table, limit, offset],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      });
+      return GetFederatedSearchBaseApiHandler(
+        `/db/tables/${encodeURIComponent(table)}?${params.toString()}`
+      );
+    },
+    enabled: Boolean(table) && enabled,
+    placeholderData: (previous) => previous,
   });
 };
 

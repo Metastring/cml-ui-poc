@@ -1,8 +1,14 @@
 "use client";
 
-import { useGetDatasetDetails } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import { useState } from "react";
+import {
+  useGetDatasetDetails,
+  useGetDatasetTableRows,
+  useGetDatasetTables,
+} from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { DatasetDetailViewProps } from "@/types/app/datasets.types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,7 +16,15 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, FileText, Users, Building2, BarChart3, ListFilter } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  Users,
+  Building2,
+  BarChart3,
+  ListFilter,
+  Database,
+} from "lucide-react";
 
 const renderVal = (value: string | number | boolean | null | undefined) => {
   if (value === null || value === undefined) return <span className="text-muted-foreground">—</span>;
@@ -28,6 +42,150 @@ const TableRowMeta = ({ label, value }: { label: string; value: string | number 
     </TableCell>
   </TableRow>
 );
+
+const PAGE_SIZE = 100;
+
+const NUMERIC_TYPES = ["int", "numeric", "double", "real", "decimal", "float"];
+
+const isNumericType = (type: string) =>
+  NUMERIC_TYPES.some((t) => type.toLowerCase().includes(t));
+
+const DatasetDataSection = ({ datasetTitle }: { datasetTitle: string }) => {
+  const [offset, setOffset] = useState(0);
+
+  const {
+    data: tables,
+    isLoading: isTablesLoading,
+    error: tablesError,
+  } = useGetDatasetTables(datasetTitle);
+
+  const tableName = tables?.datasets?.[0]?.table ?? "";
+  const {
+    data: rowsData,
+    isFetching: isRowsFetching,
+    error: rowsError,
+  } = useGetDatasetTableRows(tableName, PAGE_SIZE, offset);
+
+  const columns = rowsData?.columns ?? [];
+  const rows = rowsData?.rows ?? [];
+  const totalRows = rowsData?.total_rows ?? 0;
+
+  const from = offset + 1;
+  const to = Math.min(offset + rows.length, totalRows);
+  const page = Math.floor(offset / PAGE_SIZE) + 1;
+  const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+
+  const goToPage = (nextOffset: number) => {
+    setOffset(nextOffset);
+  };
+
+  const renderBody = () => {
+    if (isTablesLoading || (tableName && !rowsData)) {
+      return (
+        <div className="flex items-center py-6">
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">
+            Loading data…
+          </span>
+        </div>
+      );
+    }
+
+    if (tablesError || rowsError) {
+      return (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Failed to load data. Please try again.
+        </div>
+      );
+    }
+
+    if (!tableName || tables?.available === false) {
+      return <p className="text-muted-foreground text-sm">No data available.</p>;
+    }
+
+    if (!rows.length) {
+      return <p className="text-muted-foreground text-sm">No records found.</p>;
+    }
+
+    return (
+      <div className="relative max-h-[520px] overflow-auto rounded-lg border border-border">
+        <table className="w-full border-separate border-spacing-0 text-sm">
+          <thead>
+            <tr>
+              {columns.map((c) => (
+                <th
+                  key={c.name}
+                  title={c.type}
+                  className={`sticky top-0 z-10 whitespace-nowrap border-b border-border bg-muted px-3 py-2.5 font-medium text-foreground ${
+                    isNumericType(c.type) ? "text-right" : "text-left"
+                  }`}
+                >
+                  {c.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i} className="transition-colors hover:bg-muted/50">
+                {columns.map((c) => (
+                  <td
+                    key={c.name}
+                    className={`whitespace-nowrap border-b border-border px-3 py-2.5 ${
+                      isNumericType(c.type)
+                        ? "text-right tabular-nums"
+                        : "text-left"
+                    }`}
+                  >
+                    {renderVal(row[c.name])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  return (
+    <section>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Database className="size-4 text-primary" />
+          Data
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {totalRows
+              ? `${from}–${to} of ${totalRows} · page ${page}/${totalPages}`
+              : "—"}
+            {isRowsFetching && " · updating…"}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8"
+            disabled={offset === 0 || isRowsFetching}
+            onClick={() => goToPage(Math.max(0, offset - PAGE_SIZE))}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8"
+            disabled={to >= totalRows || isRowsFetching}
+            onClick={() => goToPage(offset + PAGE_SIZE)}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+      {renderBody()}
+    </section>
+  );
+};
 
 const DatasetDetailView = ({
   categoryName,
@@ -120,6 +278,9 @@ const DatasetDetailView = ({
           </ul>
         </section>
       ) : null}
+
+      {/* Data — rows from /db/tables */}
+      <DatasetDataSection datasetTitle={datasetTitle} />
 
       {/* Contacts */}
       <section>
