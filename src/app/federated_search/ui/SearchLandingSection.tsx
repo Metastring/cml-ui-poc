@@ -4,6 +4,7 @@ import React from "react";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BiodiversitySearchBackdrop } from "@/app/federated_search/ui/BiodiversitySearchBackdrop";
+import { SmartSearchSwitch } from "@/components/smart_search/SmartSearchSwitch";
 import { SLIDE_TRANSITION } from "@/app/federated_search/utils/constants";
 import { cn } from "@/lib/utils";
 import { Option } from "@/types/app/federatedSearch.types";
@@ -37,6 +38,10 @@ export function SearchLandingSection({
       )}
     >
       <BiodiversitySearchBackdrop />
+
+      <div className="absolute right-4 top-4 z-[2] sm:right-6 sm:top-6">
+        <SmartSearchSwitch />
+      </div>
 
       <div
         className={cn(

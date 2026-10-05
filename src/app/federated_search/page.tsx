@@ -11,9 +11,12 @@ import { SearchFormPanel } from "@/app/federated_search/ui/SearchFormPanel";
 import { ResultsPanel } from "@/app/federated_search/ui/ResultsPanel";
 import { DetailPanel } from "@/app/federated_search/ui/DetailPanel";
 import { cn } from "@/lib/utils";
+import { SmartSearchPanel } from "@/components/smart_search/SmartSearchPanel";
+import { useSmartSearchStore } from "@/store/smart_search_store/useSmartSearchStore";
 
 const FederatedSearchContent = () => {
   const overviewStats = useOverviewStats();
+  const isSmartSearch = useSmartSearchStore((state) => state.isSmartSearch);
   const [mapModeDatasetKey, setMapModeDatasetKey] = React.useState<string | null>(null);
 
   const {
@@ -88,6 +91,10 @@ const FederatedSearchContent = () => {
     },
     [categories, query, preData, mutate, setSelectedDataset]
   );
+
+  if (isSmartSearch) {
+    return <SmartSearchPanel />;
+  }
 
   return (
     <div className="h-screen flex">
