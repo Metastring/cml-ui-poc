@@ -3,7 +3,6 @@
 import React from "react";
 import {
   AlertCircle,
-  ChevronDown,
   Database,
   Loader2,
   Sparkles,
@@ -62,7 +61,6 @@ const EXPECTED_SECONDS = 55;
 export function SmartSearchPanel() {
   const [question, setQuestion] = React.useState("");
   const [elapsed, setElapsed] = React.useState(0);
-  const [showSql, setShowSql] = React.useState(false);
   const { data, error, mutate, isMutating, isError } = useMutateSmartSearch();
 
   // These questions take 30-60s, so show the user that time is passing.
@@ -76,7 +74,6 @@ export function SmartSearchPanel() {
   const submit = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed || isMutating) return;
-    setShowSql(false);
     mutate({ question: trimmed });
   };
 
@@ -318,30 +315,6 @@ export function SmartSearchPanel() {
                       </TableBody>
                     </Table>
                   </div>
-                </div>
-              )}
-
-              {data.sql && (
-                <div className="rounded-xl border border-primary/10 bg-card/60 backdrop-blur-sm">
-                  <button
-                    type="button"
-                    onClick={() => setShowSql((prev) => !prev)}
-                    className="flex w-full items-center justify-between px-4 py-2.5 text-left text-xs font-medium text-muted-foreground hover:text-foreground"
-                  >
-                    <span>View SQL</span>
-                    <ChevronDown
-                      className={cn(
-                        "size-4 transition-transform",
-                        showSql && "rotate-180"
-                      )}
-                      aria-hidden
-                    />
-                  </button>
-                  {showSql && (
-                    <pre className="overflow-auto border-t border-primary/10 px-4 py-3 text-xs leading-relaxed text-foreground">
-                      {data.sql}
-                    </pre>
-                  )}
                 </div>
               )}
             </div>
