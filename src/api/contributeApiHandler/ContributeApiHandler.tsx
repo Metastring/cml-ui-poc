@@ -83,6 +83,19 @@ const readDraft = (raw: unknown): DraftResponse => {
 
 const readReachability = (raw: unknown): ReachabilityResult => {
   const body = flatten(raw);
+
+  // The registration backend returns the updated dataset_source_config row:
+  // reachability_status is exactly "reachable" | "unreachable" | "unverified"
+  // (the loose regex below would read "unverified" as a success), and
+  // reachability_detail already includes the column count when one was found.
+  const reachabilityStatus = pickText(body, ["reachability_status"]);
+  if (reachabilityStatus) {
+    return {
+      reachable: reachabilityStatus === "reachable",
+      message: pickText(body, ["reachability_detail"]) ?? reachabilityStatus,
+    };
+  }
+
   const columns = body.columns ?? body.header ?? body.column_names;
   const columnCount =
     typeof body.columns_detected === "number"
