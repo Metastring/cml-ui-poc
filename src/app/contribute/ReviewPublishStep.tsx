@@ -44,7 +44,7 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
       </div>
 
       <h2 className="mb-2 text-[20px] font-bold text-foreground">
-        Node registered successfully
+        Dataset published successfully
       </h2>
       <p className="mx-auto mb-[22px] max-w-[480px] text-[13px] leading-[1.55] text-muted-foreground">
         &quot;{summary.title}&quot; is now in the CML catalog and searchable
