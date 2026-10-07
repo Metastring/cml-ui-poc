@@ -11,18 +11,35 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { BiodiversitySearchBackdrop } from "@/app/federated_search/ui/BiodiversitySearchBackdrop";
 import { SmartSearchSwitch } from "@/components/smart_search/SmartSearchSwitch";
+import { SmartSearchResultTable } from "@/components/smart_search/SmartSearchResultTable";
+import { DeepSearchResult } from "@/components/smart_search/DeepSearchResult";
 import { useMutateSmartSearch } from "@/api/smartSearchApiHandler/SmartSearchApiHandler";
+import { useAskStream } from "@/api/smartSearchApiHandler/AskApiHandler";
 import { cn } from "@/lib/utils";
+
+type SearchMode = "quick" | "deep";
+
+const SEARCH_MODES: { value: SearchMode; label: string; hint: string }[] = [
+  {
+    value: "quick",
+    label: "Quick",
+    hint: "One dataset, ~1 min",
+  },
+  {
+    value: "deep",
+    label: "Deep",
+    hint: "Across datasets and nodes, 1-3 min",
+  },
+];
+
+const DEEP_EXAMPLE_QUESTIONS = [
+  "which 3 cities had the worst air quality?",
+  "in which district is child stunting highest?",
+  "show me the weather records for Pune",
+  "where has Terminalia chebula been observed?",
+];
 
 const EXAMPLE_QUESTIONS = [
   "districts with total rainfall more than 3000 mm in 2025",
@@ -61,20 +78,24 @@ const EXPECTED_SECONDS = 55;
 export function SmartSearchPanel() {
   const [question, setQuestion] = React.useState("");
   const [elapsed, setElapsed] = React.useState(0);
+  const [mode, setMode] = React.useState<SearchMode>("quick");
   const { data, error, mutate, isMutating, isError } = useMutateSmartSearch();
+  const deep = useAskStream();
+  const isBusy = isMutating || deep.isRunning;
 
-  // These questions take 30-60s, so show the user that time is passing.
+  // These questions take 30s-3min, so show the user that time is passing.
   React.useEffect(() => {
-    if (!isMutating) return;
+    if (!isBusy) return;
     setElapsed(0);
     const timer = setInterval(() => setElapsed((prev) => prev + 1), 1000);
     return () => clearInterval(timer);
-  }, [isMutating]);
+  }, [isBusy]);
 
   const submit = (value: string) => {
     const trimmed = value.trim();
-    if (!trimmed || isMutating) return;
-    mutate({ question: trimmed });
+    if (!trimmed || isBusy) return;
+    if (mode === "deep") deep.ask(trimmed);
+    else mutate({ question: trimmed });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,7 +113,13 @@ export function SmartSearchPanel() {
 
   const hasRows = (data?.rows?.length ?? 0) > 0;
   const noRows = Boolean(data) && !hasRows;
-  const isIdle = !data && !isMutating && !isError;
+  const isQuick = mode === "quick";
+  const hasDeepResult =
+    deep.isRunning || deep.steps.length > 0 || Boolean(deep.error);
+  const isIdle = isQuick
+    ? !data && !isMutating && !isError
+    : !hasDeepResult;
+  const examples = isQuick ? EXAMPLE_QUESTIONS : DEEP_EXAMPLE_QUESTIONS;
 
   return (
     <section className="relative flex h-screen flex-col overflow-hidden federated-search-landing-bg">
@@ -123,7 +150,7 @@ export function SmartSearchPanel() {
               Ask a full question in plain language, the way you would say it
               out loud. Name the place and the period you care about, and add a
               threshold or range if you have one — the dataset is picked for
-              you.
+              you. Use Deep when the answer may need more than one dataset.
             </p>
           </div>
 
@@ -139,7 +166,7 @@ export function SmartSearchPanel() {
                     maxLength={MAX_QUESTION_LENGTH}
                     placeholder="e.g. districts in Kerala with average daily rainfall more than 8 mm"
                     className="py-5 pr-16"
-                    disabled={isMutating}
+                    disabled={isBusy}
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 text-[10px] text-muted-foreground">
                     <CornerDownLeft className="h-3 w-3" aria-hidden />
@@ -149,9 +176,9 @@ export function SmartSearchPanel() {
                 <Button
                   type="submit"
                   className="py-5 sm:w-28"
-                  disabled={isMutating || question.trim().length === 0}
+                  disabled={isBusy || question.trim().length === 0}
                 >
-                  {isMutating ? (
+                  {isBusy ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
                     "Ask"
@@ -159,12 +186,40 @@ export function SmartSearchPanel() {
                 </Button>
               </div>
 
+              <div
+                role="radiogroup"
+                aria-label="Search mode"
+                className="flex flex-wrap items-center gap-2"
+              >
+                {SEARCH_MODES.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={mode === option.value}
+                    disabled={isBusy}
+                    onClick={() => setMode(option.value)}
+                    className={cn(
+                      "rounded-lg border px-3 py-1.5 text-left text-xs transition-colors disabled:opacity-50",
+                      mode === option.value
+                        ? "border-primary/40 bg-primary/10 text-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className="font-medium">{option.label}</span>
+                    <span className="ml-1.5 text-muted-foreground">
+                      {option.hint}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
               <div className="flex flex-wrap gap-2">
-                {EXAMPLE_QUESTIONS.map((example) => (
+                {examples.map((example) => (
                   <button
                     key={example}
                     type="button"
-                    disabled={isMutating}
+                    disabled={isBusy}
                     onClick={() => {
                       setQuestion(example);
                       submit(example);
@@ -178,8 +233,22 @@ export function SmartSearchPanel() {
             </form>
           </div>
 
+          {/* Deep mode: live agent steps, answer and per-dataset tables */}
+          {!isQuick && hasDeepResult && (
+            <DeepSearchResult
+              steps={deep.steps}
+              observations={deep.observations}
+              status={deep.status}
+              answer={deep.answer}
+              error={deep.error}
+              isRunning={deep.isRunning}
+              elapsed={elapsed}
+              onCancel={deep.cancel}
+            />
+          )}
+
           {/* Working */}
-          {isMutating && (
+          {isQuick && isMutating && (
             <div
               className="rounded-2xl border border-primary/20 bg-primary/[0.03] px-5 py-10"
               role="status"
@@ -219,7 +288,7 @@ export function SmartSearchPanel() {
           )}
 
           {/* Error */}
-          {!isMutating && isError && (
+          {isQuick && !isMutating && isError && (
             <div
               className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
               role="alert"
@@ -232,7 +301,7 @@ export function SmartSearchPanel() {
           )}
 
           {/* Result */}
-          {!isMutating && !isError && data && (
+          {isQuick && !isMutating && !isError && data && (
             <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
               {data.interpretation && (
                 <p className="text-sm text-foreground">
@@ -293,28 +362,10 @@ export function SmartSearchPanel() {
                     )}
                   </div>
 
-                  <div className="overflow-auto rounded-xl border border-primary/10 bg-card/60 backdrop-blur-sm">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          {data.columns.map((column) => (
-                            <TableHead key={column}>{column}</TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {data.rows.map((row, rowIndex) => (
-                          <TableRow key={rowIndex}>
-                            {row.map((cell, cellIndex) => (
-                              <TableCell key={cellIndex}>
-                                {cell === null ? "—" : String(cell)}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <SmartSearchResultTable
+                    columns={data.columns}
+                    rows={data.rows}
+                  />
                 </div>
               )}
             </div>
