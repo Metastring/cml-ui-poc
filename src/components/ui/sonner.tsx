@@ -17,6 +17,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-border": "var(--border)",
         } as React.CSSProperties
       }
+      // sonner hard-codes 13px; follow the Settings > Text size scale instead
+      toastOptions={{ style: { fontSize: "var(--text-compact)" } }}
       {...props}
     />
   )

@@ -22,6 +22,7 @@ import {
   SelectField,
   controlClassName,
 } from "./RegistrationUI";
+import { Typography } from "@/components/ui/typography";
 
 /** The per-field details the mappings payload carries beside the term itself. */
 const DETAIL_FIELDS: {
@@ -112,7 +113,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
       <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
         <label
           htmlFor="ontology-graph-key"
-          className="text-[11px] font-bold uppercase tracking-[0.03em] text-muted-foreground"
+          className="text-caption font-bold uppercase tracking-[0.03em] text-muted-foreground"
         >
           Ontology
         </label>
@@ -120,7 +121,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
           id="ontology-graph-key"
           value={ontologyGraphKey}
           onChange={(e) => onChangeOntology(e.target.value)}
-          className="w-auto py-[7px] text-[12.5px]"
+          className="w-auto py-[7px] text-compact"
         >
           {!ontologies.some(
             (ontology) => ontology.graph_key === ontologyGraphKey
@@ -131,9 +132,9 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
             </option>
           ))}
         </SelectField>
-        <span className="text-[11.5px] text-muted-foreground">
+        <Typography variant="caption" tone="muted" className="text-caption">
           Switching ontologies clears the terms already picked.
-        </span>
+        </Typography>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2.5">
@@ -159,7 +160,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                 <th
                   key={index}
                   style={{ width: column.width }}
-                  className="border-b border-border px-2.5 pb-2 text-left text-[11px] font-bold uppercase tracking-[0.03em] text-muted-foreground"
+                  className="border-b border-border px-2.5 pb-2 text-left text-caption font-bold uppercase tracking-[0.03em] text-muted-foreground"
                 >
                   {column.label || " "}
                 </th>
@@ -171,7 +172,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
               <tr>
                 <td
                   colSpan={5}
-                  className="px-2.5 py-6 text-[12.5px] text-muted-foreground"
+                  className="px-2.5 py-6 text-compact text-muted-foreground"
                 >
                   Reading the header from your source node…
                 </td>
@@ -182,7 +183,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
               <tr>
                 <td
                   colSpan={5}
-                  className="px-2.5 py-6 text-[12.5px] text-muted-foreground"
+                  className="px-2.5 py-6 text-compact text-muted-foreground"
                 >
                   {previewError} You can still map this dataset by adding its
                   fields below.
@@ -217,13 +218,13 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                             }
                             className={cn(
                               controlClassName,
-                              "py-[7px] text-[12.5px] font-bold"
+                              "py-[7px] text-compact font-bold"
                             )}
                           />
                         ) : (
-                          <span className="text-[12.5px] font-bold text-foreground">
+                          <Typography variant="caption" tone="default" weight="bold" className="text-compact">
                             {field.field_name}
-                          </span>
+                          </Typography>
                         )}
                       </td>
 
@@ -239,13 +240,13 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                             }
                             className={cn(
                               controlClassName,
-                              "py-[7px] font-mono text-[11.5px]"
+                              "py-[7px] font-mono text-caption"
                             )}
                           />
                         ) : (
-                          <span className="font-mono text-[11.5px] text-muted-foreground">
+                          <Typography variant="caption" tone="muted" className="font-mono text-caption">
                             {field.sample_value || "—"}
-                          </span>
+                          </Typography>
                         )}
                       </td>
 
@@ -264,7 +265,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                               })
                             }
                             className={cn(
-                              "w-full appearance-none rounded-md border py-[7px] pl-2.5 pr-[62px] text-[12.5px] outline-none transition-colors",
+                              "w-full appearance-none rounded-md border py-[7px] pl-2.5 pr-[62px] text-compact outline-none transition-colors",
                               mapped
                                 ? "border-input bg-card text-foreground"
                                 : "border-[#fde68a] bg-[#fffbeb] text-muted-foreground dark:border-amber-900 dark:bg-amber-950/30"
@@ -290,9 +291,9 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                             {field.auto && mapped ? (
                               <Badge tone="info">auto</Badge>
                             ) : (
-                              <span className="text-muted-foreground">
+                              <Typography variant="inherit" as="span" tone="muted">
                                 <ChevronDownIcon />
-                              </span>
+                              </Typography>
                             )}
                           </span>
                         </div>
@@ -322,7 +323,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                                 onClick={() => onRemoveField(field.id)}
                                 aria-label="Remove this field"
                                 title="Remove this field"
-                                className="ml-auto flex items-center gap-1 text-[11.5px] text-muted-foreground hover:text-foreground"
+                                className="ml-auto flex items-center gap-1 text-caption text-muted-foreground hover:text-foreground"
                               >
                                 <XIcon size={13} />
                                 Remove
@@ -332,9 +333,9 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                             <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                               {DETAIL_FIELDS.map((detail) => (
                                 <label key={detail.label} className="block">
-                                  <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.03em] text-muted-foreground">
+                                  <Typography variant="caption" tone="muted" weight="bold" className="mb-1 block uppercase tracking-[0.03em]">
                                     {detail.label}
-                                  </span>
+                                  </Typography>
                                   <input
                                     value={detail.read(field)}
                                     placeholder={detail.placeholder}
@@ -346,8 +347,8 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
                                     }
                                     className={cn(
                                       controlClassName,
-                                      "py-[7px] text-[12.5px]",
-                                      detail.mono && "font-mono text-[11.5px]"
+                                      "py-[7px] text-compact",
+                                      detail.mono && "font-mono text-caption"
                                     )}
                                   />
                                 </label>
@@ -365,7 +366,7 @@ const OntologyMappingStep: React.FC<OntologyMappingStepProps> = ({
       </div>
 
       <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-        <Btn onClick={onAddField} className="px-3 py-[7px] text-[12px]">
+        <Btn onClick={onAddField} className="px-3 py-[7px] text-small">
           + Add new field
         </Btn>
       </div>

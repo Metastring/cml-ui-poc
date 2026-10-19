@@ -4,6 +4,7 @@ import React, { ReactNode } from "react";
 import { Search } from "lucide-react";
 import SearchInput from "./SearchInput";
 import type { MetadataSearchWhere } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
+import { Typography } from "@/components/ui/typography";
 
 interface DatasetSearchViewProps {
   searchQuery: string;
@@ -37,20 +38,20 @@ const DatasetSearchView: React.FC<DatasetSearchViewProps> = ({
             <Search className="size-4 text-primary" aria-hidden />
             <span>Metadata search</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight sm:text-4xl">
+          <Typography variant="h1" tone="default">
             Search datasets by metadata
-          </h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground text-base">
+          </Typography>
+          <Typography variant="lead" tone="muted" className="mt-2 max-w-2xl">
             Find datasets by their descriptive metadata – titles, categories,
             and textual descriptions from the catalog. Enter a term to discover
             where relevant data lives.
-          </p>
+          </Typography>
           <div className="mt-6 flex flex-col gap-4">
             <fieldset className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
               <legend className="sr-only">Where to search</legend>
-              <span className="text-sm font-medium text-foreground">
+              <Typography variant="body" as="span" tone="default" weight="medium">
                 Search in
-              </span>
+              </Typography>
               <div
                 className="flex gap-4"
                 role="radiogroup"

@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { TREE_INDENT, inputClass, paneHeaderClass } from "../constants";
 import type { ClassSearchHit, TreeRow } from "../types";
+import { Typography, typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 interface Props {
   rows: TreeRow[];
@@ -103,15 +105,15 @@ export default function ClassTree({
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto py-3 pl-3 pr-2">
-        {loading && <p className="px-2 py-2 text-sm text-[#9AA093]">Loading…</p>}
+        {loading && <Typography variant="body" className="px-2 py-2 text-[#9AA093]">Loading…</Typography>}
 
         {hint && !loading && (
-          <p className="px-2 py-2 text-xs leading-[1.6] text-[#8A8E84]">{hint}</p>
+          <Typography variant="small" className="px-2 py-2 leading-[1.6] text-[#8A8E84]">{hint}</Typography>
         )}
 
         {hits !== null ? (
           hits.length === 0 ? (
-            <p className="px-2 py-2 text-sm text-[#9AA093]">No classes match “{search.query}”.</p>
+            <Typography variant="body" className="px-2 py-2 text-[#9AA093]">No classes match “{search.query}”.</Typography>
           ) : (
             hits.map((h) => (
               <div
@@ -124,9 +126,9 @@ export default function ClassTree({
                   h.name === selectedClass ? "bg-[#E7EFE6] font-medium" : "hover:bg-[#F5F6F2]"
                 }`}
               >
-                <span className="block truncate">{h.name}</span>
+                <Typography variant="inherit" as="span" truncate className="block">{h.name}</Typography>
                 {h.label !== h.name && (
-                  <span className="block truncate text-xs text-[#8A8E84]">{h.label}</span>
+                  <Typography variant="small" as="span" truncate className="block text-[#8A8E84]">{h.label}</Typography>
                 )}
               </div>
             ))
@@ -140,7 +142,7 @@ export default function ClassTree({
                 <button
                   type="button"
                   onClick={() => setAddingUnder(null)}
-                  className="mb-1 block w-full rounded px-3 py-1 text-left text-sm text-[#7E8278] hover:text-[#4A7C59]"
+                  className={cn(typographyVariants({ variant: "body" }), "mb-1 block w-full rounded px-3 py-1 text-left text-[#7E8278] hover:text-[#4A7C59]")}
                 >
                   + Add top-level class
                 </button>
@@ -159,7 +161,7 @@ export default function ClassTree({
                   <button
                     type="button"
                     onClick={() => setAddingUnder(row.parent)}
-                    className="block py-1.5 text-left text-sm text-[#7E8278] hover:text-[#4A7C59]"
+                    className={cn(typographyVariants({ variant: "body" }), "block py-1.5 text-left text-[#7E8278] hover:text-[#4A7C59]")}
                     style={{ paddingLeft: indentFor(row.depth) + 22 }}
                   >
                     + Add subclass
@@ -203,7 +205,7 @@ export default function ClassTree({
                   className="h-[6px] w-[6px] shrink-0 rounded-full"
                   style={{ backgroundColor: active ? "#3F6B4C" : "#B9BDB2" }}
                 />
-                <span className="truncate">{node.name}</span>
+                <Typography variant="inherit" as="span" truncate>{node.name}</Typography>
               </div>
             </div>
           );

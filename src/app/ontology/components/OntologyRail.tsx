@@ -3,6 +3,7 @@ import { StatusChip } from "./Chips";
 import { paneHeaderClass } from "../constants";
 import type { OntologyListItem } from "../apiTypes";
 import { railTitle } from "../utils";
+import { Typography } from "@/components/ui/typography";
 
 interface Props {
   ontologies: OntologyListItem[];
@@ -28,11 +29,11 @@ export default function OntologyRail({ ontologies, graphKey, onSelect }: Props) 
         }`}
       >
         <span className="flex items-start justify-between gap-2">
-          <span className="text-sm font-semibold leading-[1.35]">{railTitle(o.title)}</span>
+          <Typography variant="h4" as="span" className="leading-[1.35]">{railTitle(o.title)}</Typography>
           <StatusChip status={o.status} />
         </span>
         {/* A predefined entry has no acronym to show. */}
-        {o.acronym && <span className="text-xs text-[#8A8E84]">{o.acronym}</span>}
+        {o.acronym && <Typography variant="small" as="span" className="text-[#8A8E84]">{o.acronym}</Typography>}
       </button>
     );
   };
@@ -42,9 +43,9 @@ export default function OntologyRail({ ontologies, graphKey, onSelect }: Props) 
       <div className={paneHeaderClass}>My Ontologies</div>
       <div className="min-h-0 flex-1 overflow-y-auto py-2">
         {mine.length === 0 && (
-          <p className="px-4 py-3 text-xs leading-[1.5] text-[#8A8E84]">
-            No ontologies yet. Use <span className="text-[#4A5A4E]">+ New ontology</span> to create one.
-          </p>
+          <Typography variant="small" className="px-4 py-3 leading-[1.5] text-[#8A8E84]">
+            No ontologies yet. Use <Typography variant="inherit" as="span" className="text-[#4A5A4E]">+ New ontology</Typography> to create one.
+          </Typography>
         )}
         {mine.map(row)}
 

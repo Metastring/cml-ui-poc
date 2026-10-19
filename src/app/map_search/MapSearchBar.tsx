@@ -14,6 +14,7 @@ import {
   PolygonDetail,
 } from "@/types/api/mapSearch.types";
 import { Loader2, Search, RotateCcw } from "lucide-react";
+import { Typography } from "@/components/ui/typography";
 
 interface MapSearchBarProps {
   onSearch?: () => void;
@@ -201,9 +202,9 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({
 
       {datasets.length > 0 && (
         <div className="shrink-0 rounded-md border border-border bg-muted/50 px-2.5 py-2">
-          <p className="text-[11px] text-muted-foreground">
-            <span className="font-medium text-foreground">Optional:</span> Draw a region on the map to filter by area, then click Search.
-          </p>
+          <Typography variant="caption" as="p" tone="muted">
+            <Typography variant="inherit" as="span" tone="default" weight="medium">Optional:</Typography> Draw a region on the map to filter by area, then click Search.
+          </Typography>
         </div>
       )}
     </div>

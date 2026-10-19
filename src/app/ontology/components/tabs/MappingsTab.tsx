@@ -7,6 +7,7 @@ import type { MappingRelation, MappingTargetKind, OntologyListItem, OntologyMapp
 import { fieldLabelClass, inputClass, linkButtonClass, primaryButtonClass, quietButtonClass } from "../../constants";
 import type { ClassDetail, MappingFormState } from "../../types";
 import { ontologyLabel } from "../../utils";
+import { Typography } from "@/components/ui/typography";
 
 /** The right-hand caption on a mapping row, which depends on the target kind. */
 function targetCaption(m: OntologyMapping, ontologies: OntologyListItem[]) {
@@ -49,7 +50,7 @@ function AddMappingForm({
 
   return (
     <div className="mt-6 rounded-md border border-dashed border-[#CFD3C8] bg-[#FCFCF9] p-5">
-      <h4 className="mb-4 text-xs uppercase tracking-[0.09em] text-[#6E7268]">Add mapping</h4>
+      <Typography variant="small" as="h4" className="mb-4 uppercase tracking-[0.09em] text-[#6E7268]">Add mapping</Typography>
       <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-4">
         <div>
           <label className={fieldLabelClass}>Relation</label>
@@ -176,14 +177,14 @@ export default function MappingsTab({
         {detail.mappings.map((m) => (
           <div key={m.id} className="flex flex-wrap items-center gap-3 rounded-md border border-[#E6E6DE] px-4 py-3">
             <MonoChip>{m.relation}</MonoChip>
-            <span className="text-[#9AA093]">→</span>
-            <span className="font-mono text-sm font-semibold text-[#24503A]">{targetText(m)}</span>
-            <span className="text-[13px] text-[#8A8E84]">{targetCaption(m, ontologies)}</span>
+            <Typography variant="inherit" as="span" className="text-[#9AA093]">→</Typography>
+            <Typography variant="h4" as="span" className="font-mono text-[#24503A]">{targetText(m)}</Typography>
+            <Typography variant="caption" className="text-compact text-[#8A8E84]">{targetCaption(m, ontologies)}</Typography>
             {!readOnly && (
               <button
                 type="button"
                 onClick={() => onDelete(m.id)}
-                className="ml-auto text-[13px] text-[#9AA093] hover:text-[#8A4A4A]"
+                className="ml-auto text-compact text-[#9AA093] hover:text-[#8A4A4A]"
               >
                 Remove
               </button>
@@ -192,7 +193,7 @@ export default function MappingsTab({
         ))}
       </div>
 
-      <p className="mt-4 max-w-[760px] text-[13px] italic leading-[1.6] text-[#9AA093]">
+      <Typography variant="body" className="mt-4 max-w-[760px] text-compact italic leading-[1.6] text-[#9AA093]">
         {readOnly ? (
           /* The predefined readers don't expose class mappings at all. */
           <>Mappings are only available for ontologies built here.</>
@@ -203,7 +204,7 @@ export default function MappingsTab({
             giving it a second parent.
           </>
         )}
-      </p>
+      </Typography>
 
       {form && (
         <AddMappingForm

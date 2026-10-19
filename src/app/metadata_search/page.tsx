@@ -16,6 +16,7 @@ import {
   type MetadataSearchWhere,
 } from "@/api/federatedSearchApiHandler/FederatedSearchApiHandler";
 import { SearchMetadataResponse, SearchResultItem } from "./types";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 
 const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,13 +98,13 @@ const Page = () => {
     return (
       <DatasetSearchView {...viewProps}>
         <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-          <p className="text-base font-medium">
+          <Typography variant="lead" weight="medium">
             Start by searching across dataset metadata.
-          </p>
-          <p className="text-sm mt-1 max-w-md">
+          </Typography>
+          <Typography variant="body" className="mt-1 max-w-md">
             Use terms from titles, categories, or descriptions to discover
             relevant datasets in the catalog.
-          </p>
+          </Typography>
         </div>
       </DatasetSearchView>
     );
@@ -114,7 +115,7 @@ const Page = () => {
       <DatasetSearchView {...viewProps}>
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Loader2 className="size-8 animate-spin mb-4" />
-          <p className="text-base font-medium">Searching metadata…</p>
+          <Typography variant="lead" weight="medium">Searching metadata…</Typography>
         </div>
       </DatasetSearchView>
     );
@@ -124,12 +125,12 @@ const Page = () => {
     return (
       <DatasetSearchView {...viewProps}>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-destructive font-medium">Something went wrong</p>
-          <p className="text-sm text-muted-foreground mt-1 max-w-md">
+          <Typography variant="inherit" tone="destructive" weight="medium">Something went wrong</Typography>
+          <Typography variant="body" tone="muted" className="mt-1 max-w-md">
             {error instanceof Error
               ? error.message
               : "Please try again later."}
-          </p>
+          </Typography>
         </div>
       </DatasetSearchView>
     );
@@ -139,11 +140,11 @@ const Page = () => {
     return (
       <DatasetSearchView {...viewProps}>
         <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-          <p className="text-base font-medium">No results found</p>
-          <p className="text-sm mt-1 max-w-md">
+          <Typography variant="lead" weight="medium">No results found</Typography>
+          <Typography variant="body" className="mt-1 max-w-md">
             Try adjusting your search term or using a different keyword from the
             dataset titles or descriptions.
-          </p>
+          </Typography>
         </div>
       </DatasetSearchView>
     );
@@ -153,23 +154,22 @@ const Page = () => {
     <DatasetSearchView {...viewProps}>
       <div className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <Typography variant="small" tone="muted" className="sm:text-sm">
             Showing{" "}
-            <span className="font-medium text-foreground">
+            <Typography variant="inherit" as="span" tone="default" weight="medium">
               {filteredResults.length}
-            </span>{" "}
+            </Typography>{" "}
             of{" "}
-            <span className="font-medium text-foreground">
+            <Typography variant="inherit" as="span" tone="default" weight="medium">
               {results.length}
-            </span>{" "}
+            </Typography>{" "}
             matching datasets
-          </p>
+          </Typography>
           {categories.length > 1 && (
             <div className="flex flex-wrap gap-2">
               {categories.map((categoryName) => {
                 const active = selectedCategories.includes(categoryName);
-                const baseClasses =
-                  "inline-flex items-center rounded-full border px-3 py-1 text-xs transition-colors cursor-pointer";
+                const baseClasses = `${typographyVariants({ variant: "small" })} inline-flex items-center rounded-full border px-3 py-1 transition-colors cursor-pointer`;
                 const activeClasses =
                   "border-primary bg-primary/10 text-primary";
                 const inactiveClasses =
@@ -219,15 +219,15 @@ const Page = () => {
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
                   {item.description && (
-                    <p className="line-clamp-2 text-xs text-muted-foreground mb-2">
+                    <Typography variant="small" tone="muted" className="line-clamp-2 mb-2">
                       {item.description}
-                    </p>
+                    </Typography>
                   )}
                   <div className="mt-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary group-hover:bg-primary/20 group-hover:border-primary/60 transition-colors">
+                    <Typography variant="small" as="span" tone="primary" weight="medium" className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 group-hover:bg-primary/20 group-hover:border-primary/60 transition-colors">
                       Explore dataset
                       <ArrowRight className="size-3.5" />
-                    </span>
+                    </Typography>
                   </div>
                 </CardContent>
               </Card>

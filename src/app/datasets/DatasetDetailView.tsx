@@ -25,9 +25,10 @@ import {
   ListFilter,
   Database,
 } from "lucide-react";
+import { Typography } from "@/components/ui/typography";
 
 const renderVal = (value: string | number | boolean | null | undefined) => {
-  if (value === null || value === undefined) return <span className="text-muted-foreground">—</span>;
+  if (value === null || value === undefined) return <Typography variant="inherit" as="span" tone="muted">—</Typography>;
   if (typeof value === "boolean") return value ? "Yes" : "No";
   return String(value);
 };
@@ -84,9 +85,9 @@ const DatasetDataSection = ({ datasetTitle }: { datasetTitle: string }) => {
       return (
         <div className="flex items-center py-6">
           <Loader2 className="size-4 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">
+          <Typography variant="body" as="span" tone="muted" className="ml-2">
             Loading data…
-          </span>
+          </Typography>
         </div>
       );
     }
@@ -100,11 +101,11 @@ const DatasetDataSection = ({ datasetTitle }: { datasetTitle: string }) => {
     }
 
     if (!tableName || tables?.available === false) {
-      return <p className="text-muted-foreground text-sm">No data available.</p>;
+      return <Typography variant="body" tone="muted">No data available.</Typography>;
     }
 
     if (!rows.length) {
-      return <p className="text-muted-foreground text-sm">No records found.</p>;
+      return <Typography variant="body" tone="muted">No records found.</Typography>;
     }
 
     return (
@@ -151,17 +152,17 @@ const DatasetDataSection = ({ datasetTitle }: { datasetTitle: string }) => {
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Typography variant="h4" as="h2" tone="default" className="flex items-center gap-2">
           <Database className="size-4 text-primary" />
           Data
-        </h2>
+        </Typography>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <Typography variant="small" as="span" tone="muted" numeric>
             {totalRows
               ? `${from}–${to} of ${totalRows} · page ${page}/${totalPages}`
               : "—"}
             {isRowsFetching && " · updating…"}
-          </span>
+          </Typography>
           <Button
             variant="outline"
             size="sm"
@@ -197,7 +198,7 @@ const DatasetDetailView = ({
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Loading…</span>
+        <Typography variant="body" as="span" tone="muted" className="ml-2">Loading…</Typography>
       </div>
     );
   }
@@ -211,7 +212,7 @@ const DatasetDetailView = ({
   }
 
   if (!d) {
-    return <p className="text-muted-foreground text-sm">No data found.</p>;
+    return <Typography variant="body" tone="muted">No data found.</Typography>;
   }
 
   return (
@@ -219,24 +220,24 @@ const DatasetDetailView = ({
       {/* Description */}
       {d.description && (
         <section>
-          <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+          <Typography variant="h4" as="h2" tone="default" className="mb-2 flex items-center gap-2">
             <FileText className="size-4 text-primary" />
             Description
-          </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-3xl">
+          </Typography>
+          <Typography variant="paragraph" tone="muted" className="max-w-3xl">
             {d.description}
-          </p>
+          </Typography>
           {d.citation && (
-            <p className="mt-3 text-muted-foreground text-xs leading-relaxed max-w-3xl">
-              <span className="font-medium text-foreground">Citation:</span> {d.citation}
-            </p>
+            <Typography variant="helper" className="mt-3 max-w-3xl">
+              <Typography variant="inherit" as="span" tone="default" weight="medium">Citation:</Typography> {d.citation}
+            </Typography>
           )}
         </section>
       )}
 
       {/* Metadata table */}
       <section>
-        <h2 className="text-sm font-semibold text-foreground mb-3">Metadata</h2>
+        <Typography variant="h4" as="h2" tone="default" className="mb-3">Metadata</Typography>
         <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableBody>
@@ -262,10 +263,10 @@ const DatasetDetailView = ({
       {/* Indicator — ontology_mapping_to_display from fields */}
       {d.fields?.length ? (
         <section>
-          <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Typography variant="h4" as="h2" tone="default" className="mb-3 flex items-center gap-2">
             <ListFilter className="size-4 text-primary" />
             Indicator
-          </h2>
+          </Typography>
           <ul className="rounded-lg border border-border overflow-hidden divide-y divide-border max-h-[280px] overflow-y-auto">
             {d.fields.map((f, i) => (
               <li
@@ -284,10 +285,10 @@ const DatasetDetailView = ({
 
       {/* Contacts */}
       <section>
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Typography variant="h4" as="h2" tone="default" className="mb-3 flex items-center gap-2">
           <Users className="size-4 text-primary" />
           Contacts
-        </h2>
+        </Typography>
         {d.contacts?.length ? (
           <ul className="space-y-4">
             {d.contacts.map((c, i) => (
@@ -295,31 +296,31 @@ const DatasetDetailView = ({
                 key={i}
                 className="rounded-lg border border-border/80 bg-muted/30 p-4 text-sm"
               >
-                <p className="font-medium text-foreground">{renderVal(c.name)}</p>
+                <Typography variant="inherit" tone="default" weight="medium">{renderVal(c.name)}</Typography>
                 {(c.role ?? c.email ?? c.organization) && (
-                  <p className="mt-1 text-muted-foreground">
+                  <Typography variant="inherit" tone="muted" className="mt-1">
                     {[c.role, c.email, c.organization].filter(Boolean).join(" · ")}
-                  </p>
+                  </Typography>
                 )}
                 {(c.address ?? c.city ?? c.state ?? c.country) && (
-                  <p className="mt-1 text-muted-foreground text-xs">
+                  <Typography variant="small" tone="muted" className="mt-1">
                     {[c.address, c.city, c.state, c.country].filter(Boolean).join(", ")}
-                  </p>
+                  </Typography>
                 )}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No contacts listed.</p>
+          <Typography variant="body" tone="muted">No contacts listed.</Typography>
         )}
       </section>
 
       {/* Publishers */}
       <section>
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Typography variant="h4" as="h2" tone="default" className="mb-3 flex items-center gap-2">
           <Building2 className="size-4 text-primary" />
           Publishers
-        </h2>
+        </Typography>
         {d.publishers?.length ? (
           <div className="flex flex-wrap gap-2">
             {d.publishers.map((p, i) => (
@@ -327,29 +328,29 @@ const DatasetDetailView = ({
                 key={i}
                 className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-sm"
               >
-                <span className="font-medium text-foreground">{renderVal(p.publisher_name)}</span>
+                <Typography variant="inherit" as="span" tone="default" weight="medium">{renderVal(p.publisher_name)}</Typography>
                 {p.country != null && (
                   <Badge variant="secondary" className="font-normal text-xs rounded-full">
                     {p.country}
                   </Badge>
                 )}
                 {p.record_count != null && (
-                  <span className="text-muted-foreground text-xs">{p.record_count} records</span>
+                  <Typography variant="small" as="span" tone="muted">{p.record_count} records</Typography>
                 )}
               </span>
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">No publishers listed.</p>
+          <Typography variant="body" tone="muted">No publishers listed.</Typography>
         )}
       </section>
 
       {/* Statistics */}
       <section>
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Typography variant="h4" as="h2" tone="default" className="mb-3 flex items-center gap-2">
           <BarChart3 className="size-4 text-primary" />
           Statistics
-        </h2>
+        </Typography>
         {d.statistics?.length ? (
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
@@ -368,7 +369,7 @@ const DatasetDetailView = ({
             </Table>
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">No statistics available.</p>
+          <Typography variant="body" tone="muted">No statistics available.</Typography>
         )}
       </section>
     </div>

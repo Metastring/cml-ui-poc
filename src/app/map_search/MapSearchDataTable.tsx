@@ -7,6 +7,8 @@ import useMapSearchData from "@/store/map_search_store/useMapSearchData";
 import { Loader2, AlertCircle, Inbox, MapPin, Maximize2, Minimize2, Table2 } from "lucide-react";
 import { PolygonDataItem, MapSearchResult } from "@/types/api/mapSearch.types";
 import { MapSearchDataTableProps } from "@/types/app/mapSearch.types";
+import { Typography, typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 const EMPTY_RESULT: MapSearchResult = { rows: [], displayFields: [] };
 
@@ -129,7 +131,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
             <button
               type="button"
               onClick={onRestoreSplit}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className={cn(typographyVariants({ variant: "small", weight: "medium" }), "inline-flex items-center gap-1 px-2 py-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors")}
               title="Restore split view"
               aria-label="Restore split view"
             >
@@ -140,7 +142,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
             <button
               type="button"
               onClick={onExpandFull}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className={cn(typographyVariants({ variant: "small", weight: "medium" }), "inline-flex items-center gap-1 px-2 py-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors")}
               title="Expand table to full height"
               aria-label="Expand table to full height"
             >
@@ -152,7 +154,7 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
             <button
               type="button"
               onClick={onCollapseTable}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className={cn(typographyVariants({ variant: "small", weight: "medium" }), "inline-flex items-center gap-1 px-2 py-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors")}
               title="Collapse table"
               aria-label="Collapse table"
             >
@@ -196,8 +198,8 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
         <TableToolbar label="Loading…" />
         <div className="flex-1 flex flex-col items-center justify-center gap-2 p-5 text-muted-foreground">
           <Loader2 className="h-10 w-10 animate-spin" />
-          <p className="text-sm font-medium">Loading results…</p>
-          <p className="text-xs">Searching within your drawn region.</p>
+          <Typography variant="body" weight="medium">Loading results…</Typography>
+          <Typography variant="small">Searching within your drawn region.</Typography>
         </div>
       </div>
     );
@@ -209,8 +211,8 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
         <TableToolbar label="Error" />
         <div className="flex-1 flex flex-col items-center justify-center gap-2 p-5 text-center">
           <AlertCircle className="h-10 w-10 text-destructive" />
-          <p className="text-sm font-medium text-foreground">Could not load results</p>
-          <p className="text-xs text-muted-foreground">Please try again or adjust your search region.</p>
+          <Typography variant="body" tone="default" weight="medium">Could not load results</Typography>
+          <Typography variant="small" tone="muted">Please try again or adjust your search region.</Typography>
         </div>
       </div>
     );
@@ -222,10 +224,10 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
         <TableToolbar label="No results" />
         <div className="flex-1 flex flex-col items-center justify-center gap-2 p-5 text-center">
           <Inbox className="h-10 w-10 text-muted-foreground/70" />
-          <p className="text-sm font-medium text-foreground">No results yet</p>
-          <p className="text-xs text-muted-foreground max-w-[240px]">
+          <Typography variant="body" tone="default" weight="medium">No results yet</Typography>
+          <Typography variant="small" tone="muted" className="max-w-[240px]">
             Select datasets, then click Search. Optionally draw a region on the map to filter by area.
-          </p>
+          </Typography>
         </div>
       </div>
     );
@@ -277,9 +279,9 @@ const MapSearchDataTable: React.FC<MapSearchDataTableProps> = ({
                 ))}
                 {showDatasetColumn && (
                   <td className="px-2 py-2 whitespace-nowrap">
-                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                    <Typography variant="small" as="span" tone="default" weight="medium" className="inline-flex items-center rounded-md bg-muted px-2 py-0.5">
                       {row.dataset?.toUpperCase() ?? "—"}
-                    </span>
+                    </Typography>
                   </td>
                 )}
               </tr>

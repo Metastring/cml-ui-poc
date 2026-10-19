@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
+import { Typography } from "@/components/ui/typography";
 
 interface InstructionPopoverProps {
   title: string;
@@ -37,7 +38,7 @@ const InstructionPopover: React.FC<InstructionPopoverProps> = ({ title, icon, ch
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
           {icon}
         </div>
-        <h1 className="text-sm font-semibold text-foreground truncate">{title}</h1>
+        <Typography variant="h4" as="h1" tone="default" truncate>{title}</Typography>
         {infoButton}
       </div>
     );
@@ -45,7 +46,7 @@ const InstructionPopover: React.FC<InstructionPopoverProps> = ({ title, icon, ch
 
   return (
     <div className="flex items-center space-x-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <Typography variant="h3" as="h2" className="text-xl">{title}</Typography>
       {infoButton}
     </div>
   );

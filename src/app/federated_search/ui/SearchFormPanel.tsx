@@ -14,6 +14,7 @@ import {
 import { Option } from "@/types/app/federatedSearch.types";
 import { cn } from "@/lib/utils";
 import { SLIDE_TRANSITION } from "@/app/federated_search/utils/constants";
+import { Typography } from "@/components/ui/typography";
 
 interface SearchFormPanelProps {
   indicators: string[];
@@ -68,13 +69,13 @@ export function SearchFormPanel({
     >
       <div className="federated-search-canopy-line h-1" aria-hidden />
       <div className="border-b border-primary/10 bg-primary/[0.04] px-5 py-3.5 sm:px-6">
-        <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-primary/80">
+        <div className="flex items-center gap-2 text-caption font-medium uppercase tracking-[0.14em] text-primary/80">
           <Leaf className="h-3.5 w-3.5" />
           Field query
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <Typography variant="small" tone="muted" className="mt-1">
           Species · taxonomy · occurrence records
-        </p>
+        </Typography>
       </div>
 
       <div className="space-y-3 p-3 sm:p-4">
@@ -87,12 +88,12 @@ export function SearchFormPanel({
               </div>
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold">Indicators</p>
+                  <Typography variant="h4" as="p">Indicators</Typography>
                   {indicators.length > 0 && (
                     <>
                       <Badge
                         variant="secondary"
-                        className="h-5 px-1.5 text-[10px] bg-emerald-500/12 text-emerald-700 hover:bg-emerald-500/12 ring-1 ring-emerald-500/20 dark:text-emerald-400"
+                        className="h-5 px-1.5 text-micro bg-emerald-500/12 text-emerald-700 hover:bg-emerald-500/12 ring-1 ring-emerald-500/20 dark:text-emerald-400"
                       >
                         {indicators.length} selected
                       </Badge>
@@ -110,9 +111,9 @@ export function SearchFormPanel({
                     </>
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-snug">
+                <Typography variant="caption" as="p" tone="muted" className="leading-snug">
                   Pick one or more indicators to search across datasets.
-                </p>
+                </Typography>
               </div>
             </div>
             <MultiSelectCombobox
@@ -127,11 +128,11 @@ export function SearchFormPanel({
                 {indicators.slice(0, 4).map((value, index) => (
                   <span
                     key={value}
-                    className="inline-flex max-w-[10rem] items-center gap-1 rounded-full bg-primary/8 px-2.5 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/15"
+                    className="inline-flex max-w-[10rem] items-center gap-1 rounded-full bg-primary/8 px-2.5 py-1 text-micro font-medium text-primary ring-1 ring-primary/15"
                     title={selectedIndicatorLabels[index]}
                   >
                     <Leaf className="h-2.5 w-2.5 shrink-0 opacity-60" />
-                    <span className="truncate">{selectedIndicatorLabels[index]}</span>
+                    <Typography variant="inherit" as="span" truncate>{selectedIndicatorLabels[index]}</Typography>
                     <button
                       type="button"
                       className="shrink-0 cursor-pointer rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10"
@@ -148,15 +149,15 @@ export function SearchFormPanel({
                     <HoverCardTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex cursor-pointer rounded-full bg-muted/80 px-2.5 py-1 text-[10px] text-muted-foreground ring-1 ring-border/60 hover:bg-muted"
+                        className="inline-flex cursor-pointer rounded-full bg-muted/80 px-2.5 py-1 text-micro text-muted-foreground ring-1 ring-border/60 hover:bg-muted"
                       >
                         +{indicators.length - 4} more
                       </button>
                     </HoverCardTrigger>
                     <HoverCardContent align="start" className="w-64 p-2">
-                      <p className="px-1 pb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                      <Typography variant="body" tone="muted" weight="medium" className="px-1 pb-1.5 text-micro uppercase tracking-[0.12em]">
                         Selected indicators
-                      </p>
+                      </Typography>
                       <div className="max-h-56 space-y-0.5 overflow-y-auto">
                         {indicators.map((value, index) => (
                           <div
@@ -165,7 +166,7 @@ export function SearchFormPanel({
                           >
                             <Leaf className="h-2.5 w-2.5 shrink-0 text-primary/60" />
                             <span
-                              className="min-w-0 flex-1 truncate text-[11px]"
+                              className="min-w-0 flex-1 truncate text-caption"
                               title={selectedIndicatorLabels[index]}
                             >
                               {selectedIndicatorLabels[index]}
@@ -196,10 +197,10 @@ export function SearchFormPanel({
                 <TextSearch className="h-4 w-4" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-semibold">Search term</p>
-                <p className="text-[11px] text-muted-foreground leading-snug">
+                <Typography variant="h4" as="p">Search term</Typography>
+                <Typography variant="caption" as="p" tone="muted" className="leading-snug">
                   Enter a keyword to search.
-                </p>
+                </Typography>
               </div>
             </div>
             <div className="relative overflow-hidden rounded-xl ring-1 ring-primary/15 bg-background/90 focus-within:ring-2 focus-within:ring-primary/30 transition-all shadow-inner">
@@ -215,15 +216,15 @@ export function SearchFormPanel({
                 onKeyDown={(e) => e.key === "Enter" && !isFormBusy && onSearch()}
               />
             </div>
-            <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground/80">
+            <div className="flex items-center justify-between gap-2 text-micro text-muted-foreground/80">
               <span className="inline-flex items-center gap-1">
                 <Leaf className="h-3 w-3 opacity-50" />
                 Press Enter to search
               </span>
               {hasSearchTerm && (
-                <span className="tabular-nums font-medium text-primary/70">
+                <Typography variant="inherit" as="span" weight="medium" numeric className="text-primary/70">
                   {searchDraft.trim().length} chars
-                </span>
+                </Typography>
               )}
             </div>
           </div>
@@ -257,7 +258,7 @@ export function SearchFormPanel({
                   : "bg-background/60 ring-1 ring-border/50"
               )}
             >
-              <div className="flex items-center justify-center gap-1 text-[10px] font-medium">
+              <div className="flex items-center justify-center gap-1 text-micro font-medium">
                 {item.ok ? (
                   <div className="h-3 w-3 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                 ) : (
@@ -265,9 +266,9 @@ export function SearchFormPanel({
                 )}
                 {item.label}
               </div>
-              <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
+              <Typography variant="body" tone="muted" truncate className="mt-0.5 text-nano">
                 {item.detail}
-              </p>
+              </Typography>
             </div>
           ))}
         </div>

@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui/typography";
 
 function filterCatalog(data: Category[] | undefined, query: string): Category[] {
   if (!data?.length) return [];
@@ -52,7 +53,7 @@ const MetadataPage = () => {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading catalog...</span>
+        <Typography variant="inherit" as="span" tone="muted" className="ml-2">Loading catalog...</Typography>
       </div>
     );
   }
@@ -62,7 +63,7 @@ const MetadataPage = () => {
       <div className="mx-auto max-w-4xl px-4 py-8">
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="pt-6">
-            <p className="text-destructive">Error loading catalog. Please try again later.</p>
+            <Typography variant="inherit" tone="destructive">Error loading catalog. Please try again later.</Typography>
           </CardContent>
         </Card>
       </div>
@@ -72,7 +73,7 @@ const MetadataPage = () => {
   if (!data?.length) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <p className="text-muted-foreground italic">No categories or datasets found.</p>
+        <Typography variant="inherit" tone="muted" className="italic">No categories or datasets found.</Typography>
       </div>
     );
   }
@@ -86,14 +87,14 @@ const MetadataPage = () => {
             <Database className="size-4 text-primary" aria-hidden />
             <span>Open dataset catalog</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight sm:text-4xl">
+          <Typography variant="h1" tone="default">
             Dataset catalog
-          </h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground text-base">
+          </Typography>
+          <Typography variant="lead" tone="muted" className="mt-2 max-w-2xl">
             Browse and explore the full catalog of registered datasets from multiple
             remote databases. Select a dataset to view metadata, contacts, and
             statistics.
-          </p>
+          </Typography>
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -112,21 +113,21 @@ const MetadataPage = () => {
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {filtered.length === 0 ? (
-          <p className="text-muted-foreground italic">
+          <Typography variant="inherit" tone="muted" className="italic">
             No categories or datasets match your search.
-          </p>
+          </Typography>
         ) : (
           <div className="space-y-10">
             {filtered.map((cat) => (
               <section key={cat.category_name}>
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
+                <Typography variant="h3" as="h2" tone="default" className="flex items-center gap-2 mb-4">
                   <Folder className="size-5 text-primary" aria-hidden />
                   {cat.category_name}
                   <Badge variant="secondary" className="ml-2 font-normal">
                     {cat.datasets?.length ?? 0} dataset
                     {(cat.datasets?.length ?? 0) !== 1 ? "s" : ""}
                   </Badge>
-                </h2>
+                </Typography>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {cat.datasets?.map((ds) => (
                     <Card

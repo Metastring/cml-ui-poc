@@ -5,6 +5,8 @@ import { primaryButtonClass, secondaryButtonClass } from "../constants";
 import type { BuilderAction } from "../types";
 import type { OntologyListItem, PredefinedSummary } from "../apiTypes";
 import { predefinedCaption, relativeTime } from "../utils";
+import { Typography, typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 interface Props {
   ontology: OntologyListItem | null;
@@ -36,22 +38,22 @@ export default function BuilderHeader({
   return (
     <div className="shrink-0 border-b border-[#E6E6DE] bg-white">
       <div className="flex h-[54px] items-center gap-2 px-6">
-        <button type="button" className="text-sm text-[#6E7268] hover:text-[#26292A]" onClick={onHome}>
+        <button type="button" className={cn(typographyVariants({ variant: "body" }), "text-[#6E7268] hover:text-[#26292A]")} onClick={onHome}>
           My Ontologies
         </button>
-        <span className="text-sm text-[#BFC2B8]">/</span>
-        <span className="text-sm text-[#6E7268]">{ontology?.title ?? "—"}</span>
+        <Typography variant="body" as="span" className="text-[#BFC2B8]">/</Typography>
+        <Typography variant="body" as="span" className="text-[#6E7268]">{ontology?.title ?? "—"}</Typography>
 
-        <h1 className="ml-4 text-[24px] font-bold leading-none tracking-[-0.01em]">{ontology?.title ?? ""}</h1>
+        <Typography variant="h3" as="h1" weight="bold" className="ml-4 text-h2 leading-none tracking-[-0.01em]">{ontology?.title ?? ""}</Typography>
         {ontology && (
           <>
             {ontology.acronym && (
-              <span className="inline-flex items-center rounded bg-[#EDEEE8] px-2 py-1 text-xs leading-none text-[#6B6F66]">
+              <Typography variant="small" as="span" className="inline-flex items-center rounded bg-[#EDEEE8] px-2 py-1 leading-none text-[#6B6F66]">
                 {ontology.acronym}
-              </span>
+              </Typography>
             )}
             <StatusChip status={ontology.status} />
-            <span className="ml-3 text-[13px] text-[#8A8E84]">
+            <Typography variant="caption" className="ml-3 text-compact text-[#8A8E84]">
               {/* A predefined vocabulary has no publish history, so show its size instead. */}
               {readOnly
                 ? summary
@@ -61,8 +63,8 @@ export default function BuilderHeader({
                   ? `Last published v${latestVersion ?? 1} · ${relativeTime(ontology.last_published_at)}`
                   : "Never published"}
               {" · graph_key "}
-              <span className="font-mono text-xs text-[#6E7268]">{ontology.graph_key}</span>
-            </span>
+              <Typography variant="mono" as="span" className="text-[#6E7268]">{ontology.graph_key}</Typography>
+            </Typography>
           </>
         )}
       </div>
@@ -71,7 +73,7 @@ export default function BuilderHeader({
         <button
           type="button"
           onClick={onNewOntology}
-          className="rounded px-2 py-2 text-sm text-[#4A5A4E] hover:bg-[#F1F3EE]"
+          className={cn(typographyVariants({ variant: "body" }), "rounded px-2 py-2 text-[#4A5A4E] hover:bg-[#F1F3EE]")}
         >
           + New ontology
         </button>
@@ -96,7 +98,7 @@ export default function BuilderHeader({
           {busy === "publish" ? "Publishing…" : "Publish"}
         </button>
         {notice && (
-          <button type="button" className="ml-3 truncate text-[13px] text-[#6E7268]" onClick={onDismissNotice}>
+          <button type="button" className="ml-3 truncate text-compact text-[#6E7268]" onClick={onDismissNotice}>
             {notice}
           </button>
         )}

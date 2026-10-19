@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 
 /* =========================================================
    Primitives mirroring the v2 registration mockups (html/style.css)
@@ -16,10 +17,10 @@ export const CardHead = ({
   children: React.ReactNode;
 }) => (
   <div className="mb-[18px]">
-    <h2 className="mb-1 text-[16px] font-bold text-foreground">{title}</h2>
-    <p className="m-0 max-w-[640px] text-[12.5px] leading-[1.5] text-muted-foreground">
+    <Typography variant="h3" as="h2" tone="default" weight="bold" className="mb-1 text-lead">{title}</Typography>
+    <Typography variant="body" tone="muted" className="m-0 max-w-[640px] text-compact leading-[1.5]">
       {children}
-    </p>
+    </Typography>
   </div>
 );
 
@@ -33,7 +34,7 @@ export const SectionLabel = ({
 }) => (
   <div
     className={cn(
-      "mb-2.5 mt-[22px] text-[12px] font-bold uppercase tracking-[0.04em] text-muted-foreground first:mt-0",
+      "mb-2.5 mt-[22px] text-small font-bold uppercase tracking-[0.04em] text-muted-foreground first:mt-0",
       className
     )}
   >
@@ -53,24 +54,24 @@ export const FieldLabel = ({
 }) => (
   <label
     htmlFor={htmlFor}
-    className="mb-1.5 block text-[12.5px] font-semibold text-foreground"
+    className="mb-1.5 block text-compact font-semibold text-foreground"
   >
     {children}
     {hint ? (
-      <span className="font-normal text-muted-foreground"> {hint}</span>
+      <Typography variant="inherit" as="span" tone="muted" weight="normal"> {hint}</Typography>
     ) : null}
   </label>
 );
 
 /** .field .hint */
 export const FieldHint = ({ children }: { children: React.ReactNode }) => (
-  <div className="mt-[5px] text-[11px] leading-[1.5] text-muted-foreground">
+  <div className="mt-[5px] text-caption leading-[1.5] text-muted-foreground">
     {children}
   </div>
 );
 
 export const controlClassName =
-  "w-full rounded-md border border-input bg-card px-[11px] py-2 text-[13px] text-foreground outline-none transition-colors placeholder:text-[#a3a3a3] focus:border-ring";
+  "w-full rounded-md border border-input bg-card px-[11px] py-2 text-compact text-foreground outline-none transition-colors placeholder:text-[#a3a3a3] focus:border-ring";
 
 export const TextField = ({
   className,
@@ -103,10 +104,10 @@ export const LinkField = ({
   ...props
 }: React.ComponentProps<"input"> & { icon: React.ReactNode }) => (
   <div className="flex items-center gap-2 rounded-md border border-input bg-card px-[11px] py-2">
-    <span className="flex-none text-muted-foreground">{icon}</span>
+    <Typography variant="inherit" as="span" tone="muted" className="flex-none">{icon}</Typography>
     <input
       className={cn(
-        "flex-1 border-none bg-transparent p-0 font-mono text-[13px] text-foreground outline-none placeholder:text-[#a3a3a3]",
+        "flex-1 border-none bg-transparent p-0 font-mono text-compact text-foreground outline-none placeholder:text-[#a3a3a3]",
         className
       )}
       {...props}
@@ -148,7 +149,7 @@ export const Badge = ({
 }) => (
   <span
     className={cn(
-      "inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-[10.5px] font-bold",
+      "inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-micro font-bold",
       badgeTones[tone],
       className
     )}
@@ -159,10 +160,10 @@ export const Badge = ({
 
 /** .pill-node */
 export const NodePill = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f3f0ff] px-2.5 py-1 text-[11px] font-bold text-[#5b21b6] dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300">
+  <Typography variant="caption" weight="bold" className="inline-flex items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f3f0ff] px-2.5 py-1 text-[#5b21b6] dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300">
     <span className="size-1.5 rounded-full bg-[#7c3aed]" />
     {children}
-  </span>
+  </Typography>
 );
 
 /* ---------- callouts ---------- */
@@ -185,7 +186,7 @@ const InfoCircle = ({ className }: { className?: string }) => (
 
 /** .no-store-note */
 export const NoStoreNote = ({ children }: { children: React.ReactNode }) => (
-  <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-muted px-[13px] py-[11px] text-[12px] leading-[1.5] text-foreground">
+  <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-muted px-[13px] py-[11px] text-small leading-[1.5] text-foreground">
     <InfoCircle className="text-[#6d28d9]" />
     <div>{children}</div>
   </div>
@@ -202,24 +203,23 @@ export const NodeBanner = ({
   children: React.ReactNode;
 }) => (
   <div className="mb-[22px] flex items-start gap-3 rounded-[12px] border border-[#ddd6fe] bg-[#f8f7ff] px-4 py-3.5 dark:border-violet-900 dark:bg-violet-950/30">
-    <span className="flex size-8 flex-none items-center justify-center rounded-[9px] bg-[#6d28d9] text-white">
+    <Typography variant="inherit" as="span" className="flex size-8 flex-none items-center justify-center rounded-[9px] bg-[#6d28d9] text-white">
       {icon}
-    </span>
+    </Typography>
     <div>
-      <h4 className="mb-[3px] text-[13px] font-bold text-[#4c1d95] dark:text-violet-200">
+      <Typography variant="h4" weight="bold" className="mb-[3px] text-compact text-[#4c1d95] dark:text-violet-200">
         {title}
-      </h4>
-      <p className="m-0 text-[12px] leading-[1.5] text-[#5b21b6] dark:text-violet-300">
+      </Typography>
+      <Typography variant="body" className="m-0 text-small leading-[1.5] text-[#5b21b6] dark:text-violet-300">
         {children}
-      </p>
+      </Typography>
     </div>
   </div>
 );
 
 /* ---------- buttons ---------- */
 
-export const btnBase =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent px-[18px] py-[9px] text-[13px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50";
+export const btnBase = `${typographyVariants({ variant: "button", weight: "semibold" })} inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent px-[18px] py-[9px] text-compact transition-colors disabled:pointer-events-none disabled:opacity-50`;
 
 export const Btn = ({
   variant = "outline",

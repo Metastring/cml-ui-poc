@@ -14,6 +14,7 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
+import { Typography } from "@/components/ui/typography";
 
 // Types
 export type Metadata = { key: string; value: string };
@@ -104,9 +105,9 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
           <div>
             {buttonLabel}
             {selected.length > 0 && (
-              <span className="ml-1 text-sm">
+              <Typography variant="body" as="span" className="ml-1">
                 ({selected.flatMap((s) => s.child).length})
-              </span>
+              </Typography>
             )}
           </div>
           <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
@@ -117,9 +118,9 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
         {isLoading ? (
           <div className="flex items-center justify-center p-4">
             <Loader2 className="animate-spin h-4 w-4 text-muted-foreground mr-2" />
-            <span className="text-xs text-muted-foreground italic">
+            <Typography variant="small" as="span" tone="muted" className="italic">
               Loading...
-            </span>
+            </Typography>
           </div>
         ) : isError ? (
           <div className="p-2 text-xs text-red-500 italic text-center">
@@ -145,17 +146,17 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                       <ChevronRight size={16} />
                     )}
                   </button>
-                  <span className="font-medium">{node.name}</span>
+                  <Typography variant="inherit" as="span" weight="medium">{node.name}</Typography>
 
                   {selected.find((s) => s.parent === node.name)?.child.length ? (
-                    <span className="text-xs text-muted-foreground">
+                    <Typography variant="small" as="span" tone="muted">
                       (
                       {
                         selected.find((s) => s.parent === node.name)?.child
                           .length
                       }
                       )
-                    </span>
+                    </Typography>
                   ) : null}
                 </div>
 
@@ -196,9 +197,9 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
                             className="mt-1"
                           />
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium">
+                            <Typography variant="body" as="span" weight="medium">
                               {child.name}
-                            </span>
+                            </Typography>
                             {child.description && (
                               <span
                                 className="text-xs text-muted-foreground line-clamp-2 max-w-sm whitespace-pre-wrap"

@@ -22,6 +22,7 @@ import {
   // Share2,
 } from "lucide-react";
 import { useGetPlatformStatistics } from "@/api/dashboard/DashboardApiHandler";
+import { Typography } from "@/components/ui/typography";
 
 const formatNumber = (value: number | undefined | null) => {
   if (value === undefined || value === null) return "—";
@@ -99,13 +100,13 @@ const Dashboard = () => {
             <Sparkles className="size-4 text-primary" aria-hidden />
             <span>CML</span>
           </div>
-          <h1 className="text-4xl font-bold mb-4 text-foreground tracking-tight sm:text-4xl lg:text-[2.5rem]">
+          <Typography variant="h1" tone="default" className="text-4xl mb-4 lg:text-hero">
             Cataloging and Mapping Life of India
-          </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground text-base ">
+          </Typography>
+          <Typography variant="lead" tone="muted" className="mt-3 max-w-2xl">
           An ontology driven federated data platform for discovering, sharing, and collaborating on FAIR social, ecological, health, and biodiversity data.
           Search across domains, explore connections between datasets, and contribute to a unified view of life across the subcontinent.
-          </p>
+          </Typography>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild size="lg" className="gap-2">
               <Link href="/federated_search">
@@ -123,7 +124,7 @@ const Dashboard = () => {
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Stats */}
         <section className="mb-10">
-          <h2 className="sr-only">Overview</h2>
+          <Typography variant="inherit" as="h2" className="sr-only">Overview</Typography>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map(({ label, value, icon: Icon, description }) => (
               <Card
@@ -139,10 +140,10 @@ const Dashboard = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-semibold text-foreground">
+                  <Typography variant="h3" as="p" tone="default" className="text-2xl">
                     {isLoading ? "…" : value}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{description}</p>
+                  </Typography>
+                  <Typography variant="small" tone="muted">{description}</Typography>
                 </CardContent>
               </Card>
             ))}
@@ -151,9 +152,9 @@ const Dashboard = () => {
 
         {/* Tools & actions */}
         <section>
-          <h2 className="text-foreground text-lg font-semibold mb-4">
+          <Typography variant="h3" as="h2" tone="default" className="mb-4">
             Tools & resources
-          </h2>
+          </Typography>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {actions.map(({ title, description, href, icon: Icon }) => (
               <Link key={href} href={href} className="group block">
@@ -179,11 +180,11 @@ const Dashboard = () => {
         </section>
 
         {/* Footer note */}
-        <p className="mt-10 text-center text-muted-foreground text-sm">
+        <Typography variant="body" tone="muted" align="center" className="mt-10">
           CML brings together species, ecological and climate data from
           multiple sources. Use the dataset explorer for cross-database queries or
           map search for spatial exploration.
-        </p>
+        </Typography>
       </main>
     </div>
   );

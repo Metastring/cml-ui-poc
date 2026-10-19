@@ -7,6 +7,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Typography } from "@/components/ui/typography";
 
 interface OverviewHeaderStatsProps {
   query: string;
@@ -25,9 +26,9 @@ export const OverviewHeaderStats: React.FC<OverviewHeaderStatsProps> = ({
     <div className="text-xs text-muted-foreground space-y-1.5">
       <div className="flex items-center gap-2 flex-wrap">
         <span>Search Query:</span>
-        <span className="inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 font-medium text-primary ring-1 ring-primary/20 truncate">
+        <Typography variant="inherit" as="span" tone="primary" weight="medium" truncate className="inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 ring-1 ring-primary/20">
           &quot;{query || "—"}&quot;
-        </span>
+        </Typography>
       </div>
 
       {selectedIndicators.length > 0 && (
@@ -35,14 +36,14 @@ export const OverviewHeaderStats: React.FC<OverviewHeaderStatsProps> = ({
           <span>Selected Indicators:</span>
           <HoverCard openDelay={100} closeDelay={150}>
             <HoverCardTrigger asChild>
-              <span className="inline-flex items-center font-semibold text-foreground cursor-help hover:text-primary transition-colors">
+              <Typography variant="inherit" as="span" tone="default" weight="semibold" className="inline-flex items-center cursor-help hover:text-primary transition-colors">
                 {selectedIndicators.length} {selectedIndicators.length === 1 ? "indicator" : "indicators"}
-              </span>
+              </Typography>
             </HoverCardTrigger>
             <HoverCardContent side="top" align="start" className="w-64 p-2">
-              <p className="px-1 pb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              <Typography variant="body" tone="muted" weight="medium" className="px-1 pb-1.5 text-micro uppercase tracking-[0.12em]">
                 Selected indicators
-              </p>
+              </Typography>
               <div className="max-h-56 space-y-0.5 overflow-y-auto">
                 {selectedIndicators.map((indicator) => (
                   <div
@@ -50,9 +51,9 @@ export const OverviewHeaderStats: React.FC<OverviewHeaderStatsProps> = ({
                     className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-muted/60"
                   >
                     <Leaf className="h-2.5 w-2.5 shrink-0 text-primary/60" />
-                    <span className="min-w-0 flex-1 truncate text-[11px]" title={indicator}>
+                    <Typography variant="caption" truncate className="min-w-0 flex-1" title={indicator}>
                       {indicator}
-                    </span>
+                    </Typography>
                   </div>
                 ))}
               </div>
@@ -64,9 +65,9 @@ export const OverviewHeaderStats: React.FC<OverviewHeaderStatsProps> = ({
       <div className="text-xs">
         <span>Results:</span>
         <span> Found </span>
-        <span className="font-semibold text-foreground">{datasetsWithResultsCount}</span>
+        <Typography variant="inherit" as="span" tone="default" weight="semibold">{datasetsWithResultsCount}</Typography>
         <span> of </span>
-        <span className="font-semibold text-foreground">{selectedDatasetsCount}</span>
+        <Typography variant="inherit" as="span" tone="default" weight="semibold">{selectedDatasetsCount}</Typography>
         <span> {selectedDatasetsCount === 1 ? "dataset" : "datasets"} with matching data</span>
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Typography } from "@/components/ui/typography";
 
 interface Option {
   label: string;
@@ -76,11 +77,11 @@ export function MultiSelectCombobox({
             className
           )}
         >
-          <span className="flex-1 min-w-0 truncate text-left">
+          <Typography variant="inherit" as="span" align="left" truncate className="flex-1 min-w-0">
             {selectedValues.length === 0
               ? placeholder
               : `${placeholder} (${selectedValues.length})`}
-          </span>
+          </Typography>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

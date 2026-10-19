@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatasetDetailView from "../../DatasetDetailView";
+import { Typography } from "@/components/ui/typography";
 
 export default function DatasetPage() {
   const params = useParams();
@@ -14,7 +15,7 @@ export default function DatasetPage() {
   if (!category || !dataset) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <p className="text-muted-foreground">Invalid dataset link.</p>
+        <Typography variant="inherit" tone="muted">Invalid dataset link.</Typography>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/datasets">Back to catalog</Link>
         </Button>
@@ -34,16 +35,16 @@ export default function DatasetPage() {
               </Link>
             </Button>
             <ChevronRight className="size-3.5 shrink-0" />
-            <span className="truncate">{category}</span>
+            <Typography variant="inherit" as="span" truncate>{category}</Typography>
             <ChevronRight className="size-3.5 shrink-0" />
-            <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none" title={dataset}>
+            <Typography variant="inherit" as="span" tone="default" weight="medium" truncate className="max-w-[200px] sm:max-w-none" title={dataset}>
               {dataset}
-            </span>
+            </Typography>
           </nav>
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight break-words">
+          <Typography variant="h3" as="h1" tone="default" className="text-2xl tracking-tight break-words">
             {dataset}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{category}</p>
+          </Typography>
+          <Typography variant="body" tone="muted" className="mt-1">{category}</Typography>
         </div>
       </header>
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">

@@ -5,6 +5,7 @@ import { SectionHeading } from "../Chips";
 import { DATATYPE_RANGES } from "../../apiTypes";
 import { fieldLabelClass, inputClass, linkButtonClass, primaryButtonClass, quietButtonClass } from "../../constants";
 import type { ClassDetail, PropertyFormState, TaggedProperty } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 function PropertyTable({
   title,
@@ -32,7 +33,7 @@ function PropertyTable({
         }
       />
       {rows.length === 0 ? (
-        <p className="py-3 text-sm text-[#9AA093]">{emptyText}</p>
+        <Typography variant="body" className="py-3 text-[#9AA093]">{emptyText}</Typography>
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -46,17 +47,17 @@ function PropertyTable({
             {rows.map((p) => (
               <tr key={p.name} className="border-b border-[#F0F0EA]">
                 <td className="py-3 pr-4">
-                  <span className="font-mono text-sm font-semibold text-[#26292A]">{p.name}</span>
+                  <Typography variant="h4" as="span" className="font-mono text-[#26292A]">{p.name}</Typography>
                   {p.inherited_from && (
-                    <span className="ml-2 inline-flex items-center rounded bg-[#EFF0EA] px-2 py-0.5 font-mono text-[11px] text-[#7E8278]">
+                    <Typography variant="caption" className="ml-2 inline-flex items-center rounded bg-[#EFF0EA] px-2 py-0.5 font-mono text-[#7E8278]">
                       from {p.inherited_from}
-                    </span>
+                    </Typography>
                   )}
                 </td>
                 <td className="py-3 pr-4">
-                  <span className="inline-flex items-center rounded border border-[#DCE4DD] bg-[#F1F6F1] px-2 py-1 font-mono text-xs text-[#2F5C42]">
+                  <Typography variant="mono" as="span" className="inline-flex items-center rounded border border-[#DCE4DD] bg-[#F1F6F1] px-2 py-1 text-[#2F5C42]">
                     {p.range_value}
-                  </span>
+                  </Typography>
                 </td>
                 <td className="py-3 text-[#4A4E46]">{p.cardinality_note ?? "—"}</td>
               </tr>
@@ -83,7 +84,7 @@ function AddPropertyForm({
 }) {
   return (
     <div className="mt-6 rounded-md border border-dashed border-[#CFD3C8] bg-[#FCFCF9] p-5">
-      <h4 className="mb-4 text-xs uppercase tracking-[0.09em] text-[#6E7268]">Add {form.kind} property</h4>
+      <Typography variant="small" as="h4" className="mb-4 uppercase tracking-[0.09em] text-[#6E7268]">Add {form.kind} property</Typography>
       <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
         <div>
           <label className={fieldLabelClass}>Name</label>

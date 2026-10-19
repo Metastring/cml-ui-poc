@@ -10,6 +10,7 @@ import { DataItem, PreFederatedSearchData } from "@/types/api/federatedSearch.ty
 import type { OverviewStats } from "@/app/federated_search/hooks/useOverviewStats";
 import { OverviewHeaderStats } from "@/app/federated_search/stats/OverviewHeaderStats";
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/typography";
 
 interface ResultsPanelProps {
   showResultsPanel: boolean;
@@ -68,7 +69,7 @@ export function ResultsPanel({
   if (!showResultsPanel) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
-        <p className="text-sm">No results yet. Use the search panel on the left to explore datasets.</p>
+        <Typography variant="body">No results yet. Use the search panel on the left to explore datasets.</Typography>
       </div>
     );
   }
@@ -94,17 +95,17 @@ export function ResultsPanel({
               </Button>
               {!isToggleActive && (
                 <>
-                  <span className="text-sm text-foreground flex items-center gap-2 flex-wrap" aria-live="polite">
+                  <Typography variant="body" as="span" tone="default" className="flex items-center gap-2 flex-wrap" aria-live="polite">
                     <span>Results for</span>
-                    <span className="inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 font-semibold text-primary ring-1 ring-primary/20">
+                    <Typography variant="inherit" as="span" tone="primary" weight="semibold" className="inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 ring-1 ring-primary/20">
                       &quot;{query || "—"}&quot;
-                    </span>
+                    </Typography>
                     {selectedDataset && (
                       <>
-                        <span className="text-muted-foreground">in</span>
-                        <span className="inline-flex items-center rounded-md bg-accent/15 px-2 py-0.5 font-semibold text-accent ring-1 ring-accent/20">
+                        <Typography variant="inherit" as="span" tone="muted">in</Typography>
+                        <Typography variant="inherit" as="span" weight="semibold" className="inline-flex items-center rounded-md bg-accent/15 px-2 py-0.5 text-accent ring-1 ring-accent/20">
                           {selectedDataset.datasetName}
-                        </span>
+                        </Typography>
                       </>
                     )}
                     <span>
@@ -122,13 +123,13 @@ export function ResultsPanel({
                           : "records"}
                     </span>
                     {!selectedDataset && sourcesQueried > 0 && (
-                      <span className="text-muted-foreground font-normal">
+                      <Typography variant="inherit" as="span" tone="muted" weight="normal">
                         {sourcesQueried === 1
                           ? "from 1 source"
                           : `from ${sourcesWithResults} of ${sourcesQueried} sources`}
-                      </span>
+                      </Typography>
                     )}
-                  </span>
+                  </Typography>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
                       type="button"
@@ -187,7 +188,7 @@ export function ResultsPanel({
           {preData?.hasError && (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 px-6 text-center" role="alert">
               <AlertCircle className="h-10 w-10 text-destructive" />
-              <p className="text-sm text-destructive max-w-md">{preData.errorMessage ?? "Search failed. Please try again."}</p>
+              <Typography variant="body" tone="destructive" className="max-w-md">{preData.errorMessage ?? "Search failed. Please try again."}</Typography>
               <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={onNewSearch}>
                 <RotateCcw className="h-3.5 w-3.5" />
                 Try again
@@ -198,8 +199,8 @@ export function ResultsPanel({
           {!preData?.hasError && isPreLoading && !preData?.datasets?.length && (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 text-muted-foreground" role="status" aria-live="polite">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm">Querying datasets…</p>
-              <p className="text-xs text-muted-foreground/80">Results will appear as each source responds.</p>
+              <Typography variant="body">Querying datasets…</Typography>
+              <Typography variant="small" className="text-muted-foreground/80">Results will appear as each source responds.</Typography>
             </div>
           )}
 
@@ -226,12 +227,12 @@ export function ResultsPanel({
                   {isToggleActive ? (
                     <>
                       <ArrowLeft className="h-4 w-4" />
-                      <span className="text-xs font-medium">Back to Search</span>
+                      <Typography variant="small" as="span" weight="medium">Back to Search</Typography>
                     </>
                   ) : (
                     <>
                       <Eye className="h-4 w-4" />
-                      <span className="text-xs font-medium">View Details</span>
+                      <Typography variant="small" as="span" weight="medium">View Details</Typography>
                     </>
                   )}
                 </Button>
@@ -247,15 +248,15 @@ export function ResultsPanel({
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
               {isToggleActive ? (
                 <>
-                  <p className="text-sm font-medium mb-2">Results will appear here</p>
-                  <p className="text-xs text-muted-foreground/70">
+                  <Typography variant="body" weight="medium" className="mb-2">Results will appear here</Typography>
+                  <Typography variant="small" className="text-muted-foreground/70">
                     Close the search panel to see results after performing a search.
-                  </p>
+                  </Typography>
                 </>
               ) : (
-                <p className="text-xs text-muted-foreground">
+                <Typography variant="small" tone="muted">
                   Select datasets in the sidebar, pick indicators, and search.
-                </p>
+                </Typography>
               )}
             </div>
           )}
@@ -276,15 +277,15 @@ function CardListView({ data, fieldColumns }: { data: DataItem[]; fieldColumns: 
           <div className="space-y-3">
             {fieldColumns.slice(0, 4).map((field) => (
               <div key={field} className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{field}</p>
-                <p className="text-sm text-foreground break-words font-medium line-clamp-2">{String(item[field as keyof DataItem] ?? "—")}</p>
+                <Typography variant="tableHead" as="p" tone="muted">{field}</Typography>
+                <Typography variant="body" tone="default" weight="medium" className="break-words line-clamp-2">{String(item[field as keyof DataItem] ?? "—")}</Typography>
               </div>
             ))}
           </div>
           {fieldColumns.length > 4 && (
-            <p className="text-xs text-muted-foreground/70 mt-3 pt-3 border-t border-border/40">
+            <Typography variant="small" className="text-muted-foreground/70 mt-3 pt-3 border-t border-border/40">
               +{fieldColumns.length - 4} more fields
-            </p>
+            </Typography>
           )}
         </div>
       ))}

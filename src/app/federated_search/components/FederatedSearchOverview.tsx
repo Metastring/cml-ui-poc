@@ -16,6 +16,7 @@ import {
 import { useFederatedSearchStore } from "@/store/federated_search_store/useFederatedSearchStore";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 
 function extractFieldNames(matchedFields: {
   tabular: string[];
@@ -103,7 +104,7 @@ function DatasetCard({
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold transition-all",
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded text-micro font-bold transition-all",
             isSelected
               ? "bg-primary text-primary-foreground shadow-md shadow-primary/40 ring-2 ring-primary/20 scale-110"
               : "bg-muted text-muted-foreground"
@@ -114,19 +115,21 @@ function DatasetCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h3
+            <Typography
+              variant="h4"
+              as="h3"
               className={cn(
-                "text-sm font-semibold line-clamp-1",
+                "line-clamp-1",
                 isSelected ? "text-primary font-bold" : "text-foreground"
               )}
               title={item.datasetName}
             >
               {item.datasetName}
-            </h3>
+            </Typography>
             {item.hasOccurrence && (
               <Badge
                 variant="outline"
-                className="h-4 gap-0.5 px-1 text-[9px] border-primary/25 text-primary bg-primary/5"
+                className="h-4 gap-0.5 px-1 text-nano border-primary/25 text-primary bg-primary/5"
               >
                 <MapPin className="h-2 w-2" />
                 Map
@@ -140,7 +143,7 @@ function DatasetCard({
                   <span
                     key={label}
                     className={cn(
-                      "text-[9px] rounded px-1.5 py-0.5 truncate",
+                      "text-nano rounded px-1.5 py-0.5 truncate",
                       isSelected
                         ? "bg-primary/20 text-primary font-medium"
                         : "bg-muted/50 text-muted-foreground"
@@ -151,9 +154,9 @@ function DatasetCard({
                   </span>
                 ))}
                 {item.matchedIndicatorLabels.length > 3 && (
-                  <span className="text-[9px] text-muted-foreground">
+                  <Typography variant="caption" tone="muted" className="text-nano">
                     +{item.matchedIndicatorLabels.length - 3} more
-                  </span>
+                  </Typography>
                 )}
               </div>
             )}
@@ -178,7 +181,8 @@ function DatasetCard({
                     setIsMapDropdownOpen(!isMapDropdownOpen);
                   }}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold transition-colors border",
+                    typographyVariants({ variant: "small", weight: "semibold" }),
+                    "inline-flex items-center gap-1.5 rounded px-2 py-1 transition-colors border",
                     isMapMode
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "border-primary/25 bg-primary/5 text-primary hover:bg-primary/15 hover:border-primary/40"
@@ -202,7 +206,8 @@ function DatasetCard({
                             handleMapFieldSelect(field.field);
                           }}
                           className={cn(
-                            "w-full text-left px-3 py-2 text-xs font-medium transition-colors border-b border-primary/10 last:border-b-0",
+                            typographyVariants({ variant: "small", weight: "medium" }),
+                            "w-full text-left px-3 py-2 transition-colors border-b border-primary/10 last:border-b-0",
                             isSelected
                               ? "bg-primary/15 border-primary/30 text-primary"
                               : "text-foreground hover:bg-primary/10 hover:text-primary"
@@ -269,12 +274,12 @@ function PendingCard({ name }: { name: string }) {
       aria-busy="true"
     >
       <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
-      <span className="flex-1 text-xs font-medium text-foreground/70 truncate">
+      <Typography variant="small" as="span" weight="medium" truncate className="flex-1 text-foreground/70">
         {name}
-      </span>
+      </Typography>
       <Badge
         variant="secondary"
-        className="h-4 text-[9px] px-1.5 bg-primary/10 text-primary"
+        className="h-4 text-nano px-1.5 bg-primary/10 text-primary"
       >
         …
       </Badge>
@@ -401,7 +406,7 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
             border border-dashed border-border py-6 text-muted-foreground"
         >
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          <p className="text-xs">Waiting for first dataset…</p>
+          <Typography variant="small">Waiting for first dataset…</Typography>
         </div>
       )}
 
@@ -413,35 +418,42 @@ const FederatedSearchOverview: React.FC<FederatedSearchOverviewProps> = ({
           aria-live="polite"
         >
           <SearchX className="h-8 w-8 text-muted-foreground/60" />
-          <p className="text-sm font-medium text-foreground">
+          <Typography variant="body" tone="default" weight="medium">
             No matches for &quot;{searchTerm}&quot;
-          </p>
-          <p className="max-w-sm text-xs text-muted-foreground">
+          </Typography>
+          <Typography variant="small" tone="muted" className="max-w-sm">
             None of the selected datasets returned results. Try a different
             keyword, or add more indicators and search again.
-          </p>
+          </Typography>
         </div>
       )}
 
       {hasOverviewData && noMatchNames.length > 0 && (
         <div className="rounded-lg border border-border/60 bg-muted/15 px-3 py-2">
-          <p
-            className="text-[10px] font-medium text-muted-foreground truncate"
+          <Typography
+            variant="caption"
+            as="p"
+            tone="muted"
+            weight="medium"
+            truncate
+            className="text-micro"
             title={noMatchNames.join(", ")}
           >
             No matches ({noMatchNames.length}): {noMatchNames.join(" · ")}
-          </p>
+          </Typography>
         </div>
       )}
 
       {isStreaming && pendingDatasetNames.length === 0 && (
-        <p
-          className="flex items-center justify-center gap-2 py-2
-            text-[11px] text-muted-foreground"
+        <Typography
+          variant="caption"
+          as="p"
+          tone="muted"
+          className="flex items-center justify-center gap-2 py-2"
         >
           <Loader2 className="h-3 w-3 animate-spin" />
           Finalizing search…
-        </p>
+        </Typography>
       )}
     </div>
   );

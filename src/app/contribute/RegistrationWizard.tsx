@@ -42,6 +42,7 @@ import DatasetNodeStep, { LICENSE_OPTIONS } from "./DatasetNodeStep";
 import OntologyMappingStep from "./OntologyMappingStep";
 import ReviewPublishStep from "./ReviewPublishStep";
 import { CheckIcon } from "./RegistrationUI";
+import { Typography } from "@/components/ui/typography";
 
 const STEPS: { step: RegistrationStep; label: string }[] = [
   { step: 1, label: "Dataset & node" },
@@ -159,14 +160,14 @@ const Stepper = ({
             onClick={() => isDone && onSelect(step)}
             disabled={!isDone}
             className={cn(
-              "flex items-center gap-[9px] rounded-lg px-2.5 py-[5px] text-[13px]",
+              "flex items-center gap-[9px] rounded-lg px-2.5 py-[5px] text-compact",
               isActive && "bg-[rgba(23,23,23,0.05)] dark:bg-white/10",
               isDone ? "cursor-pointer" : "cursor-default"
             )}
           >
             <span
               className={cn(
-                "flex size-[22px] flex-none items-center justify-center rounded-full text-[11px] font-bold",
+                "flex size-[22px] flex-none items-center justify-center rounded-full text-caption font-bold",
                 isActive || isDone
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground"
@@ -614,15 +615,15 @@ const RegistrationWizard = () => {
 
   return (
     <main className="mx-auto w-full max-w-[1280px] px-8 pb-[60px] pt-7">
-      <h1 className="mb-1.5 text-[26px] font-bold tracking-[-0.01em] text-foreground">
+      <Typography variant="h3" as="h1" tone="default" weight="bold" className="mb-1.5 text-h2 tracking-[-0.01em]">
         Register your dataset
-      </h1>
-      <p className="mb-[22px] max-w-[760px] text-[14px] leading-[1.55] text-muted-foreground">
+      </Typography>
+      <Typography variant="body" tone="muted" className="mb-[22px] max-w-[760px] text-body leading-[1.55]">
         Your data stays where it already lives — on your own server, database, or
         file store. CML registers it as an independent node in the network: we
         catalog rich metadata and keep a reference to your data, not a copy of
         it.
-      </p>
+      </Typography>
 
       <Stepper current={step} onSelect={setStep} />
 

@@ -8,6 +8,7 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
+import { Typography } from "@/components/ui/typography";
 
 export type Metadata = { key: string; value: string };
 
@@ -126,44 +127,44 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
       className="w-full min-w-[200px] max-w-[min(350px,100vw)] flex-1 min-h-0 flex flex-col border bg-popover text-popover-foreground shadow-md"
     >
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30 shrink-0">
-        <span className="flex items-center gap-2 font-medium text-sm">
+        <Typography variant="body" as="span" weight="medium" className="flex items-center gap-2">
           <Database className="h-4 w-4 text-muted-foreground" />
           {buttonLabel}
-        </span>
-        <span className="text-xs text-muted-foreground tabular-nums">
+        </Typography>
+        <Typography variant="small" as="span" tone="muted" numeric>
           {selectedCount > 0 ? (
-            <span className="font-medium text-foreground">{selectedCount} selected</span>
+            <Typography variant="inherit" as="span" tone="default" weight="medium">{selectedCount} selected</Typography>
           ) : (
             "0 selected"
           )}
-        </span>
+        </Typography>
       </div>
       <div className="min-w-0 flex-1 overflow-auto p-2">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-8 px-4 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden />
-            <p className="text-sm font-medium text-foreground">
+            <Typography variant="body" tone="default" weight="medium">
               Loading filters
-            </p>
-            <p className="text-xs text-muted-foreground max-w-[200px]">
+            </Typography>
+            <Typography variant="small" tone="muted" className="max-w-[200px]">
               Fetching categories and options…
-            </p>
+            </Typography>
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center gap-3 py-6 px-4 text-center rounded-md bg-destructive/5 border border-destructive/20">
             <AlertCircle className="h-8 w-8 text-destructive shrink-0" aria-hidden />
-            <p className="text-sm font-medium text-destructive">
+            <Typography variant="error">
               Couldn&apos;t load filters
-            </p>
-            <p className="text-xs text-muted-foreground max-w-[220px]">
+            </Typography>
+            <Typography variant="small" tone="muted" className="max-w-[220px]">
               The filter list couldn&apos;t be loaded. Check your connection or try again in a moment.
-            </p>
+            </Typography>
           </div>
         ) : nodes.length === 0 ? (
           <div className="py-6 px-4 text-center">
-            <p className="text-sm text-muted-foreground">
+            <Typography variant="body" tone="muted">
               No filters available
-            </p>
+            </Typography>
           </div>
         ) : (
           nodes.map((node, index) => {
@@ -194,14 +195,14 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                           <ChevronRight size={16} />
                         )}
                       </span>
-                      <span className="font-medium truncate">{node.name}</span>
-                      <span className="text-xs text-muted-foreground shrink-0">
+                      <Typography variant="inherit" as="span" weight="medium" truncate>{node.name}</Typography>
+                      <Typography variant="small" as="span" tone="muted" className="shrink-0">
                         ({node.children.length} dataset{node.children.length !== 1 ? "s" : ""})
-                      </span>
+                      </Typography>
                       {selectedCount > 0 ? (
-                        <span className="text-xs text-primary font-medium shrink-0">
+                        <Typography variant="small" as="span" tone="primary" weight="medium" className="shrink-0">
                           · {selectedCount} selected
-                        </span>
+                        </Typography>
                       ) : null}
                     </div>
 
@@ -247,9 +248,9 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                                 className="mt-0.5 shrink-0"
                               />
                               <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm font-medium truncate" title={child.name}>
+                                <Typography variant="body" as="span" weight="medium" truncate title={child.name}>
                                   {child.name}
-                                </span>
+                                </Typography>
                                 {child.description && (
                                   <span
                                     className="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap break-words overflow-hidden min-w-0"
@@ -303,9 +304,9 @@ const FederatedSearchTreeDropdown: React.FC<FederatedSearchTreeDropdownProps> = 
                                             <div className="font-medium text-foreground break-words">
                                               {f.ontology_mapping_to_display || f.field_name}
                                               {f.data_type && (
-                                                <span className="ml-1 font-normal text-muted-foreground">
+                                                <Typography variant="inherit" as="span" tone="muted" weight="normal" className="ml-1">
                                                   ({f.data_type})
-                                                </span>
+                                                </Typography>
                                               )}
                                             </div>
                                             {f.ontology_mapping_to_display && f.field_name && (

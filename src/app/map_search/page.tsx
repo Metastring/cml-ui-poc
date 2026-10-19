@@ -18,10 +18,12 @@ import useMapSearchFilter from "@/store/map_search_store/useMapSearchFilter";
 import AddLayer from "@/components/mapFeatures/addLayer/AddLayer";
 import BaseMap from "@/components/map/BaseMap";
 import PolygonEditor from "@/components/mapFeatures/polygonEditor/PolygonEditor";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 import AddMarker from "@/components/mapFeatures/addMarker/AddMarker";
 import MapSearchBar from "@/app/map_search/MapSearchBar";
 import MapSearchDataTable from "@/app/map_search/MapSearchDataTable";
 import InstructionPopover from "@/element/popover/InstructionPopover";
+import { cn } from "@/lib/utils";
 
 const Page = () => {
   const [tableVisible, setTableVisible] = useState(false);
@@ -56,14 +58,14 @@ const Page = () => {
             <header className="shrink-0 border-b border-border bg-muted/20">
               <div className="flex flex-nowrap items-center justify-between gap-2 px-3 py-2.5 min-h-[40px]">
                 <InstructionPopover title="Map Search" icon={<Map className="h-4 w-4" />}>
-                  <p>
+                  <Typography variant="inherit">
                     Map Search lets you explore data on the map. Select datasets, draw a region or search by location, and view results on the map or in the data table.
-                  </p>
+                  </Typography>
                 </InstructionPopover>
                 <button
                   type="button"
                   onClick={() => setTableVisible((prev) => !prev)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                  className={`${typographyVariants({ variant: "small", weight: "medium" })} shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors ${
                     tableVisible
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -97,7 +99,7 @@ const Page = () => {
             <button
               type="button"
               onClick={() => setSidebarVisible(false)}
-              className="absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-sm font-medium text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all"
+              className={cn(typographyVariants({ variant: "button" }), "absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all")}
               title="Close sidebar"
               aria-label="Close sidebar"
             >
@@ -108,7 +110,7 @@ const Page = () => {
             <button
               type="button"
               onClick={() => setSidebarVisible(true)}
-              className="absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-sm font-medium text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all"
+              className={cn(typographyVariants({ variant: "button" }), "absolute left-1/2 top-4 -translate-x-1/2 z-10 inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-foreground shadow-md border border-border hover:bg-muted/80 hover:shadow-lg transition-all")}
               title="Open sidebar"
               aria-label="Open sidebar"
             >

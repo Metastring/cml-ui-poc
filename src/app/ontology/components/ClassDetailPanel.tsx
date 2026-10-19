@@ -7,6 +7,7 @@ import PropertiesTab from "./tabs/PropertiesTab";
 import MappingsTab from "./tabs/MappingsTab";
 import type { OntologyListItem } from "../apiTypes";
 import type { ClassDetail, MappingFormState, PropertyFormState, TabId } from "../types";
+import { Typography } from "@/components/ui/typography";
 
 interface Props {
   detail: ClassDetail | null;
@@ -63,19 +64,19 @@ export default function ClassDetailPanel({
               >
                 {detail.parent_name}
               </button>
-              <span className="text-[#BFC2B8]">/</span>
+              <Typography variant="inherit" as="span" className="text-[#BFC2B8]">/</Typography>
             </>
           )}
-          <span className="text-[#8A8E84]">{detail.name}</span>
+          <Typography variant="inherit" as="span" className="text-[#8A8E84]">{detail.name}</Typography>
         </div>
 
         <div className="mt-2 flex items-center gap-3">
-          <h2 className="text-[26px] font-bold leading-tight tracking-[-0.01em]">{detail.label}</h2>
+          <Typography variant="h3" as="h2" weight="bold" className="text-h2 leading-tight tracking-[-0.01em]">{detail.label}</Typography>
           {/* Already normalised: "cphr:Plant" for a draft, "dcat:Dataset" for a predefined class. */}
           <MonoChip>{detail.curie}</MonoChip>
         </div>
 
-        <p className="mt-2 max-w-[600px] text-[15px] leading-[1.55] text-[#3C4140]">{detail.definition}</p>
+        <Typography variant="body" className="mt-2 max-w-[600px] text-lead leading-[1.55] text-[#3C4140]">{detail.definition}</Typography>
 
         <div className="mt-5 flex gap-8 border-b border-[#E6E6DE]">
           {tabs.map(([id, label, count]) => (
@@ -83,14 +84,14 @@ export default function ClassDetailPanel({
               key={id}
               type="button"
               onClick={() => onTabChange(id)}
-              className={`-mb-px border-b-2 pb-2.5 text-[15px] ${
+              className={`-mb-px border-b-2 pb-2.5 text-lead ${
                 tab === id
                   ? "border-[#2F5C42] font-medium text-[#2F5C42]"
                   : "border-transparent text-[#6E7268] hover:text-[#26292A]"
               }`}
             >
               {label}
-              {count !== null && <span className="text-[#9AA093]"> · {count}</span>}
+              {count !== null && <Typography variant="inherit" as="span" className="text-[#9AA093]"> · {count}</Typography>}
             </button>
           ))}
         </div>

@@ -29,6 +29,7 @@ import {
   RefreshIcon,
   TextField,
 } from "./RegistrationUI";
+import { Typography } from "@/components/ui/typography";
 
 export const FILE_FORMAT_OPTIONS = ["CSV", "JSON", "XML", "XLSX", "Parquet"];
 export const RESPONSE_FORMAT_OPTIONS = ["JSON", "CSV", "XML"];
@@ -141,12 +142,12 @@ const DataReferenceStep: React.FC<DataReferenceStepProps> = ({
               >
                 {choice.icon}
               </span>
-              <h3 className="mb-1 text-[13.5px] font-bold text-foreground">
+              <Typography variant="h3" tone="default" weight="bold" className="mb-1 text-compact">
                 {choice.title}
-              </h3>
-              <p className="m-0 text-[11.5px] leading-[1.45] text-muted-foreground">
+              </Typography>
+              <Typography variant="body" tone="muted" className="m-0 text-caption leading-[1.45]">
                 {choice.description}
-              </p>
+              </Typography>
             </button>
           );
         })}
@@ -231,7 +232,7 @@ const DataReferenceStep: React.FC<DataReferenceStepProps> = ({
                     type="button"
                     onClick={() => onChange({ method })}
                     className={cn(
-                      "rounded-[7px] px-3.5 py-[7px] text-[12.5px] font-semibold transition-colors",
+                      "rounded-[7px] px-3.5 py-[7px] text-compact font-semibold transition-colors",
                       value.method === method
                         ? "bg-card text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.08)]"
                         : "text-muted-foreground"

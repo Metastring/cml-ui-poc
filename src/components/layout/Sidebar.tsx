@@ -16,6 +16,7 @@ import {
 import React, { useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { Typography } from "@/components/ui/typography";
 
 // Sidebar Item Props Type
 interface SidebarItemProps {
@@ -34,7 +35,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isOpen, active }
       title={label}
     >
       <div className="min-w-[20px]">{icon}</div>
-      {isOpen && <span className="text-sm font-medium">{label}</span>}
+      {isOpen && <Typography variant="body" as="span" weight="medium">{label}</Typography>}
     </div>
   );
 };
@@ -45,11 +46,12 @@ const Sidebar: React.FC = () => {
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  // Expose sidebar width for full-width content panels (e.g. dataset detail sheet)
+  // Expose sidebar width for full-width content panels (e.g. dataset detail sheet).
+  // The open width grows with the Settings > Text size scale (see globals.css).
   React.useEffect(() => {
     document.documentElement.style.setProperty(
       "--sidebar-width",
-      isSidebarOpen ? "13rem" : "4rem"
+      isSidebarOpen ? "calc(13rem * var(--app-text-scale))" : "4rem"
     );
   }, [isSidebarOpen]);
 
@@ -72,7 +74,7 @@ const Sidebar: React.FC = () => {
   return (
     <div
       className={`bg-card text-foreground border-r border-border shadow-md transition-all duration-300 ${
-        isSidebarOpen ? 'w-52' : 'w-16'
+        isSidebarOpen ? 'w-[calc(13rem*var(--app-text-scale))]' : 'w-16'
       } h-screen flex flex-col`}
     >
       {/* Toggle Button */}
@@ -83,7 +85,7 @@ const Sidebar: React.FC = () => {
         >
           {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
         </button>
-        {isSidebarOpen && <span className="text-xl font-medium px-4">CML</span>}
+        {isSidebarOpen && <Typography variant="caption" weight="medium" className="text-xl px-4">CML</Typography>}
       </div>
 
       {/* Sidebar Items */}

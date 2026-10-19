@@ -7,6 +7,7 @@ import { BiodiversitySearchBackdrop } from "@/app/federated_search/ui/Biodiversi
 import { SmartSearchSwitch } from "@/components/smart_search/SmartSearchSwitch";
 import { SLIDE_TRANSITION } from "@/app/federated_search/utils/constants";
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/typography";
 import { Option } from "@/types/app/federatedSearch.types";
 
 interface SearchLandingSectionProps {
@@ -53,18 +54,18 @@ export function SearchLandingSection({
         <div className={cn(
           "space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-[1100ms] text-center"
         )}>
-          <h2 className={cn(
-            "font-semibold tracking-tight text-foreground leading-tight text-2xl sm:text-[2rem]",
+          <Typography variant="h2" tone="default" className={cn(
+            "sm:text-h1",
             isSearchLanding ? "" : ""
           )}>
             Explore Datasets
-          </h2>
-          <p className={cn(
-            "text-muted-foreground leading-relaxed text-sm sm:text-[0.925rem]",
+          </Typography>
+          <Typography variant="paragraph" tone="muted" className={cn(
+            "sm:text-lead",
             isSearchLanding ? "max-w-xl mx-auto" : ""
           )}>
             Discover records across connected datasets from multiple sources — one search, many sources.
-          </p>
+          </Typography>
         </div>
 
         {isSearchLanding && isFilterLoading && (
@@ -82,7 +83,7 @@ export function SearchLandingSection({
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 space-y-2" role="alert">
             <div className="flex items-start gap-2 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p>Could not load indicators. Check your connection and try again.</p>
+              <Typography variant="inherit">Could not load indicators. Check your connection and try again.</Typography>
             </div>
             <Button
               type="button"
@@ -112,7 +113,7 @@ export function SearchLandingSection({
             role="alert"
           >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>{searchError}</p>
+            <Typography variant="inherit">{searchError}</Typography>
           </div>
         )}
 

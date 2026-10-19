@@ -88,7 +88,7 @@ const AddMarker: React.FC<AddMarkerProps> = ({ markers, flyTo }) => {
         .setLngLat([marker.lng, marker.lat])
         .setPopup(
           new maplibregl.Popup({ maxWidth: "300px" }).setHTML(`
-           <div style="font-family: sans-serif; font-size: 14px; padding: 8px; max-height: 200px; overflow-y: auto; word-wrap: break-word;">
+           <div style="font-family: sans-serif; font-size: var(--text-body); padding: 8px; max-height: 200px; overflow-y: auto; word-wrap: break-word;">
     <ul style="padding-left: 8px; margin: 0;">
       ${Object.entries(marker)
         .filter(

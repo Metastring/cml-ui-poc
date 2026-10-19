@@ -2,6 +2,7 @@ import React from "react";
 import { Lock } from "lucide-react";
 import { PREDEFINED_CHIP, STATUS_CHIP } from "../constants";
 import type { OntologyStatus } from "../apiTypes";
+import { Typography } from "@/components/ui/typography";
 
 /** `null` means a predefined vocabulary, which carries no builder status. */
 export function StatusChip({ status }: { status: OntologyStatus | null }) {
@@ -33,7 +34,7 @@ export function MonoChip({ children, strong }: { children: React.ReactNode; stro
 export function SectionHeading({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-2 flex items-center justify-between">
-      <h3 className="text-xs uppercase tracking-[0.09em] text-[#8A8E84]">{title}</h3>
+      <Typography variant="small" as="h3" className="uppercase tracking-[0.09em] text-[#8A8E84]">{title}</Typography>
       {action}
     </div>
   );

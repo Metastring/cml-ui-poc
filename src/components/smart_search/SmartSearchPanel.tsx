@@ -23,6 +23,7 @@ import { BiodiversitySearchBackdrop } from "@/app/federated_search/ui/Biodiversi
 import { SmartSearchSwitch } from "@/components/smart_search/SmartSearchSwitch";
 import { useMutateSmartSearch } from "@/api/smartSearchApiHandler/SmartSearchApiHandler";
 import { cn } from "@/lib/utils";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 
 const EXAMPLE_QUESTIONS = [
   "districts with total rainfall more than 3000 mm in 2025",
@@ -112,19 +113,19 @@ export function SmartSearchPanel() {
         >
           {/* Hero */}
           <div className="space-y-2 text-center animate-in fade-in-0 slide-in-from-bottom-2 duration-[900ms]">
-            <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[2rem]">
+            <Typography variant="h2" tone="default" className="sm:text-h1">
               Explore Datasets
-            </h2>
-            <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-[0.925rem]">
+            </Typography>
+            <Typography variant="paragraph" tone="muted" className="mx-auto max-w-xl sm:text-lead">
               Discover records across connected datasets from multiple sources
               — one search, many sources.
-            </p>
-            <p className="mx-auto max-w-2xl pt-1 text-xs leading-relaxed text-muted-foreground/90">
+            </Typography>
+            <Typography variant="small" className="mx-auto max-w-2xl pt-1 leading-relaxed text-muted-foreground/90">
               Ask a full question in plain language, the way you would say it
               out loud. Name the place and the period you care about, and add a
               threshold or range if you have one — the dataset is picked for
               you.
-            </p>
+            </Typography>
           </div>
 
           {/* Composer */}
@@ -141,10 +142,10 @@ export function SmartSearchPanel() {
                     className="py-5 pr-16"
                     disabled={isMutating}
                   />
-                  <span className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 text-[10px] text-muted-foreground">
+                  <Typography variant="caption" tone="muted" className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 text-micro">
                     <CornerDownLeft className="h-3 w-3" aria-hidden />
                     Enter
-                  </span>
+                  </Typography>
                 </div>
                 <Button
                   type="submit"
@@ -169,7 +170,7 @@ export function SmartSearchPanel() {
                       setQuestion(example);
                       submit(example);
                     }}
-                    className="rounded-full border border-primary/15 bg-primary/[0.04] px-3 py-1 text-xs text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/30 hover:text-foreground disabled:opacity-50"
+                    className={cn(typographyVariants({ variant: "small" }), "rounded-full border border-primary/15 bg-primary/[0.04] px-3 py-1 text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/30 hover:text-foreground disabled:opacity-50")}
                   >
                     {example}
                   </button>
@@ -192,13 +193,13 @@ export function SmartSearchPanel() {
                 />
 
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">
+                  <Typography variant="body" tone="default" weight="medium">
                     {stageLabel}
-                  </p>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
+                  </Typography>
+                  <Typography variant="helper">
                     Your question is being turned into a database query written
                     just for it — that is the part worth waiting for.
-                  </p>
+                  </Typography>
                 </div>
 
                 <div
@@ -211,9 +212,9 @@ export function SmartSearchPanel() {
                   />
                 </div>
 
-                <p className="text-[11px] tabular-nums text-muted-foreground/80">
+                <Typography variant="caption" as="p" numeric className="text-muted-foreground/80">
                   {elapsed}s
-                </p>
+                </Typography>
               </div>
             </div>
           )}
@@ -225,9 +226,9 @@ export function SmartSearchPanel() {
               role="alert"
             >
               <AlertCircle className="mt-0.5 size-4 shrink-0" />
-              <p>
+              <Typography variant="inherit">
                 {error?.message ?? "Something went wrong. Please try again."}
-              </p>
+              </Typography>
             </div>
           )}
 
@@ -235,58 +236,58 @@ export function SmartSearchPanel() {
           {!isMutating && !isError && data && (
             <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
               {data.interpretation && (
-                <p className="text-sm text-foreground">
-                  <span className="text-muted-foreground">Understood as: </span>
+                <Typography variant="body" tone="default">
+                  <Typography variant="inherit" as="span" tone="muted">Understood as: </Typography>
                   {data.interpretation}
-                </p>
+                </Typography>
               )}
 
               {data.dataset && (
                 <div className="rounded-xl border border-primary/10 bg-card/60 px-4 py-3 backdrop-blur-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <Database className="size-4 text-primary" aria-hidden />
-                    <span className="text-sm font-medium text-foreground">
+                    <Typography variant="body" as="span" tone="default" weight="medium">
                       {data.dataset.title}
-                    </span>
-                    <Badge variant="secondary" className="text-[11px]">
+                    </Typography>
+                    <Badge variant="secondary" className="text-caption">
                       match {data.dataset.match_score}
                     </Badge>
                   </div>
                   {data.dataset.citation && (
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <Typography variant="small" tone="muted" className="mt-1.5">
                       {data.dataset.citation}
-                    </p>
+                    </Typography>
                   )}
                 </div>
               )}
 
               {noRows && (
                 <div className="rounded-xl border border-dashed border-border bg-muted/15 px-4 py-6 text-center">
-                  <p className="text-sm font-medium text-foreground">
+                  <Typography variant="body" tone="default" weight="medium">
                     No rows came back for this question.
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  </Typography>
+                  <Typography variant="small" tone="muted" className="mt-1">
                     The data may not cover what you asked. Try rephrasing, or
                     naming a district, state or year explicitly.
-                  </p>
+                  </Typography>
                 </div>
               )}
 
               {hasRows && (
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">
+                    <Typography variant="small" tone="muted">
+                      <Typography variant="inherit" as="span" tone="default" weight="medium">
                         {data.row_count}
-                      </span>{" "}
+                      </Typography>{" "}
                       row{data.row_count === 1 ? "" : "s"}
                       {typeof data.timings?.total_s === "number" &&
                         ` · ${data.timings.total_s}s`}
-                    </p>
+                    </Typography>
                     {data.truncated && (
                       <Badge
                         variant="secondary"
-                        className="text-[11px] text-amber-700 dark:text-amber-400"
+                        className="text-caption text-amber-700 dark:text-amber-400"
                       >
                         truncated at {ROW_LIMIT} rows
                       </Badge>

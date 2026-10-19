@@ -15,6 +15,8 @@ import {
 } from "@/types/app/federatedSearch.types";
 import { DataItem } from "@/types/api/federatedSearch.types";
 import { MAX_CELL_CHARS } from "@/app/federated_search/utils/constants";
+import { typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 function TableCellWithMore({
   text,
@@ -43,7 +45,7 @@ function TableCellWithMore({
           e.stopPropagation();
           setExpanded((prev) => !prev);
         }}
-        className="ml-1.5 text-primary font-medium text-xs hover:underline"
+        className={cn(typographyVariants({ variant: "small", weight: "medium" }), "ml-1.5 text-primary hover:underline")}
       >
         {expanded ? "See less" : "See more"}
       </button>
@@ -61,7 +63,7 @@ const FederatedDataTable: React.FC<FederatedDataTableProps> = ({
   embedded = false,
 }) => {
   const cellPad = embedded ? "px-2 py-1.5 text-xs" : "px-6 py-4";
-  const headPad = embedded ? "px-2 py-1.5 text-[11px]" : "px-6 py-4";
+  const headPad = embedded ? "px-2 py-1.5 text-caption" : "px-6 py-4";
   const router = useRouter();
 
   const handleExploreDataset = (row: DataItem) => {

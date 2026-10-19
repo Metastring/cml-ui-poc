@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Database, Search, ChevronDown, ChevronUp, Terminal, Copy, Check } from "lucide-react";
 import { useGetFederatedSourceData } from "@/api/federatedSourceApiHandler/FederatedSearchApiHandler";
+import { Typography, typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 interface FederatedSource {
   dataset_name: string;
@@ -48,16 +50,16 @@ export default function FederatedSourcesPage() {
             <Database className="size-4 text-primary" />
             <span>Federated Sources</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+          <Typography variant="h2" as="h1" tone="default" weight="bold" className="text-3xl">
             Connected Data Sources
-          </h1>
+          </Typography>
 
           <div className="mt-6 flex items-end justify-between gap-4">
             <div>
-              <p className="text-2xl font-semibold text-foreground">
+              <Typography variant="h3" as="p" tone="default" className="text-2xl">
                 {isLoading ? "…" : sources.length}
-              </p>
-              <p className="text-xs text-muted-foreground">Total sources</p>
+              </Typography>
+              <Typography variant="small" tone="muted">Total sources</Typography>
             </div>
             <div className="relative max-w-sm w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -91,8 +93,8 @@ export default function FederatedSourcesPage() {
         {/* Error */}
         {isError && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-6 text-center">
-            <p className="text-sm text-destructive font-medium">Failed to load federated sources.</p>
-            <p className="text-xs text-muted-foreground mt-1">Check your network or API configuration.</p>
+            <Typography variant="error">Failed to load federated sources.</Typography>
+            <Typography variant="small" tone="muted" className="mt-1">Check your network or API configuration.</Typography>
           </div>
         )}
 
@@ -109,19 +111,19 @@ export default function FederatedSourcesPage() {
                   <CardContent className="p-0">
                     <div className="flex items-center gap-4 px-5 py-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-foreground leading-snug">
+                        <Typography variant="h4" as="p" tone="default" className="leading-snug">
                           {source.dataset_name}
-                        </p>
-                        <span className="text-xs text-muted-foreground font-mono truncate block mt-1">
+                        </Typography>
+                        <Typography variant="mono" as="span" tone="muted" truncate className="block mt-1">
                           {source.source_api}
-                        </span>
+                        </Typography>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         {source.source_curl ? (
                           <button
                             onClick={() => toggle(index)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                            className={`${typographyVariants({ variant: "small", weight: "medium" })} flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors ${
                               isOpen
                                 ? "bg-primary/10 text-primary"
                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -144,11 +146,11 @@ export default function FederatedSourcesPage() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <Terminal className="size-3.5 text-muted-foreground" />
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">cURL Command</span>
+                            <Typography variant="small" as="span" tone="muted" weight="medium" className="uppercase tracking-wide">cURL Command</Typography>
                           </div>
                           <button
                             onClick={() => handleCopy(source.source_curl!)}
-                            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            className={cn(typographyVariants({ variant: "small" }), "flex items-center gap-1.5 px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors")}
                           >
                             {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                             {copied ? "Copied!" : "Copy"}

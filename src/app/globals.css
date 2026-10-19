@@ -3,6 +3,66 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===== TYPOGRAPHY TOKENS =====
+ * Single source for fonts and the type scale. Used by the variants in
+ * src/components/ui/typography.tsx. Themes can override any of these.
+ * To switch to Geist: --font-sans: var(--font-geist-sans), sans-serif;
+ *
+ * Every font size is multiplied by --app-text-scale, which the
+ * Settings > Text size option sets via <html data-text-size="...">.
+ * Tailwind's built-in text-xs … text-4xl are scaled too, so text that
+ * does not use <Typography> follows the setting as well.
+ */
+:root {
+  --app-text-scale: 1.25; /* medium (default) */
+}
+html[data-text-size="small"] {
+  --app-text-scale: 1;
+}
+html[data-text-size="large"] {
+  --app-text-scale: 1.35;
+}
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --font-heading: var(--font-sans);
+
+  --text-display: calc(2.25rem * var(--app-text-scale));
+  --text-display--line-height: calc(2.5 / 2.25);
+  --text-h1: calc(1.875rem * var(--app-text-scale));
+  --text-h1--line-height: calc(2.25 / 1.875);
+  --text-h2: calc(1.5rem * var(--app-text-scale));
+  --text-h2--line-height: calc(2 / 1.5);
+  --text-h3: calc(1.125rem * var(--app-text-scale));
+  --text-h3--line-height: calc(1.75 / 1.125);
+  --text-h4: calc(0.875rem * var(--app-text-scale));
+  --text-h4--line-height: calc(1.25 / 0.875);
+  --text-lead: calc(1rem * var(--app-text-scale));
+  --text-lead--line-height: calc(1.5 / 1);
+  --text-body: calc(0.875rem * var(--app-text-scale));
+  --text-body--line-height: calc(1.25 / 0.875);
+  --text-small: calc(0.75rem * var(--app-text-scale));
+  --text-small--line-height: calc(1 / 0.75);
+  --text-hero: calc(2.5rem * var(--app-text-scale));
+  --text-compact: calc(13px * var(--app-text-scale));
+  --text-caption: calc(11px * var(--app-text-scale));
+  --text-micro: calc(10px * var(--app-text-scale));
+  --text-nano: calc(9px * var(--app-text-scale));
+
+  /* Tailwind defaults, same values, scaled by the text-size setting. */
+  --text-xs: calc(0.75rem * var(--app-text-scale));
+  --text-sm: calc(0.875rem * var(--app-text-scale));
+  --text-base: calc(1rem * var(--app-text-scale));
+  --text-lg: calc(1.125rem * var(--app-text-scale));
+  --text-xl: calc(1.25rem * var(--app-text-scale));
+  --text-2xl: calc(1.5rem * var(--app-text-scale));
+  --text-3xl: calc(1.875rem * var(--app-text-scale));
+  --text-4xl: calc(2.25rem * var(--app-text-scale));
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -515,5 +575,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: calc(1rem * var(--app-text-scale));
   }
 }

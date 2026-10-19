@@ -6,6 +6,8 @@ import { STATUS_OPTIONS, VISIBILITY_OPTIONS, slugifyGraphKey } from "../apiTypes
 import type { OntologyStatus, Visibility } from "../apiTypes";
 import { fieldLabelClass, inputClass, quietButtonClass } from "../constants";
 import { errorMessage } from "../utils";
+import { Typography, typographyVariants } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 interface Props {
   onCancel: () => void;
@@ -53,10 +55,10 @@ export default function CreateOntologyModal({ onCancel, onCreated }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-[#26292A]/25 px-4 pt-14">
       <div className="w-full max-w-[560px] rounded-md bg-white p-8 shadow-xl">
-        <h2 className="text-[22px] font-bold leading-none tracking-[-0.01em]">Create ontology</h2>
-        <p className="mt-3 text-sm text-[#6E7268]">
+        <Typography variant="h2" weight="bold" className="text-h2 leading-none tracking-[-0.01em]">Create ontology</Typography>
+        <Typography variant="body" className="mt-3 text-[#6E7268]">
           Step 1 of 3 — details first, then you&apos;ll build the class tree.
-        </p>
+        </Typography>
 
         <div className="mt-6 space-y-5">
           <div>
@@ -119,7 +121,7 @@ export default function CreateOntologyModal({ onCancel, onCreated }: Props) {
               {categories.map((c) => (
                 <span
                   key={c}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF0EA] px-3 py-1.5 text-[13px] leading-none text-[#4A4E46]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF0EA] px-3 py-1.5 text-compact leading-none text-[#4A4E46]"
                 >
                   {c}
                   <button
@@ -135,7 +137,7 @@ export default function CreateOntologyModal({ onCancel, onCreated }: Props) {
                 <button
                   type="button"
                   onClick={() => setCategoryDraft("")}
-                  className="inline-flex items-center rounded-full border border-[#D8D9D0] px-3 py-1.5 text-[13px] leading-none text-[#5C6058] hover:bg-[#F5F6F2]"
+                  className="inline-flex items-center rounded-full border border-[#D8D9D0] px-3 py-1.5 text-compact leading-none text-[#5C6058] hover:bg-[#F5F6F2]"
                 >
                   + Add
                 </button>
@@ -150,14 +152,14 @@ export default function CreateOntologyModal({ onCancel, onCreated }: Props) {
                     if (e.key === "Escape") setCategoryDraft(null);
                   }}
                   placeholder="Category"
-                  className="w-[140px] rounded-full border border-[#D8D9D0] px-3 py-1.5 text-[13px] outline-none focus:border-[#4A7C59]"
+                  className="w-[140px] rounded-full border border-[#D8D9D0] px-3 py-1.5 text-compact outline-none focus:border-[#4A7C59]"
                 />
               )}
             </div>
           </div>
         </div>
 
-        {error && <p className="mt-4 text-[13px] text-[#8A4A4A]">{error}</p>}
+        {error && <Typography variant="body" className="mt-4 text-compact text-[#8A4A4A]">{error}</Typography>}
 
         <div className="mt-7 flex items-center justify-end gap-5">
           <button type="button" onClick={onCancel} className={quietButtonClass}>
@@ -167,7 +169,7 @@ export default function CreateOntologyModal({ onCancel, onCreated }: Props) {
             type="button"
             disabled={!title.trim() || !acronym.trim() || saving}
             onClick={() => void submit()}
-            className="rounded bg-[#1E5B44] px-5 py-2.5 text-sm text-white hover:bg-[#194B39] disabled:opacity-50"
+            className={cn(typographyVariants({ variant: "body" }), "rounded bg-[#1E5B44] px-5 py-2.5 text-white hover:bg-[#194B39] disabled:opacity-50")}
           >
             {saving ? "Creating…" : "Create & continue →"}
           </button>

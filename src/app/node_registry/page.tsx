@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Typography } from "@/components/ui/typography";
 import {
   Table,
   TableBody,
@@ -63,7 +64,7 @@ const STATUS_STYLES: Record<NodeStatus | "self", string> = {
 
 const StatusBadge = ({ status }: { status: NodeStatus | "self" }) => (
   <span
-    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-caption font-semibold uppercase tracking-wide ${
       STATUS_STYLES[status] ?? STATUS_STYLES.detached
     }`}
   >
@@ -73,9 +74,9 @@ const StatusBadge = ({ status }: { status: NodeStatus | "self" }) => (
 
 /** Stands in for the status badge when this node holds no registry entry. */
 const UnregisteredBadge = () => (
-  <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+  <Typography variant="caption" tone="muted" weight="semibold" className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 uppercase tracking-wide">
     not registered
-  </span>
+  </Typography>
 );
 
 const relativeTime = (timestamp: string | null) => {
@@ -96,12 +97,12 @@ const StatTile = ({
 }) => (
   <Card className="border-border/60 shadow-sm">
     <CardContent className="px-5">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <Typography variant="overline" as="p" tone="muted" weight="semibold" className="tracking-wider">
         {label}
-      </p>
-      <p className={`mt-1 text-3xl font-semibold ${tone ?? "text-foreground"}`}>
+      </Typography>
+      <Typography variant="body" className={`mt-1 text-3xl font-semibold ${tone ?? "text-foreground"}`}>
         {value}
-      </p>
+      </Typography>
     </CardContent>
   </Card>
 );
@@ -174,10 +175,10 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
             </span>
           )}
           {data && (
-            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+            <Typography variant="small" as="span" tone="muted" className="shrink-0 whitespace-nowrap">
               {data.dataset_count} dataset
               {data.dataset_count === 1 ? "" : "s"}
-            </span>
+            </Typography>
           )}
         </div>
 
@@ -192,9 +193,9 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {isLoading && (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <Typography variant="body" tone="muted">
               Contacting the node — this can take a few seconds.
-            </p>
+            </Typography>
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
@@ -206,34 +207,34 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
 
         {isError && !isLoading && (
           <div className="py-10 text-center">
-            <p className="text-sm font-medium text-destructive">
+            <Typography variant="error">
               Could not load this node&apos;s datasets.
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            </Typography>
+            <Typography variant="small" tone="muted" className="mt-1">
               The node is not in the registry, or the registry is unreachable.
-            </p>
+            </Typography>
           </div>
         )}
 
         {data && (
           <>
             {data.datasets_source === "cache" && (
-              <p className="mb-4 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              <Typography variant="small" className="mb-4 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-amber-700 dark:text-amber-400">
                 Node unreachable — showing saved copy from{" "}
                 {relativeTime(data.harvested_at)}.
-              </p>
+              </Typography>
             )}
 
             {data.datasets_source === "unavailable" && (
-              <p className="mb-4 rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+              <Typography variant="small" tone="muted" className="mb-4 rounded-md border border-border bg-muted px-3 py-2">
                 Node unreachable; no saved dataset list.
-              </p>
+              </Typography>
             )}
 
             {datasets.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
+              <Typography variant="body" tone="muted" align="center" className="py-10">
                 No datasets to show.
-              </p>
+              </Typography>
             ) : (
               <div className="space-y-4">
                 {datasets.map((dataset) => {
@@ -247,9 +248,9 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
                       <CardContent className="px-5 py-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <p className="break-words font-medium text-foreground">
+                            <Typography variant="lead" tone="default" weight="medium" className="break-words">
                               {dataset.title}
-                            </p>
+                            </Typography>
                             {dataset.category && (
                               <Badge variant="secondary">
                                 {dataset.category}
@@ -276,23 +277,23 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
                               </Link>
                             </Button>
                           ) : (
-                            <span className="shrink-0 text-xs text-muted-foreground">
+                            <Typography variant="small" as="span" tone="muted" className="shrink-0">
                               No category — detail page unavailable
-                            </span>
+                            </Typography>
                           )}
                         </div>
 
                         {dataset.description && (
-                          <p className="mt-2 break-words text-sm text-muted-foreground">
+                          <Typography variant="body" tone="muted" className="mt-2 break-words">
                             {dataset.description}
-                          </p>
+                          </Typography>
                         )}
 
                         {keywords.length > 0 && (
                           <div className="mt-4">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            <Typography variant="overline" as="p" tone="muted" weight="semibold" className="text-micro tracking-wider">
                               Keywords
-                            </p>
+                            </Typography>
                             <ul className="mt-2 flex flex-wrap gap-1.5">
                               {keywords.map((keyword) => (
                                 <li
@@ -307,13 +308,13 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
                         )}
 
                         <div className="mt-4 border-t border-border/60 pt-3">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <Typography variant="overline" as="p" tone="muted" weight="semibold" className="text-micro tracking-wider">
                             Indicators ({indicators.length})
-                          </p>
+                          </Typography>
                           {indicators.length === 0 ? (
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <Typography variant="small" tone="muted" className="mt-1">
                               No indicators
-                            </p>
+                            </Typography>
                           ) : (
                             <IndicatorList indicators={indicators} />
                           )}
@@ -335,10 +336,10 @@ const NodeDatasetsPanel = ({ node }: { node: ViewedNode }) => {
 /** One labelled value in the "This Node" card. */
 const NodeField = ({ label, value }: { label: string; value: string }) => (
   <div className="min-w-0">
-    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <Typography variant="overline" as="p" tone="muted" weight="semibold" className="text-micro tracking-wider">
       {label}
-    </p>
-    <p className="mt-1 break-words text-sm text-foreground">{value}</p>
+    </Typography>
+    <Typography variant="body" tone="default" className="mt-1 break-words">{value}</Typography>
   </div>
 );
 
@@ -371,7 +372,7 @@ const ThisNodeCard = ({
     <Card className="mt-6 border-border/60 shadow-sm">
       <CardContent className="px-5">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground">This Node</h2>
+          <Typography variant="h3" as="h2" tone="default">This Node</Typography>
           {isRegistered && selfStatus ? (
             <StatusBadge status={selfStatus} />
           ) : (
@@ -379,8 +380,9 @@ const ThisNodeCard = ({
           )}
         </div>
 
-        <p
-          className={`mt-1 max-w-3xl text-sm ${
+        <Typography
+          variant="body"
+          className={`mt-1 max-w-3xl ${
             isRegistered
               ? "text-emerald-700 dark:text-emerald-400"
               : "text-muted-foreground"
@@ -391,7 +393,7 @@ const ThisNodeCard = ({
             : isRegistered
             ? "Registered — the backend heartbeats on its own schedule; the button below forces one now."
             : "Not registered yet. Registering hands the registry this node's manifest and rejoins the federation."}
-        </p>
+        </Typography>
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <NodeField label="Node Name" value={manifest.node_name} />
@@ -575,9 +577,9 @@ export default function NodeRegistryPage() {
         {/* Page header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            <Typography variant="h1" tone="default" className="sm:text-3xl">
               Federation — Registered Nodes
-            </h1>
+            </Typography>
           </div>
 
           {manifest && (
@@ -623,22 +625,22 @@ export default function NodeRegistryPage() {
 
         {/* Table */}
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-foreground">All Nodes</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <Typography variant="h3" as="h2" tone="default">All Nodes</Typography>
+          <Typography variant="body" tone="muted" className="mt-1">
             GET /nodes?include_inactive=true — includes detached/revoked rows,
             unlike the peer-facing view.
-          </p>
+          </Typography>
 
           <Card className="mt-4 border-border/60 py-0 shadow-sm">
             <CardContent className="px-0">
               {isError ? (
                 <div className="px-6 py-14 text-center">
-                  <p className="text-sm font-medium text-destructive">
+                  <Typography variant="error">
                     Failed to load registered nodes.
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  </Typography>
+                  <Typography variant="small" tone="muted" className="mt-1">
                     Check that the registry server is reachable, then try again.
-                  </p>
+                  </Typography>
                   <Button
                     variant="outline"
                     size="sm"
@@ -652,22 +654,22 @@ export default function NodeRegistryPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="px-6 text-[11px] uppercase tracking-wider">
+                      <TableHead className="px-6 text-caption uppercase tracking-wider">
                         Name
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider">
+                      <TableHead className="text-caption uppercase tracking-wider">
                         Base URL
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider">
+                      <TableHead className="text-caption uppercase tracking-wider">
                         Maintained By
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider">
+                      <TableHead className="text-caption uppercase tracking-wider">
                         Status
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider">
+                      <TableHead className="text-caption uppercase tracking-wider">
                         Last Heartbeat
                       </TableHead>
-                      <TableHead className="px-6 text-[11px] uppercase tracking-wider">
+                      <TableHead className="px-6 text-caption uppercase tracking-wider">
                         Actions
                       </TableHead>
                     </TableRow>
@@ -686,13 +688,13 @@ export default function NodeRegistryPage() {
                     {!isLoading && nodes.length === 0 && (
                       <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={6} className="px-6 py-14 text-center">
-                          <p className="text-sm font-medium text-foreground">
+                          <Typography variant="body" tone="default" weight="medium">
                             No nodes have registered yet.
-                          </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          </Typography>
+                          <Typography variant="small" tone="muted" className="mt-1">
                             A client node appears here once it calls POST
                             /nodes/register against this server.
-                          </p>
+                          </Typography>
                         </TableCell>
                       </TableRow>
                     )}
@@ -833,12 +835,12 @@ export default function NodeRegistryPage() {
               />
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <Typography variant="small" tone="muted">
               Registering with{" "}
-              <span className="font-mono">
+              <Typography variant="inherit" as="span" className="font-mono">
                 {manifest?.central_server_url ?? "—"}
-              </span>
-            </p>
+              </Typography>
+            </Typography>
           </div>
 
           <DialogFooter>

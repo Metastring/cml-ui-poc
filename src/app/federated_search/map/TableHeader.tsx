@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Typography, typographyVariants } from "@/components/ui/typography";
 
 interface TableHeaderProps {
   title?: string;
@@ -20,21 +21,20 @@ export function TableHeader({
   canCollapse,
   recordCount,
 }: TableHeaderProps) {
-  const buttonClass =
-    "flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 rounded transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+  const buttonClass = `${typographyVariants({ variant: "small", weight: "medium" })} flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-200 rounded transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`;
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0">
       <div className="flex items-baseline gap-2 min-w-0">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+        <Typography variant="h4" as="h2" truncate className="text-gray-900 dark:text-white">
           {title}
-        </h2>
+        </Typography>
         {typeof recordCount === "number" && (
-          <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+          <Typography variant="small" as="span" className="text-gray-500 dark:text-gray-400 shrink-0">
             {`${recordCount.toLocaleString()} ${
               recordCount === 1 ? "record" : "records"
             }`}
-          </span>
+          </Typography>
         )}
       </div>
       <div className="flex gap-1 shrink-0">

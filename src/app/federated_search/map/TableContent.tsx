@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Typography } from "@/components/ui/typography";
 
 interface TableContentProps {
   children?: React.ReactNode;
@@ -13,12 +14,12 @@ export function TableContent({ children, isEmpty = true }: TableContentProps) {
       {isEmpty ? (
         <div className="flex items-center justify-center h-full text-center p-6">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            <Typography variant="body" weight="medium" className="text-gray-600 dark:text-gray-300">
               No data available
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            </Typography>
+            <Typography variant="small" className="text-gray-500 dark:text-gray-400 mt-1">
               Select features on the map or apply filters to view results
-            </p>
+            </Typography>
           </div>
         </div>
       ) : (
